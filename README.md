@@ -22,7 +22,7 @@ This project consists of implementing an IRC (Internet Relay Chat) server in C++
 ## Installation
 1. Clone the repository:
    ```sh
-   git clone https://https://github.com/Moyaxzan/42-ft_irc.git
+   git clone https://github.com/Moyaxzan/42-ft_irc.git
    cd 42-ft_irc
    ```
 2. Compile the project using the provided Makefile:
