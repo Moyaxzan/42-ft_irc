@@ -1,3 +1,4 @@
+#include "../include/exceptions.hpp"
 #include <iostream>
 #include <string>
 
@@ -13,6 +14,16 @@ void printHelp() {
 	std::cout << "  ./ircserv 6667 mypassword" << std::endl;
 }
 
+int	parsing(int argc, char *argv[]) {
+	if (argc != 3) {
+		throw InvalidNumberOfArguments();
+	}
+	// check port
+	// port max val = 65535
+	// check password ?
+	(void) argv;
+	return (0);
+}
 
 /* ecutable will be run as follows:
 	./ircserv <port> <password> */
@@ -21,8 +32,12 @@ int	main(int argc, char *argv[]) {
 		printHelp();
 		return (0);
 	}
-	if (argc != 3) {
-		std::cerr << "Invalide number of arguments." << std::endl;
+	try {
+		parsing(argc, argv);
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
 		std::cerr << "see --help for more informations..." << std::endl;
+		return (1);
 	}
+	return (0);
 }
