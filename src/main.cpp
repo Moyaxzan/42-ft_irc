@@ -2,15 +2,15 @@
 #include <string>
 
 void printHelp() {
-    std::cout << "Usage: ./ircserv <port> <password>" << std::endl;
-    std::cout << "  <port>      : The port number on which the IRC server listens for connections." << std::endl;
-    std::cout << "  <password>  : The connection password required by clients." << std::endl;
+	std::cout << "Usage: ./ircserv <port> <password>" << std::endl;
+	std::cout << "  <port>      : The port number on which the IRC server listens for connections." << std::endl;
+	std::cout << "  <password>  : The connection password required by clients." << std::endl;
 	std::cout << std::endl;
-    std::cout << "Options:" << std::endl;
+	std::cout << "Options:" << std::endl;
 	std::cout << "  --help      : Display this help message and exit." << std::endl;
 	std::cout << std::endl;
-    std::cout << "Example:" << std::endl;
-    std::cout << "  ./ircserv 6667 mypassword" << std::endl;
+	std::cout << "Example:" << std::endl;
+	std::cout << "  ./ircserv 6667 mypassword" << std::endl;
 }
 
 
