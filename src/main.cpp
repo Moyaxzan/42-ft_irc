@@ -1,6 +1,13 @@
 #include "../include/exceptions.hpp"
 #include <iostream>
 #include <string>
+#include <sstream>
+
+typedef struct s_args {
+	unsigned int port;
+	std::string password;
+	std::string portStr;
+}	t_args;
 
 void printHelp() {
 	std::cout << "Usage: ./ircserv <port> <password>" << std::endl;
@@ -14,15 +21,21 @@ void printHelp() {
 	std::cout << "  ./ircserv 6667 mypassword" << std::endl;
 }
 
-int	parsing(int argc, char *argv[]) {
+t_args	parsing(int argc, char *argv[]) {
 	if (argc != 3) {
-		throw InvalidNumberOfArguments();
+		throw (InvalidNumberOfArguments());
 	}
-	// check port
-	// port max val = 65535
+	t_args args;
+	std::stringstream sstream;
+	sstream << argv[1];
+	sstream >> args.port;
+	if (!(sstream && sstream.eof()) || args.port > 65535) {
+		throw (InvalidPortNumber());
+	}
 	// check password ?
-	(void) argv;
-	return (0);
+	args.portStr = std::string(argv[1]);
+	args.password = std::string(argv[2]);
+	return (args);
 }
 
 /* ecutable will be run as follows:
@@ -33,7 +46,8 @@ int	main(int argc, char *argv[]) {
 		return (0);
 	}
 	try {
-		parsing(argc, argv);
+		t_args args = parsing(argc, argv);
+		(void) args;
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
 		std::cerr << "see --help for more informations..." << std::endl;
