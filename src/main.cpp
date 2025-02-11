@@ -1,4 +1,5 @@
 #include "../include/exceptions.hpp"
+#include "../include/server.hpp"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -47,7 +48,8 @@ int	main(int argc, char *argv[]) {
 	}
 	try {
 		t_args args = parsing(argc, argv);
-		(void) args;
+		start_server(args);
+		// (void) args;
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
 		std::cerr << "see --help for more informations..." << std::endl;
