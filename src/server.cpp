@@ -6,7 +6,7 @@
 /*   By: kipouliq <kipouliq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:44:01 by kipouliq          #+#    #+#             */
-/*   Updated: 2025/02/13 17:18:24 by kipouliq         ###   ########.fr       */
+/*   Updated: 2025/02/14 18:37:09 by kipouliq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,11 @@ void start_server(t_args &args)
     listen(socket_fd, 20);
     int accept_fd = accept(socket_fd, (sockaddr *)&socket_infos, &size);
     std::cout << "accept res = " << accept_fd << std::endl;
-    char buffer[1024];
-    while (recv(accept_fd, buffer, 1024, 0) != 0)
+    char buffer[1024]; // bzero | memset
+    while (recv(accept_fd, buffer, 1023, 0) != 0)
     {
         std::cout << buffer << std::endl;
+        // bzero ou memset a 0
     }
     // std::perror("recv: ");
 }
