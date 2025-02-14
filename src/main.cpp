@@ -4,11 +4,11 @@
 #include <string>
 #include <sstream>
 
-typedef struct s_args {
-	unsigned int port;
-	std::string password;
-	std::string portStr;
-}	t_args;
+// typedef struct s_args {
+// 	unsigned int port;
+// 	std::string password;
+// 	std::string portStr;
+// }	t_args;
 
 void printHelp() {
 	std::cout << "Usage: ./ircserv <port> <password>" << std::endl;

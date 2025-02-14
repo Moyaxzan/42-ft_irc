@@ -6,7 +6,7 @@
 /*   By: kipouliq <kipouliq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:44:30 by kipouliq          #+#    #+#             */
-/*   Updated: 2025/02/11 16:59:29 by kipouliq         ###   ########.fr       */
+/*   Updated: 2025/02/13 13:36:12 by kipouliq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,6 @@ typedef struct s_args {
 	std::string portStr;
 }	t_args;
 
-void start_server(t_args const &args);
+void start_server(t_args &args);
 
 #endif

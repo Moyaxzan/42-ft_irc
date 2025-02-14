@@ -7,7 +7,8 @@ CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -g
 CXX = c++
 
 SRCS =	./src/main.cpp \
-		./src/exceptions.cpp
+		./src/exceptions.cpp \
+		./src/server.cpp
 
 OBJS_DIR = .objs/
 
