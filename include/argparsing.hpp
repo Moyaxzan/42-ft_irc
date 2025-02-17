@@ -1,5 +1,15 @@
+#ifndef ARGPARSING_HPP
+
+#define ARGPARSING_HPP
+
 #include <exception>
-#include "../include/server.hpp"
+#include <string>
+
+typedef struct s_args {
+	unsigned int port;
+	std::string password;
+	std::string portStr;
+}	t_args;
 
 t_args	parsing(int argc, char *argv[]);
 
@@ -12,3 +22,5 @@ class InvalidPortNumber : public std::exception {
 	public :
 		const char * what() const throw();
 };
+
+#endif

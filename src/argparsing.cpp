@@ -1,5 +1,5 @@
 #include "../include/argparsing.hpp"
-#include "../include/server.hpp"
+#include "../include/Server.hpp"
 #include <sstream>
 
 t_args	parsing(int argc, char *argv[]) {

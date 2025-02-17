@@ -1,5 +1,5 @@
 #include "../include/argparsing.hpp"
-#include "../include/server.hpp"
+#include "../include/Server.hpp"
 
 const char * InvalidNumberOfArguments::what() const throw() {
 	return ("Invalid number of arguments.");
@@ -24,3 +24,8 @@ const char * ListenError::what(void) const throw() {
 const char * AcceptError::what(void) const throw() {
 	return ("Accept Error has occured");
 }
+
+const char * SelectError::what(void) const throw() {
+	return ("Select Error has occured");
+}
+

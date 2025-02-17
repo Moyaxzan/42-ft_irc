@@ -1,27 +1,46 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.hpp                                         :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kipouliq <kipouliq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:44:30 by kipouliq          #+#    #+#             */
-/*   Updated: 2025/02/17 11:54:46 by tsaint-p         ###   ########.fr       */
+/*   Updated: 2025/02/17 15:45:29 by tsaint-p         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
+
 #define SERVER_HPP
-#include <iostream>
+#define SERV_IP "127.0.0.1"
+
+#include <netinet/in.h>
 #include <exception>
+#include <sys/types.h>
+#include <sys/select.h>
+#include "../include/argparsing.hpp"
 
-typedef struct s_args {
-	unsigned int port;
-	std::string password;
-	std::string portStr;
-}	t_args;
+class Server {
+	private:
+		fd_set all_sockets_;
+		int serv_socket_;
+		int	fd_max_;	// useful ?
+		sockaddr_in socket_infos_;
 
-void start_server(t_args &args);
+		void newClient_(void);
+		void readClient(int fd);
+
+	public:
+		Server(void);
+		Server(t_args& args);
+		Server(Server& other);
+		Server& operator=(Server& other);
+		~Server(void);
+
+		void runServer(void);
+
+};
 
 class SocketError : public std::exception {
 	public:
@@ -39,6 +58,11 @@ class ListenError : public std::exception {
 };
 
 class AcceptError : public std::exception {
+	public:
+		const char *what(void) const throw();
+};
+
+class SelectError : public std::exception {
 	public:
 		const char *what(void) const throw();
 };

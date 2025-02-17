@@ -1,14 +1,13 @@
 #include "../include/argparsing.hpp"
-#include "../include/server.hpp"
 #include <iostream>
 #include <string>
 #include <sstream>
+#include "../include/Server.hpp"
 
-// typedef struct s_args {
-// 	unsigned int port;
-// 	std::string password;
-// 	std::string portStr;
-// }	t_args;
+
+#ifndef DEBUG
+# define DEBUG 0
+#endif
 
 void printHelp() {
 	std::cout << "Usage: ./ircserv <port> <password>" << std::endl;
@@ -32,8 +31,8 @@ int	main(int argc, char *argv[]) {
 	}
 	try {
 		t_args args = parsing(argc, argv);
-		start_server(args);
-		// (void) args;
+		Server serv(args);
+		serv.runServer();
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
 		std::cerr << std::endl << "see --help for more informations..." << std::endl;
