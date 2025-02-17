@@ -1,13 +1,9 @@
-#include "../include/argparsing.hpp"
 #include <iostream>
 #include <string>
-#include <sstream>
+#include "../include/argparsing.hpp"
 #include "../include/Server.hpp"
+#include "../include/debug.hpp"
 
-
-#ifndef DEBUG
-# define DEBUG 0
-#endif
 
 void printHelp() {
 	std::cout << "Usage: ./ircserv <port> <password>" << std::endl;

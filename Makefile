@@ -2,13 +2,15 @@
 
 NAME = ircserv
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -g
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD
+
+DEBUG_FLAGS = -g -DDEBUG=1
 
 CXX = c++
 
 SRCS =	./src/main.cpp \
 		./src/exceptions.cpp \
-		./src/server.cpp \
+		./src/Server.cpp \
 		./src/argparsing.cpp
 
 OBJS_DIR = .objs/
@@ -25,6 +27,9 @@ DEPS = $(OBJS:.o=.d)
 
 $(NAME) 		:	$(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
+
+debug: CXXFLAGS += $(DEBUG_FLAGS)
+debug: re
 
 all				:	$(NAME)
 

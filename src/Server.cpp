@@ -6,11 +6,12 @@
 /*   By: tsaint-p <tsaint-p@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:44:01 by kipouliq          #+#    #+#             */
-/*   Updated: 2025/02/17 16:03:04 by tsaint-p         ###   ########.fr       */
+/*   Updated: 2025/02/17 16:15:54 by tsaint-p         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Server.hpp"
+#include "../include/debug.hpp"
 #include <arpa/inet.h>
 #include <iostream>
 #include <cstdlib>
@@ -35,7 +36,7 @@ Server::Server(t_args& args) {
     this->socket_infos_.sin_addr.s_addr = inet_addr(SERV_IP);
     size = sizeof(this->socket_infos_);
 
-    std::cout << "Starting server!" << std::endl;
+    DEBUG_LOG("Starting server!");
 	this->serv_socket_ = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (this->serv_socket_ == -1) {
