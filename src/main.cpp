@@ -1,4 +1,4 @@
-#include "../include/exceptions.hpp"
+#include "../include/argparsing.hpp"
 #include "../include/server.hpp"
 #include <iostream>
 #include <string>
@@ -22,22 +22,6 @@ void printHelp() {
 	std::cout << "  ./ircserv 6667 mypassword" << std::endl;
 }
 
-t_args	parsing(int argc, char *argv[]) {
-	if (argc != 3) {
-		throw (InvalidNumberOfArguments());
-	}
-	t_args args;
-	std::stringstream sstream;
-	sstream << argv[1];
-	sstream >> args.port;
-	if (!(sstream && sstream.eof()) || args.port > 65535) {
-		throw (InvalidPortNumber());
-	}
-	// check password ?
-	args.portStr = std::string(argv[1]);
-	args.password = std::string(argv[2]);
-	return (args);
-}
 
 /* ecutable will be run as follows:
 	./ircserv <port> <password> */
@@ -52,7 +36,7 @@ int	main(int argc, char *argv[]) {
 		// (void) args;
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
-		std::cerr << "see --help for more informations..." << std::endl;
+		std::cerr << std::endl << "see --help for more informations..." << std::endl;
 		return (1);
 	}
 	return (0);

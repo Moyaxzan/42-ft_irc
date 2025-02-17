@@ -1,4 +1,5 @@
-#include "../include/exceptions.hpp"
+#include "../include/argparsing.hpp"
+#include "../include/server.hpp"
 
 const char * InvalidNumberOfArguments::what() const throw() {
 	return ("Invalid number of arguments.");
@@ -6,4 +7,20 @@ const char * InvalidNumberOfArguments::what() const throw() {
 
 const char * InvalidPortNumber::what() const throw() {
 	return ("Invalid port number\nport must be an int between 0 and 65535");
+}
+
+const char * SocketError::what(void) const throw() {
+	return ("Socket Error has occured");
+}
+
+const char * BindError::what(void) const throw() {
+	return ("Bind Error has occured\nCheck that your port is available");
+}
+
+const char * ListenError::what(void) const throw() {
+	return ("Listen Error has occured");
+}
+
+const char * AcceptError::what(void) const throw() {
+	return ("Accept Error has occured");
 }
