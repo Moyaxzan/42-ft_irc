@@ -30,7 +30,7 @@ int	main(int argc, char *argv[]) {
 		Server serv(args);
 		serv.runServer();
 	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
+		std::cerr << "Error: " << e.what() << std::endl;
 		std::cerr << std::endl << "see --help for more informations..." << std::endl;
 		return (1);
 	}
