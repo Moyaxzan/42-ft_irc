@@ -13,7 +13,7 @@ class Server {
 	private:
 		fd_set all_sockets_;
 		int serv_socket_;
-		int	fd_max_;	// useful ?
+		int	fd_max_;
 		sockaddr_in socket_infos_;
 
 		void newClient_(void);
