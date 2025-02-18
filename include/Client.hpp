@@ -11,10 +11,11 @@ class Client {
 		std::string								nickname_;
 		unsigned int							currChannel_;
 		std::list<unsigned int>					joinedChannels_;
-		std::pair<unsigned int, std::string>	auth_;
+		std::pair<unsigned int, std::string>	auth_;	// <id, username>
 
 	public:
 		Client(void);
+		Client(std::string nickname, unsigned int id, std::string username);
 		Client(Client& other);
 		Client& operator=(Client& other);
 		~Client(void);
