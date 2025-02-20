@@ -1,6 +1,6 @@
 #include "../include/Bot.hpp"
 
-Bot::Bot(void)
+Bot::Bot(char *port)
 {
     std::ifstream infile;
     std::string line;
@@ -16,6 +16,22 @@ Bot::Bot(void)
     }
     else
         std::cout << "No profanities file found!" << "\n";
+    this->initServerConnection_(port);
+}
+
+void Bot::initServerConnection_(char *port)
+{
+    sockaddr_in server_infos;
+    server_infos.sin_family = AF_INET;
+    server_infos.sin_port = htons(atoi(port));
+    server_infos.sin_addr.s_addr = inet_addr(SERV_IP);
+
+    this->socket_ = socket(AF_INET, SOCK_STREAM, 0);
+    if (this->socket_ == -1)
+        return ;
+
+    if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
+        throw ConnectionError();
 }
 
 Bot::Bot(Bot const & other)
@@ -30,6 +46,7 @@ Bot::~Bot(void)
 
 Bot &Bot::operator=(Bot const & other)
 {
+    this->socket_ = other.socket_;
     this->profanities_ = other.profanities_;
     return *this;
 }
@@ -79,31 +96,63 @@ bool Bot::isStrPbmatic(std::string str)
     return false;
 }
 
+int Bot::getClientSocket(void)
+{
+    return this->socket_;
+}
+
 void Bot::launchRoulette(void)
 {
     Gun gun;
     std::vector<int> players;
     std::vector<int>::iterator it;
+    char buffer[1024];
     // std::string req;
 
     //requete au serveur pour pick 6 joueurs random (max) dans le channel
     // req = "1 3";
     players.push_back(1);
     players.push_back(2);
-    std::cout << "Players ";
+    players.push_back(3);
+    players.push_back(4);
+    std::string intro = "Players ";
     for (it = players.begin(); it != players.end(); it++)
     {
-        std::stringstream player_nb;
-        player_nb << "[" << *it << "]";
-        if (it == players.end() - 1)
-            std::cout << "and " << player_nb.str() << " ";
+        std::cerr << "yes\n";
+        std::string player_nb = encapsulate(*it);
+        if (it == players.end())
+        {
+            intro += "and " + player_nb + " ";
+        }
         else
-            std::cout << player_nb.str() << ", ";
+            intro += player_nb + ", ";
     }
-    std::cout << "have been selected !\n";
+    intro += "have been selected !\n";
+    send(this->socket_, intro.c_str(), intro.size(), 0);
+    std::random_shuffle(players.begin(), players.end());
+    intro.clear();
+    intro = encapsulate(players[0]) + " will begin ! Would you rather PULL the trigger or ROLL the bullets ?\n";
+    send(this->socket_, intro.c_str(), intro.size(), 0);
+    while (recv(this->socket_, buffer, 1023, 0) != 0 || recv(this->socket_, buffer, 1023, 0) != -1)
+    {
+        std::string buff = buffer;
+        if (buff.find("PULL") != buff.npos)
+            std::cout << "PULLING TRIGGER\n";
+        else if (buff.find("ROLL") != buff.npos)
+            std::cout << "ROLLING BULLETS\n";
+        memset(buffer, '\0', 1023);
+    }
 }
 
 void Bot::fileError(void)
 {
     std::cerr << "There was a problem opening a profanities file : " << std::strerror(errno) << "\n";
+}
+
+std::string encapsulate(int i)
+{
+    std::stringstream nb;
+
+    nb << "[" << i << "]";
+    return nb.str();
 }

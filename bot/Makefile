@@ -10,6 +10,7 @@ CXX = c++
 
 SRCS =	./src/Bot.cpp \
 		./src/Gun.cpp \
+		./src/BotExceptions.cpp \
 		./src/main.cpp
 
 OBJS_DIR = .objs/
