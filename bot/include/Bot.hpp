@@ -8,11 +8,13 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include "../../include/Server.hpp"
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "../../include/Server.hpp"
+#include "../../include/Client.hpp"
+#include "../include/Gun.hpp"
 
-class Bot // : public Client ?
+class Bot /* : public Client */
 {
     private:
         void fileError(void);
@@ -28,6 +30,7 @@ class Bot // : public Client ?
         std::vector<std::vector<std::string> >&getDicts(void);
 
         bool isStrPbmatic(std::string str);
+        void launchRoulette(void);
 };
 
 #endif

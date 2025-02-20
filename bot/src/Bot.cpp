@@ -39,7 +39,6 @@ std::vector<std::vector<std::string> >&Bot::getDicts(void)
     return this->profanities_;
 }
 
-
 void Bot::addProfanityDict(std::string filename)
 {
     if (filename.empty() || filename.compare(".") == 0 || filename.compare("..") == 0)
@@ -78,6 +77,30 @@ bool Bot::isStrPbmatic(std::string str)
         }
     }
     return false;
+}
+
+void Bot::launchRoulette(void)
+{
+    Gun gun;
+    std::vector<int> players;
+    std::vector<int>::iterator it;
+    // std::string req;
+
+    //requete au serveur pour pick 6 joueurs random (max) dans le channel
+    // req = "1 3";
+    players.push_back(1);
+    players.push_back(2);
+    std::cout << "Players ";
+    for (it = players.begin(); it != players.end(); it++)
+    {
+        std::stringstream player_nb;
+        player_nb << "[" << *it << "]";
+        if (it == players.end() - 1)
+            std::cout << "and " << player_nb.str() << " ";
+        else
+            std::cout << player_nb.str() << ", ";
+    }
+    std::cout << "have been selected !\n";
 }
 
 void Bot::fileError(void)

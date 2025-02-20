@@ -77,6 +77,7 @@ void Server::runServer(void)
 				if (i == this->serv_socket_) {
 					this->newClient_();
 				} else {
+                    DEBUG_LOG("message incoming");
 					this->readClient(i);
 				}
 			}
@@ -84,7 +85,6 @@ void Server::runServer(void)
 	}
 	return ;
 }
-
 
 void Server::newClient_(void) {
 	int accept_fd = accept(this->serv_socket_, NULL, NULL);
@@ -103,7 +103,18 @@ void Server::readClient(int fd) {
 	recv_res = recv(fd, buffer, 1023, 0);
 	if (recv_res == 0) {
 		std::cout << "Client " << fd << " disconnected";
+        FD_CLR(fd, &this->all_sockets_);
+        close(fd);
 	} else {
-		std::cout << "[" << fd << "] :"<< buffer << std::endl;
+        for (int i = 0; i <= this->fd_max_; i++)
+        {
+            if (FD_ISSET(i, &all_sockets_) && i != this->serv_socket_ && fd != i)
+            {
+                std::stringstream to_send;
+                to_send << "[" << i << "] :"<< buffer << std::endl;
+                std::string msg = to_send.str();
+                send(i, msg.c_str(), msg.size(), 0);
+            }
+        }
 	}
 }

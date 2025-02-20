@@ -9,6 +9,7 @@ DEBUG_FLAGS = -g -DDEBUG=1
 CXX = c++
 
 SRCS =	./src/Bot.cpp \
+		./src/Gun.cpp \
 		./src/main.cpp
 
 OBJS_DIR = .objs/

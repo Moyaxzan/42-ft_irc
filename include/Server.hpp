@@ -7,6 +7,7 @@
 #include <exception>
 #include <sys/types.h>
 #include <sys/select.h>
+#include <sstream>
 #include "../include/argparsing.hpp"
 
 class Server {
