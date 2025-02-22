@@ -9,6 +9,8 @@
 #include <sys/select.h>
 #include "../include/argparsing.hpp"
 
+static bool stopSig = false;
+
 class Server {
 	private:
 		fd_set all_sockets_;

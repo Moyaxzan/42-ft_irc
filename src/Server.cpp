@@ -67,8 +67,9 @@ Server::~Server(void) {
 void Server::runServer(void)
 {
 	fd_set readfds;
-	while (1) {
+	while (!stopSig) {
 		readfds = this->all_sockets_;
+		//select catches signal...
 		if (select(this->fd_max_ + 1, &readfds, NULL, NULL, NULL) == -1) {
 			throw(SelectError());
 		}
@@ -82,6 +83,7 @@ void Server::runServer(void)
 			}
 		}
 	}
+	std::cout << "signal recieved" << std::endl;
 	return ;
 }
 
