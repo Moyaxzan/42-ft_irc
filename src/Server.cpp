@@ -59,7 +59,11 @@ Server& Server::operator=(Server& other) {
 }
 
 Server::~Server(void) {
-// close stuff
+	for (int i = 0; i <= this->fd_max_; i++) {
+		if (FD_ISSET(i, &this->all_sockets_)) {
+			close(i);
+		}
+	}
 }
 
 // see https://www.codequoi.com/programmation-reseau-via-socket-en-c/#c%C3%B4t%C3%A9-serveur--accepter-des-connexions-client-via-socket
@@ -67,13 +71,12 @@ Server::~Server(void) {
 void Server::runServer(void)
 {
 	fd_set readfds;
-	while (!stopSig) {
+	while (!g_stopSig) {
 		readfds = this->all_sockets_;
-		//select catches signal...
-		if (select(this->fd_max_ + 1, &readfds, NULL, NULL, NULL) == -1) {
+		if (select(this->fd_max_ + 1, &readfds, NULL, NULL, NULL) == -1 && !g_stopSig) {
 			throw(SelectError());
 		}
-		for (int i = 0; i <= this->fd_max_; i++) {
+		for (int i = 0; !g_stopSig && i <= this->fd_max_; i++) {
 			if (FD_ISSET(i, &readfds)) {
 				if (i == this->serv_socket_) {
 					this->newClient_();
@@ -83,7 +86,7 @@ void Server::runServer(void)
 			}
 		}
 	}
-	std::cout << "signal recieved" << std::endl;
+	std::cout << std::endl << "Exit" << std::endl;
 	return ;
 }
 

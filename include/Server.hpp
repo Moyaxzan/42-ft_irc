@@ -9,7 +9,7 @@
 #include <sys/select.h>
 #include "../include/argparsing.hpp"
 
-static bool stopSig = false;
+extern volatile sig_atomic_t g_stopSig;
 
 class Server {
 	private:

@@ -5,6 +5,8 @@
 #include "../include/Server.hpp"
 #include "../include/debug.hpp"
 
+volatile sig_atomic_t g_stopSig = false;
+
 static void printHelp() {
 	std::cout << "Usage: ./ircserv <port> <password>" << std::endl;
 	std::cout << "  <port>      : The port number on which the IRC server listens for connections." << std::endl;
@@ -17,10 +19,10 @@ static void printHelp() {
 	std::cout << "  ./ircserv 6667 mypassword" << std::endl;
 }
 
-static void signalHandler(int signal) {
-	if (signal == SIGINT || signal == SIGQUIT) {
-		stopSig = true;
-	}
+void signalHandler(int signal) {
+	(void) signal;
+	g_stopSig = true;
+	DEBUG_LOG("\nsignal recieved");
 }
 
 /* ecutable will be run as follows:
