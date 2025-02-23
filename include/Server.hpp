@@ -9,6 +9,8 @@
 #include <sys/select.h>
 #include "../include/argparsing.hpp"
 
+extern volatile sig_atomic_t g_stopSig;
+
 class Server {
 	private:
 		fd_set all_sockets_;
