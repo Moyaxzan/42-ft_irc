@@ -118,7 +118,6 @@ void Bot::launchRoulette(void)
     std::string intro = "Players ";
     for (it = players.begin(); it != players.end(); it++)
     {
-        std::cerr << "yes\n";
         std::string player_nb = encapsulate(*it);
         if (it == players.end())
         {
@@ -137,9 +136,16 @@ void Bot::launchRoulette(void)
     {
         std::string buff = buffer;
         if (buff.find("PULL") != buff.npos)
-            std::cout << "PULLING TRIGGER\n";
+        {
+            if (!gun.checkBullet())
+                std::cout << "Survived\n";
+            else
+                std::cout << "Dead!\n";
+        }
         else if (buff.find("ROLL") != buff.npos)
-            std::cout << "ROLLING BULLETS\n";
+        {
+            gun.shuffleBullets();
+        }
         memset(buffer, '\0', 1023);
     }
 }

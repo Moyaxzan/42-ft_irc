@@ -12,14 +12,14 @@ Gun::Gun(void)
     this->shuffleBullets();
 }
 
-Gun::Gun(Gun const & other)
+Gun::Gun(Gun const &other)
 {
     *this = other;
 }
 
 Gun::~Gun(void) {}
 
-Gun &Gun::operator=(Gun const & other)
+Gun &Gun::operator=(Gun const &other)
 {
     this->bullets_ = other.bullets_;
     return *this;
@@ -28,12 +28,20 @@ Gun &Gun::operator=(Gun const & other)
 void Gun::shuffleBullets(void)
 {
     std::random_shuffle(this->bullets_.begin(), this->bullets_.end());
+    for (int i = 0; i < 6; i++)
+        this->bullets_[i] ? std::cout << "true\n" : std::cout << "false\n";
 }
 
 bool Gun::checkBullet(void)
 {
+    for (int i = 0; i < 6; i++)
+        this->bullets_[i] ? std::cout << "true\n" : std::cout << "false\n";
     if (this->bullets_[0])
+    {
+        std::cout << "hello\n";
         return true;
-    this->bullets_.push_back(0);
+    }
+    this->bullets_.erase(this->bullets_.begin());
+
     return false;
 }
