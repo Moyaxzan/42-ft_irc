@@ -9,6 +9,16 @@ const char * InvalidPortNumber::what() const throw() {
 	return ("Invalid port number\nport must be an int between 0 and 65535");
 }
 
+/*
+const char * InvalidPortNumber::what() const throw() {
+	return ("Invalid port number\nport must be an int between 1024 and 65535");
+}
+*/
+
+const char * InvalidPassword::what() const throw() {
+	return ("Invalid password\npassword can't be empty, please enter at least a character");
+}
+
 const char * SocketError::what(void) const throw() {
 	return ("Socket Error has occured");
 }

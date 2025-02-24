@@ -23,4 +23,9 @@ class InvalidPortNumber : public std::exception {
 		const char * what() const throw();
 };
 
+class InvalidPassword : public std::exception {
+	public :
+		const char * what() const throw();
+};
+
 #endif
