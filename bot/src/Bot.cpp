@@ -15,23 +15,8 @@ Bot::Bot(char *port)
         closedir(profanities_dir);
     }
     else
-        std::cout << "No profanities file found!" << "\n";
+        std::cout << "No profanities file found!\n";
     this->initServerConnection_(port);
-}
-
-void Bot::initServerConnection_(char *port)
-{
-    sockaddr_in server_infos;
-    server_infos.sin_family = AF_INET;
-    server_infos.sin_port = htons(atoi(port));
-    server_infos.sin_addr.s_addr = inet_addr(SERV_IP);
-
-    this->socket_ = socket(AF_INET, SOCK_STREAM, 0);
-    if (this->socket_ == -1)
-        return ;
-
-    if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
-        throw ConnectionError();
 }
 
 Bot::Bot(Bot const & other)
@@ -51,9 +36,66 @@ Bot &Bot::operator=(Bot const & other)
     return *this;
 }
 
+void Bot::initServerConnection_(char *port)
+{
+    sockaddr_in server_infos;
+    server_infos.sin_family = AF_INET;
+    server_infos.sin_port = htons(atoi(port));
+    server_infos.sin_addr.s_addr = inet_addr(SERV_IP);
+
+    this->socket_ = socket(AF_INET, SOCK_STREAM, 0);
+    if (this->socket_ == -1)
+        throw SocketBotError();
+
+    if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
+        throw ConnectionError();
+}
+
 std::vector<std::vector<std::string> >&Bot::getDicts(void)
 {
     return this->profanities_;
+}
+
+void Bot::sendMsg(std::string to_send)
+{
+    int bytes_sent = 0;
+    int str_len = to_send.length();
+    const char *str = to_send.c_str();
+    int send_res;
+
+    while (bytes_sent < str_len)
+    {
+        send_res = send(this->socket_, str + bytes_sent, str_len - bytes_sent, 0);
+        if (send_res == -1)
+        {
+            if (errno == EINTR)
+                continue;
+            else
+                throw SendError();
+        }
+        bytes_sent += send_res;
+    }
+}
+
+std::string Bot::recvMsg(void)
+{
+    char buffer[512];
+    int err;
+    std::string full_msg;
+
+    memset(buffer, '\0', 1024);
+    while (full_msg.find("\r\n") == full_msg.npos)
+    {
+        err = recv(this->getClientSocket(), buffer, 512, 0);
+        if (err == -1)
+        {
+            if (errno == EINTR)
+                continue;
+            
+        }
+        
+    }
+
 }
 
 void Bot::addProfanityDict(std::string filename)
@@ -120,9 +162,7 @@ void Bot::launchRoulette(void)
     {
         std::string player_nb = encapsulate(*it);
         if (it == players.end())
-        {
             intro += "and " + player_nb + " ";
-        }
         else
             intro += player_nb + ", ";
     }

@@ -19,8 +19,8 @@ class Bot /* : public Client */
     private:
         void fileError(void);
         void addProfanityDict(std::string filename);
-        int socket_;
         std::vector<std::vector<std::string> >profanities_;
+        int socket_;
 
         void initServerConnection_(char *port);
 
@@ -31,8 +31,10 @@ class Bot /* : public Client */
         Bot & operator=(Bot const & other);
 
         std::vector<std::vector<std::string> >&getDicts(void);
-
         int  getClientSocket(void);
+
+        void sendMsg(std::string);
+        std::string recvMsg(void);
         bool isStrPbmatic(std::string str);
         void launchRoulette(void);
 };
@@ -45,6 +47,22 @@ class ConnectionError : public std::exception
         const char *what(void) const throw();
 };
 
+class SocketBotError : public std::exception
+{
+    public:
+        const char *what(void) const throw();
+};
 
+class SendError : public std::exception
+{
+    public:
+        const char *what(void) const throw();
+};
+
+class FileOpenError : public std::exception
+{
+    public:
+        const char *what(void) const throw();
+};
 
 #endif
