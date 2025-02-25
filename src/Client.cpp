@@ -23,6 +23,7 @@ Client& Client::operator=(const Client& other) {
 	this->currChannel_ = other.currChannel_;
 	this->joinedChannels_ = other.joinedChannels_;
 	// auth info ?
+	return (*this);
 }
 
 Client::~Client(void) {

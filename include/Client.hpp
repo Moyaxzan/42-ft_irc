@@ -7,7 +7,7 @@
 
 class Client {
 	private:
-		bool									isAuth_; // equivalent in server class
+		bool									isAuth_; // equivalent in server class, useful ?
 		std::string								nickname_;
 		std::string								username_; // useful since it's in auth_ ?
 		unsigned int							currChannel_;

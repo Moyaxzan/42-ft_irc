@@ -13,7 +13,9 @@
 #define ERR_NONICKNAMEGIVEN "431 * :No nickname given\r\n"
 #define ERR_NICKNAMEINUSE "433 * "
 #define NICKINUSE ":Nickname is already in use\r\n"
-#define ERR_ERRONEUSNICKNAME "432"
+#define ERR_ERRONEUSNICKNAME "432 * "
+#define ERRONEUS ":Erroneous nickname"
+#define NICKSET "NOTICE AUTH :Nickname set to "
 
 #include <netinet/in.h>
 #include <exception>
