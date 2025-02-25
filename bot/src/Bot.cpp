@@ -56,7 +56,7 @@ std::vector<std::vector<std::string> >&Bot::getDicts(void)
     return this->profanities_;
 }
 
-void Bot::sendMsg(std::string to_send)
+void Bot::sendMsg(std::string const & to_send)
 {
     int bytes_sent = 0;
     int str_len = to_send.length();
@@ -83,19 +83,21 @@ std::string Bot::recvMsg(void)
     int err;
     std::string full_msg;
 
-    memset(buffer, '\0', 1024);
+    memset(buffer, '\0', 512);
     while (full_msg.find("\r\n") == full_msg.npos)
     {
         err = recv(this->getClientSocket(), buffer, 512, 0);
+        if (err == 0)
+            throw ConnectionError();
         if (err == -1)
-        {
-            if (errno == EINTR)
-                continue;
-            
-        }
-        
+            std::cout << "problem\n";
+        std::cout << "err = " << err << "\n";
+        std::cout << "buffer = '" << buffer << "'\n"; 
+        full_msg += std::string(buffer);
     }
-
+    std::cout << "msg = '" << full_msg << "'\n";
+    std::cout << "Str size = " << full_msg.length() << "\n";
+    return (full_msg);
 }
 
 void Bot::addProfanityDict(std::string filename)
@@ -148,7 +150,7 @@ void Bot::launchRoulette(void)
     Gun gun;
     std::vector<int> players;
     std::vector<int>::iterator it;
-    char buffer[1024];
+    std::string msg;
     // std::string req;
 
     //requete au serveur pour pick 6 joueurs random (max) dans le channel
@@ -167,26 +169,22 @@ void Bot::launchRoulette(void)
             intro += player_nb + ", ";
     }
     intro += "have been selected !\n";
-    send(this->socket_, intro.c_str(), intro.size(), 0);
+    this->sendMsg(intro);
     std::random_shuffle(players.begin(), players.end());
     intro.clear();
     intro = encapsulate(players[0]) + " will begin ! Would you rather PULL the trigger or ROLL the bullets ?\n";
-    send(this->socket_, intro.c_str(), intro.size(), 0);
-    while (recv(this->socket_, buffer, 1023, 0) != 0 || recv(this->socket_, buffer, 1023, 0) != -1)
+    this->sendMsg(intro);
+    while (!(msg = this->recvMsg()).empty())
     {
-        std::string buff = buffer;
-        if (buff.find("PULL") != buff.npos)
+        if (msg.find("PULL") != msg.npos)
         {
             if (!gun.checkBullet())
                 std::cout << "Survived\n";
             else
                 std::cout << "Dead!\n";
         }
-        else if (buff.find("ROLL") != buff.npos)
-        {
+        else if (msg.find("ROLL") != msg.npos)
             gun.shuffleBullets();
-        }
-        memset(buffer, '\0', 1023);
     }
 }
 

@@ -7,28 +7,18 @@ int main(int argc, char **argv)
     try
     {
         Bot bot(argv[1]);
-        int err;
-
-        char buffer[1024];
-        memset(buffer, '\0', 1024);
+        std::string msg;
         bot.sendMsg("Hey, i'm the bot! ready to moderate.\n");
-        while ((err = recv(bot.getClientSocket(), buffer, 1024, 0)) != -1)
+        while (!(msg = bot.recvMsg()).empty())
         {
-            std::cout << bot.getClientSocket();
-            std::string msg = buffer;
             if (bot.isStrPbmatic(msg))
-            {
-                std::string warning = "Problematic content detected ! I will strike.\n";
-                send(bot.getClientSocket(), warning.c_str(), warning.size(), 0);
-            }
+                bot.sendMsg("Problematic content detected ! I will strike.\n");
             else if (std::string(msg).find("/RCR") != msg.npos)
             {
-                std::string begin_game = "Oh oh! It seems like someone launched a Russian Chat Roulette! Let's do it!\n";
-                send(bot.getClientSocket(), begin_game.c_str(), begin_game.size(), 0);
+                bot.sendMsg("Oh oh! It seems like someone launched a Russian Chat Roulette! Let's do it!\n");
                 bot.launchRoulette();
             }
             std::cout << msg << "\n";
-            memset(buffer, '\0', 1024);
         }
         close(bot.getClientSocket());
     }

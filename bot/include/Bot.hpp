@@ -33,7 +33,7 @@ class Bot /* : public Client */
         std::vector<std::vector<std::string> >&getDicts(void);
         int  getClientSocket(void);
 
-        void sendMsg(std::string);
+        void sendMsg(std::string const & to_send);
         std::string recvMsg(void);
         bool isStrPbmatic(std::string str);
         void launchRoulette(void);
