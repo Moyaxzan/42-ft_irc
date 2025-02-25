@@ -49,7 +49,7 @@ Server::Server(t_args& args) {
 	this->password_=args.password;
 }
 
-Server::Server(Server& other) {
+Server::Server(const Server& other) {
 	*this = other;
 }
 
@@ -59,7 +59,7 @@ Server::~Server(void) {
 
 // *************************************** OVERLOAD OPERATORS **************************************************************//
 
-Server& Server::operator=(Server& other) {
+Server& Server::operator=(const Server& other) {
 	this->all_sockets_ = other.all_sockets_;
 	this->serv_socket_ = other.serv_socket_;
 	this->socket_infos_ = other.socket_infos_;
@@ -79,8 +79,8 @@ void Server::newClient_(void) {
 	FD_SET(accept_fd, &this->all_sockets_);
 	if (accept_fd > this->fd_max_)
 		this->fd_max_ = accept_fd;
-	this->authClients_.insert(accept_fd, 0);
-	//create a client instance in map here or after authentication ?
+	this->authClients_[accept_fd] = 0;
+	this->clients_.insert(std::make_pair(accept_fd, Client("", accept_fd, "")));
 	std::cout << "New client detected with fd: " << accept_fd << std::endl;
 }
 
@@ -97,61 +97,98 @@ std::vector<std::string>	splitLines(std::string msg) {
 	return (lines);
 }
 
-void	sendToClient(int fd, std::string message, std::string print, std::string nickname) {
+void	sendToClient(int fd, std::string message, std::string nickname) {
 	send(fd, message.c_str(), message.size(), 0);
 	if (nickname.empty())
-		std::cout << "Client [" << fd << "]: " << print << std::endl;
+		std::cout << "Message sent to client [" << fd << "]: " << message << std::endl;
 	else
-		std::cout << "Client [" << nickname << "]: " << print << std::endl;
-	DEBUG_LOG("Message sent by server to client: " + message);
+		std::cout << "Message sent to client [" << nickname << "]: " << message << std::endl;
 }
 
+/*
+envoie un message à tous les clients sauf le client emetteur
+void Server::broadcastMessage(const std::string &message, int sender_fd) {
+    std::map<int, Client>::iterator it;
+    for (it = this->clients_.begin(); it != this->clients_.end(); ++it) {
+        int client_fd = it->first;
+        if (client_fd != sender_fd) { // Ne pas renvoyer le message à l'émetteur
+            send(client_fd, message.c_str(), message.size(), 0);
+        }
+    }
+}
+*/
+
+// gérer ERR_NEEDMOREPARAMS ?
 void	Server::checkPassword(int fd, std::string line) {
 	DEBUG_LOG("Into checkPassword function");
 	std::string	clientPass = line.substr(5);
 	//std::string	response;
 
 	if (this->authClients_.count(fd) && this->authClients_[fd] != 0) {
-		sendToClient(fd, ":" SERV_NAME " 462 * :You may not reregister\r\n", "already registered", "");
+		sendToClient(fd, SERV_NAME ERR_ALREADYREGISTRED, "");
 		return ;
 	}
 	if (clientPass == this->password_) {
 		this->authClients_[fd] = 1;
-		sendToClient(fd, ":" SERV_NAME " NOTICE AUTH :Password accepted\r\n", "correct password", "");
-		//response = ":" SERV_NAME " NOTICE AUTH :Password accepted\r\n";
+		sendToClient(fd, SERV_NAME CORRECTPASS, "");
+		//response = SERV_NAME " NOTICE AUTH :Password accepted\r\n";
 		//send(fd, response.c_str(), response.size(), 0);
 		//std::cout << "Client " << fd << " correct password" << std::endl;
 	} else {
-		sendToClient(fd, ":" SERV_NAME " NOTICE AUTH :Invalid password\r\n", "wrong password", "");
-		//response = ":" SERV_NAME " NOTICE AUTH :Invalid password\r\n";
+		sendToClient(fd, SERV_NAME ERR_WRONGPASS, "");
+		//response = SERV_NAME " NOTICE AUTH :Invalid password\r\n";
 		//send(fd, response.c_str(), response.size(), 0);
 		//std::cout << "Client " << fd << ": wrong password" << std::endl;
 		disconnectClient(fd);
 	}		
 }
 
-// si aucun nick fourni ou déjà pris, 2 solutions : soit on vire le client, soit on laisse la connexion ouverte mais on bloque toute autre action
+bool	Server::isValidNickname(int fd, std::string nickname) {
+	if (nickname.empty()) {
+		sendToClient(fd, SERV_NAME ERR_NONICKNAMEGIVEN, "");
+		//response = SERV_NAME " 431 * :No nickname given\r\n";
+		//send(fd, response.c_str(), response.size(), 0);
+		//std::cout << "Client " << fd << ": no nickname given" << std::endl;
+		//disconnectClient(fd);
+		return (false);
+	}
+	// ERR_ERRONEUSNICKNAME check avant de valider le nick
+
+	if (this->nicknames_.count(nickname)) { // Vérifie que le pseudo n'est pas déjà pris, standard IRC n'autorise pas deux utilisateurs avec le même NICK, peu importe leur USER
+		sendToClient(fd, SERV_NAME ERR_NICKNAMEINUSE + nickname + NICKINUSE, "");
+		//response = SERV_NAME " 433 * " + nickname + " :Nickname is already in use\r\n";
+		//send(fd, response.c_str(), response.size(), 0);
+		return (false);
+	}
+}
+
+// :serveur CODE <client> <paramètre> :message
+// si aucun nick fourni ou déjà pris: on laisse la connexion ouverte mais on bloque toute autre action
+/*
+ERR_ERRONEUSNICKNAME :
+1️⃣ Longueur maximale (généralement 9 caractères, mais peut varier selon les serveurs).
+2️⃣ Ne contenir que des caractères valides : A-Z a-z 0-9 - _ \ | [ ]
+3️⃣ Commencer obligatoirement par une lettre (A-Z ou a-z)
+6️⃣ Ne pas être un pseudo réservé par le serveur (ex: "root", "admin", etc.)
+7️⃣ Ne pas contenir de caractères de contrôle ASCII (0x00 à 0x1F et 0x7F)
+8️⃣ Ne pas être un pseudo interdit par la politique du serveur (ex: obscène, insultant, etc.)
+*/
 void	Server::handleNick(int fd, std::string line) {
 	std::string	nickname = line.substr(5);
-	std::string	response;
+	//std::string	response;
 
-	if (nickname.empty()) {
-		response = ":" SERV_NAME " 431 * :No nickname given\r\n";
-		send(fd, response.c_str(), response.size(), 0);
-		std::cout << "Client " << fd << ": no nickname given" << std::endl;
-		//disconnectClient(fd);
+	if (this->authClients_.count(fd) && this->authClients_[fd] < 1)
+		sendToClient(fd, SERV_NAME ERR_NOTREGISTERED, "");
 		return ;
-	}
-	if (this->nicknames_.count(nickname)) { // Vérifie que le pseudo n'est pas déjà pris, standard IRC n'autorise pas deux utilisateurs avec le même NICK, peu importe leur USER
-		response = ":" SERV_NAME " 433 * " + nickname + " :Nickname is already in use\r\n";
-		send(fd, response.c_str(), response.size(), 0);
+	if (!isValidNickname(fd, nickname))
 		return ;
-	}
+	
 	this->nicknames_.insert(nickname); // to lock the nickname
+	this->clients_[fd].set
 	// set the client nickname in its instance
 	if (this->authClients_[fd] == 1) // to preserve already connected clients' status
 		this->authClients_[fd] = 2;
-	std::string response = ":" SERV_NAME " NOTICE AUTH :Nickname set to " + nickname + "\r\n";
+	std::string response = SERV_NAME " NOTICE AUTH :Nickname set to " + nickname + "\r\n";
 	send(fd, response.c_str(), response.size(), 0);
 	std::cout << "Client " << fd << " nickname set successfully to : " << nickname << std::endl;
 }
@@ -176,7 +213,7 @@ void	Server::authenticate(int fd, std::string msg) {
 
 // Verifier avec structure sever qu'on supprime bien tout
 // Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel
-// message aus autres clients en cas de déconnexion volontaire avec un int pr le type de déconnexion
+// message aux autres clients en cas de déconnexion volontaire avec un int pr le type de déconnexion
 // et une string pr le message à transférer
 void	Server::disconnectClient(int fd) {
 		std::string	nickname = this->clients_[fd].getNick();
@@ -185,20 +222,21 @@ void	Server::disconnectClient(int fd) {
 		if (this->authClients_.count(fd))
 			this->authClients_.erase(fd);
 		this->nicknames_.erase(nickname); // to free the nickname
-		// destroy the client's instance ?
+		this->clients_.erase(fd); // destroys the instance Client
 		//change fd_max_ if it is equal to fd and look for the new higher fd
 		// signaler aux autres clients la déconnexion du client actuel (avec broadcastmessage ?)
 		std::cout << "Client " << nickname << " disconnected" << std::endl;
 }
 
 void	Server::ignoreCAP(int fd) {
-	sendToClient(fd, ":" SERV_NAME " CAP * LS : \r\nCAP END\r\n", "CAP response sent", "");
+	sendToClient(fd, SERV_NAME CAPRESP, "");
 	//std::string capResponse = ":" SERV_NAME " CAP * LS : \r\nCAP END\r\n"; // capacities list (none here)
 	//send(fd, capResponse.c_str(), capResponse.size(), 0);
 	//DEBUG_LOG("CAP response sent to client : " + capResponse);
 }
 
 // Gérer autres commandes
+// 401 ERR_NOSUCHNICK	"No such nick/channel" = tentative d'envoi d'un msg à un nick inexistant
 void Server::readClient(int fd) {
 	char	buffer[1024] = {'\0'};
 	int		recv_res;
@@ -207,7 +245,7 @@ void Server::readClient(int fd) {
 	if (recv_res == 0) {
 		disconnectClient(fd);
 		return ;
-	} // cas d'une fermeture propre du client mais on doit aussi gérer QUIT (cf réponse chat gpt)
+	} // cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
 	std::string	msg(buffer);
 	std::cout << "[" << fd << "] :"<< msg << std::endl;
 

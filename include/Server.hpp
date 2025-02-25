@@ -3,7 +3,17 @@
 #define SERVER_HPP
 #define SERV_IP "127.0.0.1"
 
-#define SERV_NAME "localhost"
+#define SERV_NAME ":localhost "
+
+#define CAPRESP "CAP * LS : \r\nCAP END\r\n"
+#define ERR_ALREADYREGISTRED "462 * :You may not reregister\r\n"
+#define CORRECTPASS "NOTICE AUTH :Password accepted\r\n"
+#define ERR_WRONGPASS "NOTICE AUTH :Invalid password\r\n"
+#define ERR_NOTREGISTERED  "451 * :Please authenticate first with PASS command\r\n"
+#define ERR_NONICKNAMEGIVEN "431 * :No nickname given\r\n"
+#define ERR_NICKNAMEINUSE "433 * "
+#define NICKINUSE ":Nickname is already in use\r\n"
+#define ERR_ERRONEUSNICKNAME "432"
 
 #include <netinet/in.h>
 #include <exception>
@@ -35,19 +45,20 @@ authClients_ : différentes valeurs d'état :
 Tant que authClients_[fd] < 3, le client ne peut pas interagir avec le serveur
 */
 
-		void newClient_(void);
-		void readClient(int fd);
-		void disconnectClient(int fd);
-		void ignoreCAP(int fd);
-		void authenticate(int fd, std::string msg);
-		void checkPassword(int fd, std::string line);
-		void handleNick(int fd, std::string line);
+		void	newClient_(void);
+		void	readClient(int fd);
+		void	disconnectClient(int fd);
+		void	ignoreCAP(int fd);
+		void	authenticate(int fd, std::string msg);
+		void	checkPassword(int fd, std::string line);
+		void	handleNick(int fd, std::string line);
+		bool	isValidNickname(int fd, std::string nickname);
 
 	public:
 		Server(void);
 		Server(t_args& args);
-		Server(Server& other);
-		Server& operator=(Server& other);
+		Server(const Server& other);
+		Server& operator=(const Server& other);
 		~Server(void);
 
 		void runServer(void);
