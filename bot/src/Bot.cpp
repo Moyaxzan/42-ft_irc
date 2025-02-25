@@ -91,12 +91,8 @@ std::string Bot::recvMsg(void)
             throw ConnectionError();
         if (err == -1)
             std::cout << "problem\n";
-        std::cout << "err = " << err << "\n";
-        std::cout << "buffer = '" << buffer << "'\n"; 
         full_msg += std::string(buffer);
     }
-    std::cout << "msg = '" << full_msg << "'\n";
-    std::cout << "Str size = " << full_msg.length() << "\n";
     return (full_msg);
 }
 
@@ -179,13 +175,20 @@ void Bot::launchRoulette(void)
         if (msg.find("PULL") != msg.npos)
         {
             if (!gun.checkBullet())
-                std::cout << "Survived\n";
+                this->sendMsg("Survived\n");
             else
-                std::cout << "Dead!\n";
+            {
+                this->sendMsg("Dead!\n");
+                break ;
+            }
         }
         else if (msg.find("ROLL") != msg.npos)
+        {
             gun.shuffleBullets();
+            this->sendMsg("Bullets have been rolled !\n");
+        }
     }
+    std::cout << "Looks like someone died !\n";
 }
 
 void Bot::fileError(void)
