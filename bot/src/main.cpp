@@ -8,7 +8,7 @@ int main(int argc, char **argv)
     {
         Bot bot(argv[1]);
         std::string msg;
-        bot.sendMsg("Hey, i'm the bot! ready to moderate.\n");
+        // bot.sendMsg("Hey, i'm the bot! ready to moderate.\n");
         while (!(msg = bot.recvMsg()).empty())
         {
             if (bot.isStrPbmatic(msg))
@@ -18,7 +18,6 @@ int main(int argc, char **argv)
                 bot.sendMsg("Oh oh! It seems like someone launched a Russian Chat Roulette! Let's do it!\n");
                 bot.launchRoulette();
             }
-            std::cout << msg << "\n";
         }
         close(bot.getClientSocket());
     }

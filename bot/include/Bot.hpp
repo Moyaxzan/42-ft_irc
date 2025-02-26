@@ -1,6 +1,7 @@
 #ifndef BOT_HPP
 #define BOT_HPP
 #include <iostream>
+#include <cctype>
 #include <vector>
 #include <fstream>
 #include <cstring>
@@ -40,6 +41,8 @@ class Bot /* : public Client */
 };
 
 std::string encapsulate(int i);
+std::string trim(std::string str, std::string delim);
+std::vector<std::string> split(std::string str, std::string delim);
 
 class ConnectionError : public std::exception
 {

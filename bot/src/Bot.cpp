@@ -19,17 +19,16 @@ Bot::Bot(char *port)
     this->initServerConnection_(port);
 }
 
-Bot::Bot(Bot const & other)
+Bot::Bot(Bot const &other)
 {
     *this = other;
 }
 
 Bot::~Bot(void)
 {
-    std::cout << "Bot destructor called\n";
 }
 
-Bot &Bot::operator=(Bot const & other)
+Bot &Bot::operator=(Bot const &other)
 {
     this->socket_ = other.socket_;
     this->profanities_ = other.profanities_;
@@ -43,20 +42,28 @@ void Bot::initServerConnection_(char *port)
     server_infos.sin_port = htons(atoi(port));
     server_infos.sin_addr.s_addr = inet_addr(SERV_IP);
 
+
     this->socket_ = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_ == -1)
         throw SocketBotError();
 
     if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
         throw ConnectionError();
+
+    this->sendMsg("CAP LS 302");
+    std::string res = this->recvMsg();
+    if (res.find("CAP END") != res.npos)
+    {
+        this->sendMsg("PASS mdp\nNICK sheriff\nUSER le_sheriff");
+    }
 }
 
-std::vector<std::vector<std::string> >&Bot::getDicts(void)
+std::vector<std::vector<std::string> > &Bot::getDicts(void)
 {
     return this->profanities_;
 }
 
-void Bot::sendMsg(std::string const & to_send)
+void Bot::sendMsg(std::string const &to_send)
 {
     int bytes_sent = 0;
     int str_len = to_send.length();
@@ -99,8 +106,8 @@ std::string Bot::recvMsg(void)
 void Bot::addProfanityDict(std::string filename)
 {
     if (filename.empty() || filename.compare(".") == 0 || filename.compare("..") == 0)
-        return ;
-    
+        return;
+
     std::ifstream infile;
     std::string line;
     std::vector<std::string> dict;
@@ -109,7 +116,7 @@ void Bot::addProfanityDict(std::string filename)
     if (!infile.is_open())
     {
         this->fileError();
-        return ;
+        return;
     }
     while (std::getline(infile, line, '\n'))
         dict.push_back(line);
@@ -120,7 +127,8 @@ bool Bot::isStrPbmatic(std::string str)
 {
     std::vector<std::string>::iterator it;
     std::vector<std::vector<std::string> >::iterator it2;
-    std::vector<std::vector<std::string> >&all_dicts = this->getDicts();
+    std::vector<std::string>::iterator it3;
+    std::vector<std::vector<std::string> > &all_dicts = this->getDicts();
 
     for (it2 = all_dicts.begin(); it2 != all_dicts.end(); it2++)
     {
@@ -128,8 +136,19 @@ bool Bot::isStrPbmatic(std::string str)
         {
             if (str.find(*it) != str.npos)
             {
-                std::cout << "Profanity found" << "\n";
-                return true;
+                std::vector<std::string> split_str = split(str, " ");
+                for (it3 = split_str.begin(); it3 < split_str.end(); it3++)
+                {
+                    std::cout << "'" << *it << "'" << "   " << "'" << *it3 << "'" << "\n";
+                    std::cout << std::string(*it).length() << "   " << std::string(*it3).length() << "\n"; 
+                    if (*it == *it3)
+                    {
+                        std::cout << "Profanity found : " << *it << "\n";
+                        return true;
+                    }
+                    else
+                        std::cout << "not same\n";
+                }
             }
         }
     }
@@ -149,8 +168,8 @@ void Bot::launchRoulette(void)
     std::string msg;
     // std::string req;
 
-    //requete au serveur pour pick 6 joueurs random (max) dans le channel
-    // req = "1 3";
+    // requete au serveur pour pick 6 joueurs random (max) dans le channel
+    //  req = "1 3";
     players.push_back(1);
     players.push_back(2);
     players.push_back(3);
@@ -179,7 +198,7 @@ void Bot::launchRoulette(void)
             else
             {
                 this->sendMsg("Dead!\n");
-                break ;
+                break;
             }
         }
         else if (msg.find("ROLL") != msg.npos)
@@ -202,4 +221,39 @@ std::string encapsulate(int i)
 
     nb << "[" << i << "]";
     return nb.str();
+}
+
+std::vector<std::string> split(std::string str, std::string delim)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+
+    str.resize(str.length() - 3);
+    while (str.find(delim) != str.npos)
+    {
+        // std::cout << "begin loop str = " << str << "\n";
+        token = str.substr(0, str.find(delim));
+        if (*token.begin() == ':')
+            token.erase(0, 1);
+        if (*token.end() == '\n')
+        {
+            // std::cout << "one token backslash" << std::endl;
+            token.resize(str.length() - 1);
+        }
+        std::cout << "pushing token = '" << token << "'" << "\n";
+        tokens.push_back(token);
+        str.erase(0, str.find(delim) + delim.length());
+        // std::cout << "str after erase = '" << str << "'" << "\n";
+    }
+    if (*str.begin() == ':')
+        str.erase(0, 1);
+    // std::cout << "token = '" << str << "'" << "\n";
+    tokens.push_back(str);
+    std::vector<std::string>::iterator it = tokens.begin();
+    while (it != tokens.end())
+    {
+        std::cout << "end token func = " << *it << "\n";
+        it++;
+    }
+    return tokens;
 }
