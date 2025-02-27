@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <ctime>
+#include <sstream>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -92,8 +93,7 @@ void Server::newClient_(void) {
 	FD_SET(accept_fd, &this->all_sockets_);
 	if (accept_fd > this->fd_max_)
 		this->fd_max_ = accept_fd;
-	this->authClients_[accept_fd] = 0;
-	this->clients_.insert(std::make_pair(accept_fd, Client("", accept_fd, "")));
+	this->clients_.insert(std::make_pair(accept_fd, Client(accept_fd)));
 	std::cout << "New client detected with fd: " << accept_fd << std::endl;
 }
 
@@ -137,12 +137,12 @@ void	Server::checkPassword(int fd, std::string line) {
 	std::string	clientPass = line.substr(5);
 	//std::string	response;
 
-	if (this->authClients_.count(fd) && this->authClients_[fd] != 0) {
+	if (this->clients_[fd].isPasswdSet()) {
 		sendToClient(fd, SERV_NAME ERR_ALREADYREGISTRED, "");
 		return ;
 	}
 	if (clientPass == this->password_) {
-		this->authClients_[fd] = 1;
+		this->clients_[fd].setPasswdSet(true);
 		sendToClient(fd, SERV_NAME CORRECTPASS, "");
 		//response = SERV_NAME " NOTICE AUTH :Password accepted\r\n";
 		//send(fd, response.c_str(), response.size(), 0);
@@ -209,7 +209,7 @@ void	Server::handleNick(int fd, std::string line) {
 	//std::string	response;
 
 	DEBUG_LOG("Into handleNick function");
-	if (this->authClients_.count(fd) && this->authClients_[fd] < 1) {
+	if (!this->clients_[fd].isPasswdSet()) {
 		sendToClient(fd, SERV_NAME ERR_NOTREGISTERED, "");
 		return ;
 	}
@@ -218,31 +218,11 @@ void	Server::handleNick(int fd, std::string line) {
 	
 	this->nicknames_.insert(nickname); // to lock the nickname
 	this->clients_[fd].setNick(nickname); // set the client nickname in its instance
-	if (this->authClients_[fd] == 1) // to preserve already connected clients' status
-		this->authClients_[fd] = 2;
 	sendToClient(fd, SERV_NAME NICKSET + nickname + "\r\n", "");
 	//std::string response = SERV_NAME " NOTICE AUTH :Nickname set to " + nickname + "\r\n";
 	//send(fd, response.c_str(), response.size(), 0);
 	//std::cout << "Client " << fd << " nickname set successfully to : " << nickname << std::endl;
 }
-
-// Ajouter USER et autres commandes
-// Check if (authCliens_ < 3) ? 
-// bloquer en cas d'authentification déjà valide
-void	Server::authenticate(int fd, std::string msg) {
-	std::vector<std::string> lines = splitLines(msg);
-	DEBUG_LOG("Into authenticate function");
-
-	for (size_t i = 0; i < lines.size(); i++) {
-		DEBUG_LOG("Into loop, line: " + lines[i]);
-		std::cout << "i = " << i << std::endl;
-		if (lines[i].find("PASS ") == 0)
-			checkPassword(fd, lines[i]);
-		if (lines[i].find("NICK ") == 0)
-			handleNick(fd, lines[i]);
-	}
-}
-
 
 // Verifier avec structure sever qu'on supprime bien tout
 // Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel
@@ -253,8 +233,6 @@ void	Server::disconnectClient(int fd) {
 	std::string	nickname = this->clients_[fd].getNick();
 	close (fd);
 	FD_CLR(fd, &this->all_sockets_);
-	if (this->authClients_.count(fd))
-		this->authClients_.erase(fd);
 	this->nicknames_.erase(nickname); // to free the nickname
 	this->clients_.erase(fd); // destroys the instance Client
 	//change fd_max_ if it is equal to fd and look for the new higher fd
@@ -288,21 +266,21 @@ void Server::readClient(int fd) {
 		disconnectClient(fd);
 		return ;
 	}
-	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
-	//Ignore "CAP LS 302"
-	if (msg.find("CAP LS") == 0)
-		ignoreCAP(fd);
+	std::vector<std::string> lines = splitLines(msg);
+	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
+		std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
+		//Ignore "CAP LS 302"
+		if (line->find("CAP LS") == 0)
+			ignoreCAP(fd);
 
-	// Handle authentication: password, nick and user
-	if (msg.find("CAP END") == 0 || msg.find("PASS") == 0 || msg.find("NICK") == 0)
-		authenticate(fd, msg);
-	/*if (msg.find("PASS") == 0)
-		authenticate(fd, msg);
-	if (msg.find("NICK") == 0)
-		authenticate(fd, msg);
-	if (msg.find("USER") == 0)
-		authenticate(fd, msg);
-	*/
+		// if (msg.find("CAP END") == 0 || msg.find("PASS") == 0 || msg.find("NICK") == 0)
+		// 	authenticate(fd);
+
+		if (line->find("PASS ") == 0)
+			checkPassword(fd, *line);
+		if (line->find("NICK ") == 0)
+			handleNick(fd, *line);
+	}
 }
 
 

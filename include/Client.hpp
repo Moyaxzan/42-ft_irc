@@ -7,28 +7,44 @@
 
 class Client {
 	private:
-		bool									isAuth_; // equivalent in server class, useful ?
+
+		int										id_;
+		bool									nickSet_;
+		bool									usernameSet_;
+		bool									passwdSet_;
 		std::string								nickname_;
-		std::string								username_; // useful since it's in auth_ ?
+		std::string								username_;
 		unsigned int							currChannel_;
 		std::list<unsigned int>					joinedChannels_;
-		std::pair<unsigned int, std::string>	auth_;	// <id, username>
 
 	public:
 		Client(void);
+		Client(int id);
 		Client(std::string nickname, unsigned int id, std::string username);
 		Client(const Client& other);
 		Client& operator=(const Client& other);
 		~Client(void);
 
-		bool									isAuth(void);
-		std::string								getNick(void);
+		bool									isNickSet(void) const;
+		bool									isUsernameSet(void) const;
+		bool									isPasswdSet(void) const;
+		std::string								getNick(void) const;
+		std::string								getUsername(void) const;
+		unsigned int							getCurrChannel(void) const;
+		std::list<unsigned int>					getJoinedChannels(void) const;
+
+		void									setId(int id);
+		void									setNickSet(bool nickSet);
+		void									setUsernameSet(bool usernameSet);
+		void									setPasswdSet(bool passwdSet);
 		void									setNick(std::string nickname);
-		//std::string								getUser(void);
-		//void									setUser(std::string username);
-		unsigned int							getCurrChannel(void);
-		std::list<unsigned int>					getJoinedChannels(void);
-		std::pair<unsigned int, std::string>	getAuthInfos(void);
+		void									setUser(std::string username);
+		void									setCurrChannel(unsigned int channel);
+
+		bool									isAuth(void) const;
+		bool									joined(unsigned int channel) const;		// return if user joined channel
+		void									addJoinedChann(unsigned int channel);	// add channel to the joined channel list
+		void									rmJoinedChann(unsigned int channel);	// removes channel from the joined channel list
 };
 
 #endif
