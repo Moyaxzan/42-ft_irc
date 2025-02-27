@@ -127,7 +127,6 @@ void Bot::checkAddBadPerson(std::string username)
     std::vector<BadPerson>::iterator it;
 
     username.erase(0, 1);
-    std::cout << "username = " << username << "\n"; 
     for (it = bad_people.begin(); it != bad_people.end(); it++)
     {
         if ((*it).getName() == username)
