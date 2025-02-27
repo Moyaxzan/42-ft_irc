@@ -119,27 +119,20 @@ void Server::broadcastMessage(const std::string &message, int sender_fd) {
 */
 
 // gérer ERR_NEEDMOREPARAMS ?
-void	Server::checkPassword(int fd, std::string line) {
+bool	Server::checkPassword(int fd, std::string line) {
 	DEBUG_LOG("Into checkPassword function");
 	std::string	clientPass = line.substr(5);
-	//std::string	response;
 
-	if (this->authClients_.count(fd) && this->authClients_[fd] != 0) {
-		sendToClient(fd, SERV_NAME ERR_ALREADYREGISTRED, "");
-		return ;
-	}
+	if (this->authClients_.count(fd) && this->authClients_[fd] != 0)
+		return (sendToClient(fd, SERV_NAME ERR_ALREADYREGISTRED, ""), true);
 	if (clientPass == this->password_) {
 		this->authClients_[fd] = 1;
 		sendToClient(fd, SERV_NAME CORRECTPASS, "");
-		//response = SERV_NAME " NOTICE AUTH :Password accepted\r\n";
-		//send(fd, response.c_str(), response.size(), 0);
-		//std::cout << "Client " << fd << " correct password" << std::endl;
+		return (true);
 	} else {
 		sendToClient(fd, SERV_NAME ERR_WRONGPASS, "");
-		//response = SERV_NAME " NOTICE AUTH :Invalid password\r\n";
-		//send(fd, response.c_str(), response.size(), 0);
-		//std::cout << "Client " << fd << ": wrong password" << std::endl;
 		disconnectClient(fd);
+		return (false);
 	}		
 }
 
@@ -222,8 +215,10 @@ void	Server::authenticate(int fd, std::string msg) {
 
 	for (size_t i = 0; i < lines.size(); i++) {
 		DEBUG_LOG("Into loop, line: " + lines[i]);
-		if (lines[i].find("PASS ") == 0)
-			checkPassword(fd, lines[i]);
+		if (lines[i].find("PASS ") == 0) {
+			if (!checkPassword(fd, lines[i]))
+				return ;
+		}
 		if (lines[i].find("NICK ") == 0)
 			handleNick(fd, lines[i]);
 	}

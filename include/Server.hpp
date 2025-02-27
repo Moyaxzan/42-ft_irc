@@ -52,7 +52,7 @@ Tant que authClients_[fd] < 3, le client ne peut pas interagir avec le serveur
 		void	disconnectClient(int fd);
 		void	ignoreCAP(int fd);
 		void	authenticate(int fd, std::string msg);
-		void	checkPassword(int fd, std::string line);
+		bool	checkPassword(int fd, std::string line);
 		void	handleNick(int fd, std::string line);
 		bool	isValidNickname(int fd, std::string nickname);
 
