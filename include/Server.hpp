@@ -34,6 +34,7 @@ class Server {
 		int						fd_max_;
 		sockaddr_in				socket_infos_;
 		std::string				password_;
+		std::string				creatTime_;
 		std::map<int, int>		authClients_;
 		std::set<std::string>	nicknames_;
 		//std::set<std::string>	usernames_;
@@ -50,12 +51,14 @@ Tant que authClients_[fd] < 3, le client ne peut pas interagir avec le serveur
 		void	newClient_(void);
 		void	readClient(int fd);
 		void	disconnectClient(int fd);
-		void	ignoreCAP(int fd);
+
 		void	authenticate(int fd, std::string msg);
+		void	ignoreCAP(int fd);
 		void	checkPassword(int fd, std::string line);
 		void	handleNick(int fd, std::string line);
 		bool	isValidNickname(int fd, std::string nickname);
 
+		void	setCreatTime_(void);
 	public:
 		Server(void);
 		Server(t_args& args);

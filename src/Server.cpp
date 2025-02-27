@@ -9,6 +9,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <ctime>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -31,14 +32,16 @@ Server::Server(t_args& args) {
 		throw(SocketError());
 	}
 
+	// get creation time and date 
+	setCreatTime_();
+	DEBUG_LOG("startup time: " + this->creatTime_);
+
 	//bind fd and ip::port
 	int	opt = 1;
 	setsockopt(this->serv_socket_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     int bind_res = bind(this->serv_socket_, (const sockaddr *)&this->socket_infos_, size);
 	if (bind_res == -1)
 		throw(BindError());
-    std::cout << "ip: " << this->socket_infos_.sin_addr.s_addr << "   ";
-	std::cout << "this->serv_socket_: " << this->serv_socket_ << "  " << std::endl;
 
 	//sets socket as passive listener waiting for incoming connections 
     if (listen(this->serv_socket_, 20) == -1) // pourquoi 20 ?
@@ -69,6 +72,16 @@ Server& Server::operator=(const Server& other) {
 }
 
 // *************************************** GETTERS/SETTERS **************************************************************//
+
+void	Server::setCreatTime_(void) {
+	time_t now = time(NULL);  // Get current time
+    struct tm *timeinfo = localtime(&now);  // Convert to local time
+
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);  // Format time
+
+	this->creatTime_ = buffer;
+}
 
 // *************************************** MEMBER FUNCTIONS **************************************************************//
 
@@ -222,6 +235,7 @@ void	Server::authenticate(int fd, std::string msg) {
 
 	for (size_t i = 0; i < lines.size(); i++) {
 		DEBUG_LOG("Into loop, line: " + lines[i]);
+		std::cout << "i = " << i << std::endl;
 		if (lines[i].find("PASS ") == 0)
 			checkPassword(fd, lines[i]);
 		if (lines[i].find("NICK ") == 0)
@@ -268,14 +282,13 @@ void Server::readClient(int fd) {
 	std::string	msg(buffer);
  
 	DEBUG_LOG("Into readClient");
-	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
  	// cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
 	if (recv_res <= 0) {
 		DEBUG_LOG("Into previous recv_res == 0");
 		disconnectClient(fd);
 		return ;
 	}
-
+	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
 	//Ignore "CAP LS 302"
 	if (msg.find("CAP LS") == 0)
 		ignoreCAP(fd);
