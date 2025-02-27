@@ -9,6 +9,8 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <ctime>
+#include <sstream>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -31,14 +33,16 @@ Server::Server(t_args& args) {
 		throw(SocketError());
 	}
 
+	// get creation time and date 
+	setCreatTime_();
+	DEBUG_LOG("startup time: " + this->creatTime_);
+
 	//bind fd and ip::port
 	int	opt = 1;
 	setsockopt(this->serv_socket_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     int bind_res = bind(this->serv_socket_, (const sockaddr *)&this->socket_infos_, size);
 	if (bind_res == -1)
 		throw(BindError());
-    std::cout << "ip: " << this->socket_infos_.sin_addr.s_addr << "   ";
-	std::cout << "this->serv_socket_: " << this->serv_socket_ << "  " << std::endl;
 
 	//sets socket as passive listener waiting for incoming connections 
     if (listen(this->serv_socket_, 20) == -1) // pourquoi 20 ?
@@ -70,6 +74,16 @@ Server& Server::operator=(const Server& other) {
 
 // *************************************** GETTERS/SETTERS **************************************************************//
 
+void	Server::setCreatTime_(void) {
+	time_t now = time(NULL);  // Get current time
+    struct tm *timeinfo = localtime(&now);  // Convert to local time
+
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);  // Format time
+
+	this->creatTime_ = buffer;
+}
+
 // *************************************** MEMBER FUNCTIONS **************************************************************//
 
 void Server::newClient_(void) {
@@ -79,8 +93,7 @@ void Server::newClient_(void) {
 	FD_SET(accept_fd, &this->all_sockets_);
 	if (accept_fd > this->fd_max_)
 		this->fd_max_ = accept_fd;
-	this->authClients_[accept_fd] = 0;
-	this->clients_.insert(std::make_pair(accept_fd, Client("", accept_fd, "")));
+	this->clients_.insert(std::make_pair(accept_fd, Client(accept_fd)));
 	std::cout << "New client detected with fd: " << accept_fd << std::endl;
 }
 
@@ -123,10 +136,12 @@ bool	Server::checkPassword(int fd, std::string line) {
 	DEBUG_LOG("Into checkPassword function");
 	std::string	clientPass = line.substr(5);
 
-	if (this->authClients_.count(fd) && this->authClients_[fd] != 0)
-		return (sendToClient(fd, SERV_NAME ERR_ALREADYREGISTRED, ""), true);
+	if (this->clients_[fd].isPasswdSet()) {
+		sendToClient(fd, SERV_NAME ERR_ALREADYREGISTRED, "");
+		return ;
+	}
 	if (clientPass == this->password_) {
-		this->authClients_[fd] = 1;
+		this->clients_[fd].setPasswdSet(true);
 		sendToClient(fd, SERV_NAME CORRECTPASS, "");
 		return (true);
 	} else {
@@ -189,7 +204,7 @@ void	Server::handleNick(int fd, std::string line) {
 	//std::string	response;
 
 	DEBUG_LOG("Into handleNick function");
-	if (this->authClients_.count(fd) && this->authClients_[fd] < 1) {
+	if (!this->clients_[fd].isPasswdSet()) {
 		sendToClient(fd, SERV_NAME ERR_NOTREGISTERED, "");
 		return ;
 	}
@@ -198,8 +213,6 @@ void	Server::handleNick(int fd, std::string line) {
 	
 	this->nicknames_.insert(nickname); // to lock the nickname
 	this->clients_[fd].setNick(nickname); // set the client nickname in its instance
-	if (this->authClients_[fd] == 1) // to preserve already connected clients' status
-		this->authClients_[fd] = 2;
 	sendToClient(fd, SERV_NAME NICKSET + nickname + "\r\n", "");
 	//std::string response = SERV_NAME " NOTICE AUTH :Nickname set to " + nickname + "\r\n";
 	//send(fd, response.c_str(), response.size(), 0);
@@ -234,8 +247,6 @@ void	Server::disconnectClient(int fd) {
 	std::string	nickname = this->clients_[fd].getNick();
 	close (fd);
 	FD_CLR(fd, &this->all_sockets_);
-	if (this->authClients_.count(fd))
-		this->authClients_.erase(fd);
 	this->nicknames_.erase(nickname); // to free the nickname
 	this->clients_.erase(fd); // destroys the instance Client
 	//change fd_max_ if it is equal to fd and look for the new higher fd
@@ -263,28 +274,27 @@ void Server::readClient(int fd) {
 	std::string	msg(buffer);
  
 	DEBUG_LOG("Into readClient");
-	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
  	// cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
 	if (recv_res <= 0) {
 		DEBUG_LOG("Into previous recv_res == 0");
 		disconnectClient(fd);
 		return ;
 	}
+	std::vector<std::string> lines = splitLines(msg);
+	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
+		std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
+		//Ignore "CAP LS 302"
+		if (line->find("CAP LS") == 0)
+			ignoreCAP(fd);
 
-	//Ignore "CAP LS 302"
-	if (msg.find("CAP LS") == 0)
-		ignoreCAP(fd);
+		// if (msg.find("CAP END") == 0 || msg.find("PASS") == 0 || msg.find("NICK") == 0)
+		// 	authenticate(fd);
 
-	// Handle authentication: password, nick and user
-	if (msg.find("CAP END") == 0 || msg.find("PASS") == 0 || msg.find("NICK") == 0)
-		authenticate(fd, msg);
-	/*if (msg.find("PASS") == 0)
-		authenticate(fd, msg);
-	if (msg.find("NICK") == 0)
-		authenticate(fd, msg);
-	if (msg.find("USER") == 0)
-		authenticate(fd, msg);
-	*/
+		if (line->find("PASS ") == 0)
+			checkPassword(fd, *line);
+		if (line->find("NICK ") == 0)
+			handleNick(fd, *line);
+	}
 }
 
 
