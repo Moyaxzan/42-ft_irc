@@ -42,7 +42,6 @@ void Bot::initServerConnection_(char *port)
     server_infos.sin_port = htons(atoi(port));
     server_infos.sin_addr.s_addr = inet_addr(SERV_IP);
 
-
     this->socket_ = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_ == -1)
         throw SocketBotError();
@@ -50,12 +49,12 @@ void Bot::initServerConnection_(char *port)
     if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
         throw ConnectionError();
 
-    this->sendMsg("CAP LS 302");
-    std::string res = this->recvMsg();
-    if (res.find("CAP END") != res.npos)
-    {
-        this->sendMsg("PASS mdp\nNICK sheriff\nUSER le_sheriff");
-    }
+    // this->sendMsg("CAP LS 302");
+    // std::string res = this->recvMsg();
+    // if (res.find("CAP END") != res.npos)  // GOOD AUTH TO ADD BACK 
+    // {
+    //     this->sendMsg("PASS mdp\nNICK sheriff\nUSER le_sheriff");
+    // }
 }
 
 std::vector<std::vector<std::string> > &Bot::getDicts(void)
@@ -123,6 +122,57 @@ void Bot::addProfanityDict(std::string filename)
     this->profanities_.push_back(dict);
 }
 
+void Bot::checkAddBadPerson(std::string username)
+{
+    std::vector<BadPerson>::iterator it;
+
+    username.erase(0, 1);
+    std::cout << "username = " << username << "\n"; 
+    for (it = bad_people.begin(); it != bad_people.end(); it++)
+    {
+        if ((*it).getName() == username)
+        {
+            if ((*it).getStrike() == 1)
+            {
+                (*it).incStrike();
+                this->sendMsg("BOT: This is your last warning " + username + "! Next time you're getting some time off.\n");
+                return ;
+            }
+            else if ((*it).getStrike() == 2)
+            {
+                this->sendMsg("BOT: That's it " + username + " ! You are out! OUT !\n");
+                this->sendMsg("BOT: KICK MESSAGE SERVEUR " + username + "\n");
+                this->bad_people.erase(it);
+                return ;
+            }
+        }
+    }
+    BadPerson first_warning(username);
+    this->bad_people.push_back(username);
+    this->sendMsg("BOT: First warning " + username + ". This is my channel and we're being polite around here.\n");
+}
+
+void Bot::parseMsg(std::string msg, std::string bad_word)
+{
+    std::vector<std::string> split_msg;
+    std::vector<std::string>::iterator it;
+
+    split_msg = split(msg, " ");
+    if (split_msg.size() < 4) // should not be necessary once msgs are correctly formatted
+        return;
+    it = split_msg.end() - 1;
+    if (it->find('\n') != it->npos && it->find("\r") != it->npos)
+        it->resize(it->length() - 2);
+    it = split_msg.begin() + 3;
+    it->erase(0, 1);
+    while (it != split_msg.end())
+    {
+        if (*it == bad_word)
+            checkAddBadPerson(*(split_msg.begin()));
+        it++;
+    }
+}
+
 bool Bot::isStrPbmatic(std::string str)
 {
     std::vector<std::string>::iterator it;
@@ -135,21 +185,7 @@ bool Bot::isStrPbmatic(std::string str)
         for (it = it2->begin(); it != it2->end(); it++)
         {
             if (str.find(*it) != str.npos)
-            {
-                std::vector<std::string> split_str = split(str, " ");
-                for (it3 = split_str.begin(); it3 < split_str.end(); it3++)
-                {
-                    std::cout << "'" << *it << "'" << "   " << "'" << *it3 << "'" << "\n";
-                    std::cout << std::string(*it).length() << "   " << std::string(*it3).length() << "\n"; 
-                    if (*it == *it3)
-                    {
-                        std::cout << "Profanity found : " << *it << "\n";
-                        return true;
-                    }
-                    else
-                        std::cout << "not same\n";
-                }
-            }
+                this->parseMsg(str, *it);
         }
     }
     return false;
@@ -228,32 +264,42 @@ std::vector<std::string> split(std::string str, std::string delim)
     std::vector<std::string> tokens;
     std::string token;
 
-    str.resize(str.length() - 3);
     while (str.find(delim) != str.npos)
     {
-        // std::cout << "begin loop str = " << str << "\n";
         token = str.substr(0, str.find(delim));
-        if (*token.begin() == ':')
-            token.erase(0, 1);
-        if (*token.end() == '\n')
-        {
-            // std::cout << "one token backslash" << std::endl;
-            token.resize(str.length() - 1);
-        }
-        std::cout << "pushing token = '" << token << "'" << "\n";
         tokens.push_back(token);
         str.erase(0, str.find(delim) + delim.length());
-        // std::cout << "str after erase = '" << str << "'" << "\n";
     }
-    if (*str.begin() == ':')
-        str.erase(0, 1);
-    // std::cout << "token = '" << str << "'" << "\n";
     tokens.push_back(str);
-    std::vector<std::string>::iterator it = tokens.begin();
-    while (it != tokens.end())
-    {
-        std::cout << "end token func = " << *it << "\n";
-        it++;
-    }
     return tokens;
 }
+
+// std::vector<std::string> split(std::string str, std::string delim)
+// {
+//     std::vector<std::string> tokens;
+//     std::string token;
+
+//     str.resize(str.length() - 3);
+//     while (str.find(delim) != str.npos)
+//     {
+//         // std::cout << "begin loop str = " << str << "\n";
+//         token = str.substr(0, str.find(delim));
+//         if (*token.begin() == ':')
+//             token.erase(0, 1);
+//         if (*token.end() == '\n')
+//         {
+//             // std::cout << "one token backslash" << std::endl;
+//             token.resize(str.length() - 1);
+//         }
+//         // std::cout << "pushing token = '" << token << "'" << "\n";
+//         tokens.push_back(token);
+//         str.erase(0, str.find(delim) + delim.length());
+//         // std::cout << "str after erase = '" << str << "'" << "\n";
+//     }
+//     if (*str.begin() == ':')
+//         str.erase(0, 1);
+//     // std::cout << "token = '" << str << "'" << "\n";
+//     tokens.push_back(str);
+//     // std::vector<std::string>::iterator it = tokens.begin();
+//     return tokens;
+// }

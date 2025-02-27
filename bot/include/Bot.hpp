@@ -13,15 +13,19 @@
 #include <arpa/inet.h>
 #include "../../include/Server.hpp"
 #include "../../include/Client.hpp"
+#include "../include/BadPerson.hpp"
 #include "../include/Gun.hpp"
+
+class BadPerson;
 
 class Bot /* : public Client */
 {
     private:
         void fileError(void);
         void addProfanityDict(std::string filename);
-        std::vector<std::vector<std::string> >profanities_;
         int socket_;
+        std::vector<std::vector<std::string> >profanities_;
+        std::vector<BadPerson> bad_people;
 
         void initServerConnection_(char *port);
 
@@ -36,7 +40,9 @@ class Bot /* : public Client */
 
         void sendMsg(std::string const & to_send);
         std::string recvMsg(void);
+        void checkAddBadPerson(std::string username);
         bool isStrPbmatic(std::string str);
+        void parseMsg(std::string msg, std::string bad_word);
         void launchRoulette(void);
 };
 

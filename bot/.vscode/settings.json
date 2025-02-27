@@ -1,5 +1,7 @@
 {
   "files.associations": {
+    "*.c": "c",
+    "*.h": "c",
     "*.embeddedhtml": "html",
     "array": "cpp",
     "atomic": "cpp",
@@ -39,6 +41,18 @@
     "ostream": "cpp",
     "stdexcept": "cpp",
     "streambuf": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "clocale": "cpp",
+    "cstdarg": "cpp",
+    "cstring": "cpp",
+    "cwctype": "cpp",
+    "list": "cpp",
+    "system_error": "cpp",
+    "fstream": "cpp",
+    "iostream": "cpp",
+    "istream": "cpp",
+    "ranges": "cpp",
+    "span": "cpp",
+    "sstream": "cpp"
   }
 }

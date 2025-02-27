@@ -8,16 +8,18 @@ int main(int argc, char **argv)
     {
         Bot bot(argv[1]);
         std::string msg;
-        // bot.sendMsg("Hey, i'm the bot! ready to moderate.\n");
+        bot.sendMsg("Hey, i'm the bot! ready to moderate.\n");
         while (!(msg = bot.recvMsg()).empty())
         {
-            if (bot.isStrPbmatic(msg))
-                bot.sendMsg("Problematic content detected ! I will strike.\n");
-            else if (std::string(msg).find("/RCR") != msg.npos)
-            {
-                bot.sendMsg("Oh oh! It seems like someone launched a Russian Chat Roulette! Let's do it!\n");
-                bot.launchRoulette();
-            }
+            bot.isStrPbmatic(msg);
+            // if (bot.isStrPbmatic(msg))
+            //     bot.sendMsg("Problematic content detected ! I will strike.\n");
+            // else if (std::string(msg).find("/RCR") != msg.npos)
+            // {
+            //     bot.sendMsg("Oh oh! It seems like someone launched a Russian Chat Roulette! Let's do it!\n");
+            //     bot.launchRoulette();
+            // }
+            // std::cout << "hey\n";
         }
         close(bot.getClientSocket());
     }

@@ -4,12 +4,13 @@ NAME = Bot
 
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD
 
-DEBUG_FLAGS = -g -DDEBUG=1
+DEBUG_FLAGS = -g3 -DDEBUG=1
 
 CXX = c++
 
 SRCS =	./src/Bot.cpp \
 		./src/Gun.cpp \
+		./src/BadPerson.cpp \
 		./src/BotExceptions.cpp \
 		./src/main.cpp
 
