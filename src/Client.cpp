@@ -6,18 +6,21 @@ Client::Client(void) {
 	this->nickSet_ = false;
 	this->usernameSet_ = false;
 	this->passwdSet_ = false;
+	this->welcomeSent_ = false;
 }
 
 Client::Client(int id) {
 	this->nickSet_ = false;
 	this->usernameSet_ = false;
 	this->passwdSet_ = false;
+	this->welcomeSent_ = false;
 	this->id_ = id;
 }
 
 Client::Client(std::string nickname, unsigned int id, std::string username) {
 	this->nickSet_ = true;
 	this->usernameSet_ = true;
+	this->welcomeSent_ = false;
 	this->nickname_ = nickname;
 	this->username_ = username; // useful ?
 	this->id_ = id;
@@ -36,6 +39,7 @@ Client& Client::operator=(const Client& other) {
 	this->nickSet_ = other.nickSet_;
 	this->usernameSet_ = other.usernameSet_;
 	this->passwdSet_ = other.passwdSet_;
+	this->welcomeSent_ = other.welcomeSent_;
 	this->nickname_ = other.nickname_;
 	this->username_ = other.username_;
 	this->currChannel_ = other.currChannel_;
@@ -55,6 +59,10 @@ bool	Client::isUsernameSet(void) const {
 
 bool	Client::isPasswdSet(void) const {
 	return (this->passwdSet_);
+}
+
+bool	Client::isWelcomeSent(void) const {
+	return (this->welcomeSent_);
 }
 
 std::string	Client::getNick(void) const {
@@ -89,6 +97,10 @@ void	Client::setUsernameSet(bool usernameSet) {
 
 void	Client::setPasswdSet(bool passwdSet) {
 	this->passwdSet_ = passwdSet;
+}
+
+void	Client::setWelcomeSent(bool welcomeSent) {
+	this->welcomeSent_ = welcomeSent;
 }
 
 void	Client::setNick(std::string nickname) {

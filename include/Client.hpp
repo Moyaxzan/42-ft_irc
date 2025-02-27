@@ -12,6 +12,7 @@ class Client {
 		bool									nickSet_;
 		bool									usernameSet_;
 		bool									passwdSet_;
+		bool									welcomeSent_;
 		std::string								nickname_;
 		std::string								username_;
 		unsigned int							currChannel_;
@@ -28,6 +29,7 @@ class Client {
 		bool									isNickSet(void) const;
 		bool									isUsernameSet(void) const;
 		bool									isPasswdSet(void) const;
+		bool									isWelcomeSent(void) const;
 		std::string								getNick(void) const;
 		std::string								getUsername(void) const;
 		unsigned int							getCurrChannel(void) const;
@@ -37,6 +39,7 @@ class Client {
 		void									setNickSet(bool nickSet);
 		void									setUsernameSet(bool usernameSet);
 		void									setPasswdSet(bool passwdSet);
+		void									setWelcomeSent(bool welcomeSent);
 		void									setNick(std::string nickname);
 		void									setUser(std::string username);
 		void									setCurrChannel(unsigned int channel);
