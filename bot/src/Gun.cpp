@@ -9,6 +9,7 @@ Gun::Gun(void)
         else
             this->bullets_.push_back(false);
     }
+    std::srand(std::time(0));
     this->shuffleBullets();
 }
 
@@ -37,10 +38,7 @@ bool Gun::checkBullet(void)
     for (int i = 0; i < 6; i++)
         this->bullets_[i] ? std::cout << "true\n" : std::cout << "false\n";
     if (this->bullets_[0])
-    {
-        std::cout << "hello\n";
         return true;
-    }
     this->bullets_.erase(this->bullets_.begin());
 
     return false;

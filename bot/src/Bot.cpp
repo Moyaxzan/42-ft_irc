@@ -62,7 +62,7 @@ std::vector<std::vector<std::string> > &Bot::getDicts(void)
     return this->profanities_;
 }
 
-void Bot::sendMsg(std::string const &to_send)
+void Bot::sendMsg(std::string const &to_send, int time)
 {
     int bytes_sent = 0;
     int str_len = to_send.length();
@@ -71,6 +71,7 @@ void Bot::sendMsg(std::string const &to_send)
 
     while (bytes_sent < str_len)
     {
+        sleep(time);
         send_res = send(this->socket_, str + bytes_sent, str_len - bytes_sent, 0);
         if (send_res == -1)
         {
@@ -96,8 +97,9 @@ std::string Bot::recvMsg(void)
         if (err == 0)
             throw ConnectionError();
         if (err == -1)
-            std::cout << "problem\n";
+            std::cout << "problem\n";       // need to throw something ?
         full_msg += std::string(buffer);
+        memset(buffer, '\0', 512);
     }
     return (full_msg);
 }
@@ -126,7 +128,6 @@ void Bot::checkAddBadPerson(std::string username)
 {
     std::vector<BadPerson>::iterator it;
 
-    username.erase(0, 1);
     for (it = bad_people.begin(); it != bad_people.end(); it++)
     {
         if ((*it).getName() == username)
@@ -134,13 +135,13 @@ void Bot::checkAddBadPerson(std::string username)
             if ((*it).getStrike() == 1)
             {
                 (*it).incStrike();
-                this->sendMsg("BOT: This is your last warning " + username + "! Next time you're getting some time off.\n");
+                this->sendMsg("BOT: This is your last warning " + username + "! Next time you're getting some time off.\n", 0);
                 return ;
             }
             else if ((*it).getStrike() == 2)
             {
-                this->sendMsg("BOT: That's it " + username + " ! You are out! OUT !\n");
-                this->sendMsg("BOT: KICK MESSAGE SERVEUR " + username + "\n");
+                this->sendMsg("BOT: That's it " + username + " ! You are out! OUT !\n", 0);
+                this->sendMsg("BOT: KICK MESSAGE SERVEUR " + username + "\n", 0);
                 this->bad_people.erase(it);
                 return ;
             }
@@ -148,46 +149,77 @@ void Bot::checkAddBadPerson(std::string username)
     }
     BadPerson first_warning(username);
     this->bad_people.push_back(username);
-    this->sendMsg("BOT: First warning " + username + ". This is my channel and we're being polite around here.\n");
+    this->sendMsg("BOT: First warning " + username + ". This is my channel and we're being polite around here.\n", 0);
 }
 
-void Bot::parseMsg(std::string msg, std::string bad_word)
+t_msg Bot::parseMsg(std::string recv_msg)
 {
     std::vector<std::string> split_msg;
     std::vector<std::string>::iterator it;
+    t_msg final_msg;
 
-    split_msg = split(msg, " ");
+    final_msg.original = recv_msg;
+    split_msg = split(recv_msg, " ");
     if (split_msg.size() < 4) // should not be necessary once msgs are correctly formatted
-        return;
+        return (final_msg); // is empty
     it = split_msg.end() - 1;
     if (it->find('\n') != it->npos && it->find("\r") != it->npos)
         it->resize(it->length() - 2);
     it = split_msg.begin() + 3;
     it->erase(0, 1);
+    split_msg.begin()->erase(0, 1);
+    final_msg.username = *split_msg.begin();
     while (it != split_msg.end())
     {
+        std::string tmp = *it;
+        if (!tmp.empty())
+            final_msg.content.push_back(std::string(*it));
+        it++;
+    }
+    return final_msg;
+}
+
+bool Bot::checkBadContent(std::vector<std::string> & content, std::string const & bad_word)
+{
+    std::vector<std::string>::iterator it = content.begin();
+
+    while (it != content.end())
+    {
         if (*it == bad_word)
-            checkAddBadPerson(*(split_msg.begin()));
+            return true;
+        it++;
+    }
+    return false;
+}
+
+void Bot::checkRoulette(t_msg & msg)
+{
+    std::vector<std::string>::iterator it = msg.content.begin();
+    while (it != msg.content.end())
+    {
+        if (*it == "START" && it + 1 != msg.content.end() && *(it + 1) == "RCR")
+            launchRoulette(msg.username);
         it++;
     }
 }
 
-bool Bot::isStrPbmatic(std::string str)
+void Bot::monitor(t_msg & msg)
 {
     std::vector<std::string>::iterator it;
     std::vector<std::vector<std::string> >::iterator it2;
-    std::vector<std::string>::iterator it3;
     std::vector<std::vector<std::string> > &all_dicts = this->getDicts();
 
     for (it2 = all_dicts.begin(); it2 != all_dicts.end(); it2++)
     {
         for (it = it2->begin(); it != it2->end(); it++)
         {
-            if (str.find(*it) != str.npos)
-                this->parseMsg(str, *it);
+            if (msg.original.find(*it) != std::string::npos && checkBadContent(msg.content, *it))
+            {
+                this->checkAddBadPerson(msg.username);
+                return ;
+            }
         }
     }
-    return false;
 }
 
 int Bot::getClientSocket(void)
@@ -195,7 +227,7 @@ int Bot::getClientSocket(void)
     return this->socket_;
 }
 
-void Bot::launchRoulette(void)
+void Bot::launchRoulette(std::string const & username)
 {
     Gun gun;
     std::vector<int> players;
@@ -203,6 +235,13 @@ void Bot::launchRoulette(void)
     std::string msg;
     // std::string req;
 
+    printBear();
+    sendMsg(username + " just started a Russian Chat Roulette! LET'S GO!\n", 0);
+    sendMsg("It's a quite simple game. There's a 6 bullets gun loaded with only one bullet.\n", 2);
+    sendMsg("Each turn, each person picked will have to PULL the trigger and try shooting the gun to his/her face.\n", 2);
+    sendMsg("Alternatively, you can also ROLL the gun barrel and randomize the bullets inside.\n", 2);
+    sendMsg("But you will have to shoot the gun, eventually!\n", 2);
+    sendMsg("What could go wrong ? Good luck !\n", 2);
     // requete au serveur pour pick 6 joueurs random (max) dans le channel
     //  req = "1 3";
     players.push_back(1);
@@ -219,27 +258,29 @@ void Bot::launchRoulette(void)
             intro += player_nb + ", ";
     }
     intro += "have been selected !\n";
-    this->sendMsg(intro);
+    this->sendMsg(intro, 2);
+    std::srand(std::time(0));
     std::random_shuffle(players.begin(), players.end());
     intro.clear();
     intro = encapsulate(players[0]) + " will begin ! Would you rather PULL the trigger or ROLL the bullets ?\n";
-    this->sendMsg(intro);
+    this->sendMsg(intro, 2);
     while (!(msg = this->recvMsg()).empty())
     {
+
         if (msg.find("PULL") != msg.npos)
         {
             if (!gun.checkBullet())
-                this->sendMsg("Survived\n");
+                this->sendMsg("Survived\n", 0);
             else
             {
-                this->sendMsg("Dead!\n");
+                this->sendMsg("Dead!\n", 0);
                 break;
             }
         }
         else if (msg.find("ROLL") != msg.npos)
         {
             gun.shuffleBullets();
-            this->sendMsg("Bullets have been rolled !\n");
+            this->sendMsg("Bullets have been rolled !\n", 0);
         }
     }
     std::cout << "Looks like someone died !\n";
@@ -271,6 +312,19 @@ std::vector<std::string> split(std::string str, std::string delim)
     }
     tokens.push_back(str);
     return tokens;
+}
+
+void Bot::printBear(void)
+{
+    std::ifstream bear;
+    std::string line;
+
+    bear.open("./src/bear");
+    if (!bear.is_open())
+        return ;
+    while (std::getline(bear, line, '\0'))
+        this->sendMsg(line, 1);
+    bear.close();
 }
 
 // std::vector<std::string> split(std::string str, std::string delim)

@@ -18,36 +18,46 @@
 
 class BadPerson;
 
+typedef struct s_msg
+{
+    std::string original;
+    std::string username;
+    std::vector<std::string> content;
+} t_msg;
+
 class Bot /* : public Client */
 {
     private:
-        void fileError(void);
-        void addProfanityDict(std::string filename);
         int socket_;
-        std::vector<std::vector<std::string> >profanities_;
+        std::vector<std::vector<std::string> >profanities_; 
         std::vector<BadPerson> bad_people;
-
+        
+        void addProfanityDict(std::string filename);
         void initServerConnection_(char *port);
-
+        void checkAddBadPerson(std::string username);
+        void launchRoulette(std::string const & username);
+        void printBear(void);
+        void fileError(void);
+        bool checkBadContent(std::vector<std::string> & content, std::string const & bad_word);
+        
     public:
         Bot(char *port);
         Bot(Bot const & other);
         ~Bot(void);
         Bot & operator=(Bot const & other);
-
+        
         std::vector<std::vector<std::string> >&getDicts(void);
         int  getClientSocket(void);
-
-        void sendMsg(std::string const & to_send);
+        
+        t_msg parseMsg(std::string msg);
+        void sendMsg(std::string const & to_send, int time);
         std::string recvMsg(void);
-        void checkAddBadPerson(std::string username);
-        bool isStrPbmatic(std::string str);
-        void parseMsg(std::string msg, std::string bad_word);
-        void launchRoulette(void);
+        
+        void monitor(t_msg & msg);
+        void checkRoulette(t_msg & msg);
 };
 
 std::string encapsulate(int i);
-std::string trim(std::string str, std::string delim);
 std::vector<std::string> split(std::string str, std::string delim);
 
 class ConnectionError : public std::exception
