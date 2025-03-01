@@ -131,16 +131,16 @@ bool	Server::checkPassword(int fd, std::string line) {
 
 	if (this->clients_[fd].isPasswdSet()) {
 		this->clients_[fd].sendMessage(SERV_NAME ERR_ALREADYREGISTRED);
-		return ;
+		return (false);
 	}
 	if (clientPass == this->password_) {
 		this->clients_[fd].setPasswdSet(true);
 		this->clients_[fd].sendMessage(SERV_NAME CORRECTPASS);
-    return (true)
+    return (true);
 	} else {
 		this->clients_[fd].sendMessage(SERV_NAME ERR_WRONGPASS);
 		disconnectClient(fd);
-    return (false)
+    return (false);
 	}
 }
 
