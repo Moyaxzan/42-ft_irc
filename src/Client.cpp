@@ -95,7 +95,7 @@ void	Client::setPasswdSet(bool passwdSet) {
 	this->passwdSet_ = passwdSet;
 }
 
-// setNickSet and setUserSet usedul ? it's done in setNick and setUser
+// setNickSet and setUserSet useful ? it's done in setNick and setUser
 void	Client::setNickSet(bool nickSet) {
 	this->nickSet_ = nickSet;
 }

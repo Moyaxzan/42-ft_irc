@@ -204,6 +204,7 @@ bool	Server::handleNick(int fd, std::string line) {
 	this->nicknames_.insert(nickname); // to lock the nickname
 	this->clients_[fd].setNick(nickname); // set the client nickname in its instance
 	this->clients_[fd].sendMessage(SERV_NAME NICKSET + nickname);
+	return (true);
 }
 
 bool	Server::allUserElements(int fd, std::string line, std::string &username) {
@@ -262,25 +263,23 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	DEBUG_LOG("Into handleCommand function");
 	DEBUG_LOG("Command = " + cmd);
 	//for (size_t i = 0; i < lines.size(); i++) {
-		if (cmd.find("CAP LS") == 0) //Ignore "CAP LS *"
-			ignoreCAP(fd);
-		else if (cmd.find("PASS ") == 0) {
-			if (!checkPassword(fd, cmd))
-				return (false); // blocking command
-		}
-		else if (cmd.find("NICK ") == 0) {
-			if (!handleNick(fd, cmd))
-				return (false);
-		}
-		else if (cmd.find("USER ") == 0) {
-			if (!handleUser(fd, cmd))
-				return (false);
-		}
-		return (true);
+	if (cmd.find("CAP LS") == 0) //Ignore "CAP LS *"
+		ignoreCAP(fd);
+	else if (cmd.find("PASS ") == 0) {
+		if (!checkPassword(fd, cmd))
+			return (false); // blocking command
+	}
+	else if (cmd.find("NICK ") == 0) {
+		if (!handleNick(fd, cmd))
+			return (false);
+	}
+	else if (cmd.find("USER ") == 0) {
+		if (!handleUser(fd, cmd))
+			return (false);
+	}
+	return (true);
 	//}
 }
-
-
 
 // Verifier avec structure sever qu'on supprime bien tout
 // Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel
@@ -323,7 +322,6 @@ void Server::readClient(int fd) {
 			break ;
 	}
 }
-
 
 // see https://www.codequoi.com/programmation-reseau-via-socket-en-c/#c%C3%B4t%C3%A9-serveur--accepter-des-connexions-client-via-socket
 // for guideline
