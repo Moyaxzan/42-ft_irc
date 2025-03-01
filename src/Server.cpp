@@ -125,10 +125,9 @@ void Server::broadcastMessage(const std::string &message, int sender_fd) {
 */
 
 // gérer ERR_NEEDMOREPARAMS ?
-void	Server::checkPassword(int fd, std::string line) {
+bool	Server::checkPassword(int fd, std::string line) {
 	DEBUG_LOG("Into checkPassword function");
 	std::string	clientPass = line.substr(5);
-	//std::string	response;
 
 	if (this->clients_[fd].isPasswdSet()) {
 		this->clients_[fd].sendMessage(SERV_NAME ERR_ALREADYREGISTRED);
@@ -137,15 +136,11 @@ void	Server::checkPassword(int fd, std::string line) {
 	if (clientPass == this->password_) {
 		this->clients_[fd].setPasswdSet(true);
 		this->clients_[fd].sendMessage(SERV_NAME CORRECTPASS);
-		//response = SERV_NAME " NOTICE AUTH :Password accepted\r\n";
-		//send(fd, response.c_str(), response.size(), 0);
-		//std::cout << "Client " << fd << " correct password" << std::endl;
+    return (true)
 	} else {
 		this->clients_[fd].sendMessage(SERV_NAME ERR_WRONGPASS);
-		//response = SERV_NAME " NOTICE AUTH :Invalid password\r\n";
-		//send(fd, response.c_str(), response.size(), 0);
-		//std::cout << "Client " << fd << ": wrong password" << std::endl;
 		disconnectClient(fd);
+    return (false)
 	}
 }
 
@@ -216,6 +211,25 @@ void	Server::handleNick(int fd, std::string line) {
 	//send(fd, response.c_str(), response.size(), 0);
 	//std::cout << "Client " << fd << " nickname set successfully to : " << nickname << std::endl;
 }
+
+// Ajouter USER et autres commandes
+// Check if (authCliens_ < 3) ? 
+// bloquer en cas d'authentification déjà valide
+void	Server::authenticate(int fd, std::string msg) {
+	std::vector<std::string> lines = splitLines(msg);
+	DEBUG_LOG("Into authenticate function");
+
+	for (size_t i = 0; i < lines.size(); i++) {
+		DEBUG_LOG("Into loop, line: " + lines[i]);
+		if (lines[i].find("PASS ") == 0) {
+			if (!checkPassword(fd, lines[i]))
+				return ;
+		}
+		if (lines[i].find("NICK ") == 0)
+			handleNick(fd, lines[i]);
+	}
+}
+
 
 // Verifier avec structure sever qu'on supprime bien tout
 // Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel

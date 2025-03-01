@@ -42,12 +42,12 @@ class Server {
 		void	readClient(int fd);
 		void	disconnectClient(int fd);
 
-				//auth checking
-		void	checkPassword(int fd, std::string line);
+        //auth
+		void	ignoreCAP(int fd);
+		void	authenticate(int fd, std::string msg);
+		bool	checkPassword(int fd, std::string line);
 		void	handleNick(int fd, std::string line);
 		bool	isValidNickname(int fd, std::string nickname);
-
-		void	ignoreCAP(int fd);
 
 				//welcome message
 		void	setCreatTime_(void);
