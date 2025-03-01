@@ -9,9 +9,9 @@ class Client {
 	private:
 
 		int										id_;
+		bool									passwdSet_;
 		bool									nickSet_;
 		bool									usernameSet_;
-		bool									passwdSet_;
 		bool									welcomeSent_;
 		std::string								nickname_;
 		std::string								username_;
@@ -27,10 +27,9 @@ class Client {
 		Client& operator=(const Client& other);
 		~Client(void);
 
-		//GETTERS
+		bool									isPasswdSet(void) const;
 		bool									isNickSet(void) const;
 		bool									isUsernameSet(void) const;
-		bool									isPasswdSet(void) const;
 		bool									isWelcomeSent(void) const;
 		std::string								getNick(void) const;
 		std::string								getUsername(void) const;
@@ -39,9 +38,9 @@ class Client {
 
 		//SETTERS
 		void									setId(int id);
+		void									setPasswdSet(bool passwdSet);
 		void									setNickSet(bool nickSet);
 		void									setUsernameSet(bool usernameSet);
-		void									setPasswdSet(bool passwdSet);
 		void									setWelcomeSent(bool welcomeSent);
 		void									setNick(std::string nickname);
 		void									setUser(std::string username);

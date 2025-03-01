@@ -124,14 +124,22 @@ void Server::broadcastMessage(const std::string &message, int sender_fd) {
 }
 */
 
-// gérer ERR_NEEDMOREPARAMS ?
+void	Server::ignoreCAP(int fd) {
+	DEBUG_LOG("Into ignoreCAP");
+	this->clients_[fd].sendMessage(SERV_NAME CAPRESP);
+}
+
 bool	Server::checkPassword(int fd, std::string line) {
 	DEBUG_LOG("Into checkPassword function");
 	std::string	clientPass = line.substr(5);
 
 	if (this->clients_[fd].isPasswdSet()) {
 		this->clients_[fd].sendMessage(SERV_NAME ERR_ALREADYREGISTRED);
-		return (false);
+		return (true); // return true or false ? check with irssi
+	}
+	if (clientPass.empty()) {
+		this->clients_[fd].sendMessage(SERV_NAME  ERR_NEEDMOREPARAMS "* PASS :Not enough parameters");
+		return (false); // to check with irssi
 	}
 	if (clientPass == this->password_) {
 		this->clients_[fd].setPasswdSet(true);
@@ -144,91 +152,134 @@ bool	Server::checkPassword(int fd, std::string line) {
 	}
 }
 
-bool	correctChars(std::string nickname) {
+bool	correctChars(std::string nickname, char caller) {
 	char	c;
 
-	if (!isalpha(nickname[0])) // Doit commencer par une lettre
+	if (!isalpha(nickname[0])) // nick has to begin with a letter
 		return (false);
 	for (unsigned int i = 1; i < nickname.size(); i++) {
 		c = nickname[i];
-		if (!isprint(c)) // Vérifie si le caractère est imprimable (espace exclu)
+		if (!isprint(c)) // check if chars are printable
 			return (false);
-		if (!(isalnum(c) || c == '-' || c == '_' || c == '\\' || c == '|' || c == '[' || c == ']'))
-			return (false); // Vérifie si le caractère est un caractère autorisé
+		if (caller == 'n') {
+			if (!(isalnum(c) || c == '-' || c == '_' || c == '\\' || c == '|' || c == '[' || c == ']'))
+			return (false); // check if it is an allowed char
+		}
+		else {
+			if (!(isalnum(c) || c == '-' || c == '_' || c == '\\' || c == '|' || c == '[' || c == ']' || c == '{'  || c == '}'))
+			return (false); // check if it is an allowed char
+		}
 	}
 	return (true);
 }
 
-/*
-ERR_ERRONEUSNICKNAME :
-1️⃣ OK: Longueur maximale (généralement 9 caractères, mais peut varier selon les serveurs).
-2️⃣ OK: Ne contenir que des caractères valides : A-Z a-z 0-9 - _ \ | [ ]
-3️⃣ OK: Commencer obligatoirement par une lettre (A-Z ou a-z)
-6️⃣ OK: Ne pas être un pseudo réservé par le serveur (ex: "root", "admin", etc.)
-7️⃣ OK: Ne pas contenir de caractères de contrôle ASCII (0x00 à 0x1F et 0x7F)
-8️⃣ Ne pas être un pseudo interdit par la politique du serveur (ex: obscène, insultant, etc.)
-*/
 bool	Server::isValidNickname(int fd, std::string nickname) {
 	DEBUG_LOG("Into isValidNickname function");
 	if (nickname.empty()) {
 		this->clients_[fd].sendMessage(SERV_NAME ERR_NONICKNAMEGIVEN);
-		//response = SERV_NAME " 431 * :No nickname given\r\n";
-		//send(fd, response.c_str(), response.size(), 0);
-		//std::cout << "Client " << fd << ": no nickname given" << std::endl;
-		//disconnectClient(fd);
 		return (false);
 	}
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
-	if (nickname.size() > 9 || !correctChars(nickname) || nickname == SERV_NAME) {
+	if (nickname.size() > 9 || !correctChars(nickname, 'n') || nickname == SERV_NAME) {
 		this->clients_[fd].sendMessage(SERV_NAME ERR_ERRONEUSNICKNAME + nickname + ERRONEUS);
 		return (false);
 	}
-	if (this->nicknames_.count(nickname)) { // Vérifie que le pseudo n'est pas déjà pris
+	if (this->nicknames_.count(nickname)) { // check if nickname is available
 		this->clients_[fd].sendMessage(SERV_NAME ERR_NICKNAMEINUSE + nickname + NICKINUSE);
-		//response = SERV_NAME " 433 * " + nickname + " :Nickname is already in use\r\n";
-		//send(fd, response.c_str(), response.size(), 0);
 		return (false);
 	}
 	return (true);
 }
 
-void	Server::handleNick(int fd, std::string line) {
+bool	Server::handleNick(int fd, std::string line) {
 	std::string	nickname = line.substr(5);
-	//std::string	response;
 
 	DEBUG_LOG("Into handleNick function");
 	if (!this->clients_[fd].isPasswdSet()) {
-		this->clients_[fd].sendMessage(SERV_NAME ERR_NOTREGISTERED);
-		return ;
+		this->clients_[fd].sendMessage(SERV_NAME ERR_NOTREGISTEREDPASS);
+		return (false);
 	}
 	if (!isValidNickname(fd, nickname))
-		return ;
-	
+		return (false);
 	this->nicknames_.insert(nickname); // to lock the nickname
 	this->clients_[fd].setNick(nickname); // set the client nickname in its instance
-	this->clients_[fd].sendMessage(SERV_NAME NICKSET + nickname + "\r\n");
-	//std::string response = SERV_NAME " NOTICE AUTH :Nickname set to " + nickname + "\r\n";
-	//send(fd, response.c_str(), response.size(), 0);
-	//std::cout << "Client " << fd << " nickname set successfully to : " << nickname << std::endl;
+	this->clients_[fd].sendMessage(SERV_NAME NICKSET + nickname);
 }
 
-// Ajouter USER et autres commandes
-// Check if (authCliens_ < 3) ? 
-// bloquer en cas d'authentification déjà valide
-void	Server::authenticate(int fd, std::string msg) {
-	std::vector<std::string> lines = splitLines(msg);
-	DEBUG_LOG("Into authenticate function");
+bool	Server::allUserElements(int fd, std::string line, std::string &username) {
+	std::istringstream	iss(line);
+	std::string			cmd, hostname, servername, realname;
 
-	for (size_t i = 0; i < lines.size(); i++) {
-		DEBUG_LOG("Into loop, line: " + lines[i]);
-		if (lines[i].find("PASS ") == 0) {
-			if (!checkPassword(fd, lines[i]))
-				return ;
-		}
-		if (lines[i].find("NICK ") == 0)
-			handleNick(fd, lines[i]);
+	iss >> cmd >> username >> hostname >> servername; // extraction of words one by one
+	std::getline(iss, realname);
+	if (username.empty() || hostname.empty() || servername.empty() || realname.empty()) {
+		std::string	nickname = this->clients_[fd].getNick();
+		this->clients_[fd].sendMessage(SERV_NAME ERR_NEEDMOREPARAMS + nickname + " USER :Not enough parameters");
+		return (false);
 	}
+	//if (realname[0] == ':') if parsing of realname
+			//realname = realname.substr(1);
+	return (true);
 }
+
+// USER <username> <hostname> <servername> :<realname>
+bool	Server::isValidUsername(int fd, std::string line, std::string &username) {
+	if (!allUserElements(fd, line, username)) // check if 4 params or if empty (=needmore params)
+		return (false);
+	// Ajouter vérification par le bot pour respecter la politique du serveur ?
+	if (username.size() > 9 || !correctChars(username, 'u') || username == SERV_NAME) {
+		std::string	nickname = this->clients_[fd].getNick();
+		this->clients_[fd].sendMessage(SERV_NAME ERR_ERRONEUSUSERNAME + nickname + ERRONEUSUSERNAME);
+		return (false);
+	}
+	//parse hostname, servername and realname ?
+	return (true);
+}
+
+bool	Server::handleUser(int fd, std::string line) {
+	DEBUG_LOG("Into handleUser function");
+	if (!this->clients_[fd].isNickSet()) {
+		this->clients_[fd].sendMessage(SERV_NAME ERR_NOTREGISTEREDNICK);
+		return (false);
+	}
+	if (this->clients_[fd].isUsernameSet()) {
+		std::string nickname = this->clients_[fd].getNick();
+		this->clients_[fd].sendMessage(SERV_NAME "462 " + nickname + " :You may not reregister");
+		return (true);
+	}
+	std::string	username;
+	if (!isValidUsername(fd, line, username))
+		return (false);
+	this->clients_[fd].setUser(username); // set the client nickname in its instance
+	this->clients_[fd].sendMessage(SERV_NAME USERSET + username);
+	this->sendWelcomeMessage_(fd);
+	return (true);
+}
+
+
+bool	Server::handleCommand(int fd, std::string cmd) {
+	//std::vector<std::string> lines = splitLines(cmd);
+	DEBUG_LOG("Into handleCommand function");
+	DEBUG_LOG("Command = " + cmd);
+	//for (size_t i = 0; i < lines.size(); i++) {
+		if (cmd.find("CAP LS") == 0) //Ignore "CAP LS *"
+			ignoreCAP(fd);
+		else if (cmd.find("PASS ") == 0) {
+			if (!checkPassword(fd, cmd))
+				return (false); // blocking command
+		}
+		else if (cmd.find("NICK ") == 0) {
+			if (!handleNick(fd, cmd))
+				return (false);
+		}
+		else if (cmd.find("USER ") == 0) {
+			if (!handleUser(fd, cmd))
+				return (false);
+		}
+		return (true);
+	//}
+}
+
 
 
 // Verifier avec structure sever qu'on supprime bien tout
@@ -250,14 +301,6 @@ void	Server::disconnectClient(int fd) {
 		std::cout << "Client " << nickname << " disconnected" << std::endl;
 }
 
-void	Server::ignoreCAP(int fd) {
-	DEBUG_LOG("Into ignoreCAP");
-	this->clients_[fd].sendMessage(SERV_NAME CAPRESP);
-	//std::string capResponse = ":" SERV_NAME " CAP * LS : \r\nCAP END\r\n"; // capacities list (none here)
-	//send(fd, capResponse.c_str(), capResponse.size(), 0);
-	//DEBUG_LOG("CAP response sent to client : " + capResponse);
-}
-
 // Gérer autres commandes
 // :serveur CODE <client> <paramètre> :message
 // 401 ERR_NOSUCHNICK	"No such nick/channel" = tentative d'envoi d'un msg à un nick inexistant
@@ -267,6 +310,7 @@ void Server::readClient(int fd) {
 	std::string	msg(buffer);
  
 	DEBUG_LOG("Into readClient");
+	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
  	// cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
 	if (recv_res <= 0) {
 		DEBUG_LOG("Into previous recv_res == 0");
@@ -275,21 +319,8 @@ void Server::readClient(int fd) {
 	}
 	std::vector<std::string> lines = splitLines(msg);
 	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
-		std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
-		//Ignore "CAP LS 302"
-		if (line->find("CAP LS") == 0)
-			ignoreCAP(fd);
-
-		// if (msg.find("CAP END") == 0 || msg.find("PASS") == 0 || msg.find("NICK") == 0)
-		// 	authenticate(fd);
-
-		if (line->find("PASS ") == 0)
-			checkPassword(fd, *line);
-		if (line->find("NICK ") == 0)
-			handleNick(fd, *line);
-		if (!this->clients_[fd].isWelcomeSent() && this->clients_[fd].isAuth()) {
-			this->sendWelcomeMessage_(fd);
-		}
+		if (!handleCommand(fd, *line))
+			break ;
 	}
 }
 

@@ -5,18 +5,20 @@
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
 Client::Client(void) {
+	this->passwdSet_ = false;
 	this->nickSet_ = false;
 	this->usernameSet_ = false;
-	this->passwdSet_ = false;
 	this->welcomeSent_ = false;
+	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
 Client::Client(int id) {
+	this->id_ = id;
+	this->passwdSet_ = false;
 	this->nickSet_ = false;
 	this->usernameSet_ = false;
-	this->passwdSet_ = false;
 	this->welcomeSent_ = false;
-	this->id_ = id;
+	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
 Client::Client(std::string nickname, unsigned int id, std::string username) {
@@ -24,7 +26,7 @@ Client::Client(std::string nickname, unsigned int id, std::string username) {
 	this->usernameSet_ = true;
 	this->welcomeSent_ = false;
 	this->nickname_ = nickname;
-	this->username_ = username; // useful ?
+	this->username_ = username;
 	this->id_ = id;
 }
 
@@ -38,9 +40,9 @@ Client::~Client(void) {
 // *************************************** OVERLOAD OPERATORS **************************************************************//
 // should copy id ?
 Client& Client::operator=(const Client& other) {
+	this->passwdSet_ = other.passwdSet_;
 	this->nickSet_ = other.nickSet_;
 	this->usernameSet_ = other.usernameSet_;
-	this->passwdSet_ = other.passwdSet_;
 	this->welcomeSent_ = other.welcomeSent_;
 	this->nickname_ = other.nickname_;
 	this->username_ = other.username_;
@@ -51,16 +53,16 @@ Client& Client::operator=(const Client& other) {
 
 // *************************************** GETTERS ************************************************************************//
 
+bool	Client::isPasswdSet(void) const {
+	return (this->passwdSet_);
+}
+
 bool	Client::isNickSet(void) const {
 	return (this->nickSet_);
 }
 
 bool	Client::isUsernameSet(void) const {
 	return (this->usernameSet_);
-}
-
-bool	Client::isPasswdSet(void) const {
-	return (this->passwdSet_);
 }
 
 bool	Client::isWelcomeSent(void) const {
@@ -89,16 +91,17 @@ void	Client::setId(int id) {
 	this->id_ = id;
 }
 
+void	Client::setPasswdSet(bool passwdSet) {
+	this->passwdSet_ = passwdSet;
+}
+
+// setNickSet and setUserSet usedul ? it's done in setNick and setUser
 void	Client::setNickSet(bool nickSet) {
 	this->nickSet_ = nickSet;
 }
 
 void	Client::setUsernameSet(bool usernameSet) {
 	this->usernameSet_ = usernameSet;
-}
-
-void	Client::setPasswdSet(bool passwdSet) {
-	this->passwdSet_ = passwdSet;
 }
 
 void	Client::setWelcomeSent(bool welcomeSent) {
@@ -121,6 +124,7 @@ void	Client::setCurrChannel(unsigned int channel) {
 
 // *************************************** MEMBER FUNCTIONS **************************************************************//
 
+// add welcomeSent ?
 bool	Client::isAuth(void) const {
 	return (this->nickSet_ && this->usernameSet_ && this->passwdSet_);
 }

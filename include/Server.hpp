@@ -15,15 +15,25 @@
 
 #define CAPRESP "CAP * LS : \r\nCAP END\r\n"
 #define ERR_ALREADYREGISTRED "462 * :You may not reregister\r\n"
+#define ERR_NEEDMOREPARAMS "461 "
+//#define NEEDMOREPARAMS " :Not enough parameters\r\n"
+// #define ERR_NEEDMOREPARAMS "461 * :Not enough parameters\r\n"
+
 #define CORRECTPASS "NOTICE AUTH :Password accepted\r\n"
 #define ERR_WRONGPASS "NOTICE AUTH :Invalid password\r\n"
-#define ERR_NOTREGISTERED  "451 * :Please authenticate first with PASS command\r\n"
+#define ERR_NOTREGISTEREDPASS  "451 * :Please authenticate first with PASS command\r\n"
+#define ERR_NOTREGISTEREDNICK  "451 * :Please authenticate first with NICK command\r\n"
 #define ERR_NONICKNAMEGIVEN "431 * :No nickname given\r\n"
 #define ERR_NICKNAMEINUSE "433 * "
 #define NICKINUSE ":Nickname is already in use\r\n"
 #define ERR_ERRONEUSNICKNAME "432 * "
 #define ERRONEUS ":Erroneous nickname"
 #define NICKSET "NOTICE AUTH :Nickname set to "
+
+#define USERSET "NOTICE AUTH :Username set to "
+#define ERR_ERRONEUSUSERNAME "461 "
+#define ERRONEUSUSERNAME "USER :Invalid username"
+
 
 class Server {
 	private:
@@ -44,10 +54,13 @@ class Server {
 
         //auth
 		void	ignoreCAP(int fd);
-		void	authenticate(int fd, std::string msg);
+		bool	handleCommand(int fd, std::string msg);
 		bool	checkPassword(int fd, std::string line);
-		void	handleNick(int fd, std::string line);
 		bool	isValidNickname(int fd, std::string nickname);
+		bool	handleNick(int fd, std::string line);
+		bool	allUserElements(int fd, std::string line, std::string &username);
+		bool	isValidUsername(int fd, std::string line, std::string &username);
+		bool	handleUser(int fd, std::string line);
 
 				//welcome message
 		void	setCreatTime_(void);
