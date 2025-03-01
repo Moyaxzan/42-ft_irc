@@ -1,4 +1,6 @@
 #include "../include/Client.hpp"
+#include <iostream>
+#include <sys/socket.h>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -140,4 +142,11 @@ void	Client::rmJoinedChann(unsigned int channel) {
 	this->joinedChannels_.remove(channel);
 }
 
-
+void	Client::sendMessage(std::string message) const {
+	message += "\r\n";
+	send(this->id_, message.c_str(), message.size(), 0);
+	if (this->nickSet_)
+		std::cout << "Message sent to client [" << this->nickname_ << "]: " << message << std::endl;
+	else
+		std::cout << "Message sent to client [" << this->id_ << "]: " << message << std::endl;
+}
