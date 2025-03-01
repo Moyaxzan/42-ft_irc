@@ -110,13 +110,6 @@ std::vector<std::string>	splitLines(std::string msg) {
 	return (lines);
 }
 
-void	sendToClient(int fd, std::string message, std::string nickname) {
-	send(fd, message.c_str(), message.size(), 0);
-	if (nickname.empty())
-		std::cout << "Message sent to client [" << fd << "]: " << message << std::endl;
-	else
-		std::cout << "Message sent to client [" << nickname << "]: " << message << std::endl;
-}
 
 /*
 envoie un message à tous les clients sauf le client emetteur
@@ -138,22 +131,22 @@ void	Server::checkPassword(int fd, std::string line) {
 	//std::string	response;
 
 	if (this->clients_[fd].isPasswdSet()) {
-		sendToClient(fd, SERV_NAME ERR_ALREADYREGISTRED, "");
+		this->clients_[fd].sendMessage(SERV_NAME ERR_ALREADYREGISTRED);
 		return ;
 	}
 	if (clientPass == this->password_) {
 		this->clients_[fd].setPasswdSet(true);
-		sendToClient(fd, SERV_NAME CORRECTPASS, "");
+		this->clients_[fd].sendMessage(SERV_NAME CORRECTPASS);
 		//response = SERV_NAME " NOTICE AUTH :Password accepted\r\n";
 		//send(fd, response.c_str(), response.size(), 0);
 		//std::cout << "Client " << fd << " correct password" << std::endl;
 	} else {
-		sendToClient(fd, SERV_NAME ERR_WRONGPASS, "");
+		this->clients_[fd].sendMessage(SERV_NAME ERR_WRONGPASS);
 		//response = SERV_NAME " NOTICE AUTH :Invalid password\r\n";
 		//send(fd, response.c_str(), response.size(), 0);
 		//std::cout << "Client " << fd << ": wrong password" << std::endl;
 		disconnectClient(fd);
-	}		
+	}
 }
 
 bool	correctChars(std::string nickname) {
@@ -183,7 +176,7 @@ ERR_ERRONEUSNICKNAME :
 bool	Server::isValidNickname(int fd, std::string nickname) {
 	DEBUG_LOG("Into isValidNickname function");
 	if (nickname.empty()) {
-		sendToClient(fd, SERV_NAME ERR_NONICKNAMEGIVEN, "");
+		this->clients_[fd].sendMessage(SERV_NAME ERR_NONICKNAMEGIVEN);
 		//response = SERV_NAME " 431 * :No nickname given\r\n";
 		//send(fd, response.c_str(), response.size(), 0);
 		//std::cout << "Client " << fd << ": no nickname given" << std::endl;
@@ -192,11 +185,11 @@ bool	Server::isValidNickname(int fd, std::string nickname) {
 	}
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (nickname.size() > 9 || !correctChars(nickname) || nickname == SERV_NAME) {
-		sendToClient(fd, SERV_NAME ERR_ERRONEUSNICKNAME + nickname + ERRONEUS, "");
+		this->clients_[fd].sendMessage(SERV_NAME ERR_ERRONEUSNICKNAME + nickname + ERRONEUS);
 		return (false);
 	}
 	if (this->nicknames_.count(nickname)) { // Vérifie que le pseudo n'est pas déjà pris
-		sendToClient(fd, SERV_NAME ERR_NICKNAMEINUSE + nickname + NICKINUSE, "");
+		this->clients_[fd].sendMessage(SERV_NAME ERR_NICKNAMEINUSE + nickname + NICKINUSE);
 		//response = SERV_NAME " 433 * " + nickname + " :Nickname is already in use\r\n";
 		//send(fd, response.c_str(), response.size(), 0);
 		return (false);
@@ -210,7 +203,7 @@ void	Server::handleNick(int fd, std::string line) {
 
 	DEBUG_LOG("Into handleNick function");
 	if (!this->clients_[fd].isPasswdSet()) {
-		sendToClient(fd, SERV_NAME ERR_NOTREGISTERED, "");
+		this->clients_[fd].sendMessage(SERV_NAME ERR_NOTREGISTERED);
 		return ;
 	}
 	if (!isValidNickname(fd, nickname))
@@ -218,7 +211,7 @@ void	Server::handleNick(int fd, std::string line) {
 	
 	this->nicknames_.insert(nickname); // to lock the nickname
 	this->clients_[fd].setNick(nickname); // set the client nickname in its instance
-	sendToClient(fd, SERV_NAME NICKSET + nickname + "\r\n", "");
+	this->clients_[fd].sendMessage(SERV_NAME NICKSET + nickname + "\r\n");
 	//std::string response = SERV_NAME " NOTICE AUTH :Nickname set to " + nickname + "\r\n";
 	//send(fd, response.c_str(), response.size(), 0);
 	//std::cout << "Client " << fd << " nickname set successfully to : " << nickname << std::endl;
@@ -245,7 +238,7 @@ void	Server::disconnectClient(int fd) {
 
 void	Server::ignoreCAP(int fd) {
 	DEBUG_LOG("Into ignoreCAP");
-	sendToClient(fd, SERV_NAME CAPRESP, "");
+	this->clients_[fd].sendMessage(SERV_NAME CAPRESP);
 	//std::string capResponse = ":" SERV_NAME " CAP * LS : \r\nCAP END\r\n"; // capacities list (none here)
 	//send(fd, capResponse.c_str(), capResponse.size(), 0);
 	//DEBUG_LOG("CAP response sent to client : " + capResponse);
@@ -280,6 +273,9 @@ void Server::readClient(int fd) {
 			checkPassword(fd, *line);
 		if (line->find("NICK ") == 0)
 			handleNick(fd, *line);
+		if (!this->clients_[fd].isWelcomeSent() && this->clients_[fd].isAuth()) {
+			this->sendWelcomeMessage_(fd);
+		}
 	}
 }
 
@@ -307,6 +303,21 @@ void Server::runServer(void)
 	return ;
 }
 
+void	Server::sendWelcomeMessage_(int fd) {
+	Client*		client = &this->clients_[fd];
+    std::string	nick = client->getNick();
+
+    client->sendMessage(std::string(":") + SERV_NAME + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
+    client->sendMessage(std::string(":") + SERV_NAME + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
+    client->sendMessage(std::string(":") + SERV_NAME + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
+    client->sendMessage(std::string(":") + SERV_NAME + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
+    
+    // Message of the Day (MOTD) ?
+    // client->sendMessage(std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
+    // client->sendMessage(std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
+    // client->sendMessage(std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
+    // client->sendMessage(std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
+}
 /*
 ✔ Si le client se déconnecte volontairement (QUIT), il n'est pas nécessaire de lui envoyer un message, mais il faut notifier les autres clients.
 dans disconnectClient : + relayer un message du client qui s'est déconnecté aux autres en meme tps que la notification de déconnexion ?

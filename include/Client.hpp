@@ -19,6 +19,7 @@ class Client {
 		std::list<unsigned int>					joinedChannels_;
 
 	public:
+		//CANONICAL FORM
 		Client(void);
 		Client(int id);
 		Client(std::string nickname, unsigned int id, std::string username);
@@ -26,6 +27,7 @@ class Client {
 		Client& operator=(const Client& other);
 		~Client(void);
 
+		//GETTERS
 		bool									isNickSet(void) const;
 		bool									isUsernameSet(void) const;
 		bool									isPasswdSet(void) const;
@@ -35,6 +37,7 @@ class Client {
 		unsigned int							getCurrChannel(void) const;
 		std::list<unsigned int>					getJoinedChannels(void) const;
 
+		//SETTERS
 		void									setId(int id);
 		void									setNickSet(bool nickSet);
 		void									setUsernameSet(bool usernameSet);
@@ -44,10 +47,12 @@ class Client {
 		void									setUser(std::string username);
 		void									setCurrChannel(unsigned int channel);
 
+		// MEMBER FUNCTIONS
 		bool									isAuth(void) const;
 		bool									joined(unsigned int channel) const;		// return if user joined channel
 		void									addJoinedChann(unsigned int channel);	// add channel to the joined channel list
 		void									rmJoinedChann(unsigned int channel);	// removes channel from the joined channel list
+		void									sendMessage(std::string message) const;
 };
 
 #endif

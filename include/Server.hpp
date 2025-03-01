@@ -37,16 +37,22 @@ class Server {
 		//std::set<std::string>	usernames_;
 		std::map<int, Client>	clients_;
 
+				//client management
 		void	newClient_(void);
 		void	readClient(int fd);
 		void	disconnectClient(int fd);
 
-		void	ignoreCAP(int fd);
+				//auth checking
 		void	checkPassword(int fd, std::string line);
 		void	handleNick(int fd, std::string line);
 		bool	isValidNickname(int fd, std::string nickname);
 
+		void	ignoreCAP(int fd);
+
+				//welcome message
 		void	setCreatTime_(void);
+		void	sendWelcomeMessage_(int fd);
+
 	public:
 		Server(void);
 		Server(t_args& args);
