@@ -49,12 +49,12 @@ void Bot::initServerConnection_(char *port)
     if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
         throw ConnectionError();
 
-    // this->sendMsg("CAP LS 302");
-    // std::string res = this->recvMsg();
-    // if (res.find("CAP END") != res.npos)  // GOOD AUTH TO ADD BACK 
-    // {
-    //     this->sendMsg("PASS mdp\nNICK sheriff\nUSER le_sheriff");
-    // }
+    this->sendMsg("CAP LS 302", 0);
+    std::string res = this->recvMsg();
+    if (res.find("CAP END") != res.npos)  // GOOD AUTH TO ADD BACK 
+    {
+        this->sendMsg("PASS mdp\nNICK sheriff\nUSER le_sheriff", 0);
+    }
 }
 
 std::vector<std::vector<std::string> > &Bot::getDicts(void)
@@ -198,7 +198,7 @@ void Bot::checkRoulette(t_msg & msg)
     while (it != msg.content.end())
     {
         if (*it == "START" && it + 1 != msg.content.end() && *(it + 1) == "RCR")
-            launchRoulette(msg.username);
+            launchRoulette(msg);
         it++;
     }
 }
@@ -227,21 +227,27 @@ int Bot::getClientSocket(void)
     return this->socket_;
 }
 
-void Bot::launchRoulette(std::string const & username)
+void Bot::introRoulette(std::string username)
+{
+    printBear();
+    sendMsg(username + " just threw down the gauntlet for a game of Russian Roulette! Saddle up, folks!\n", 0);
+    sendMsg("The rules are simple, partner. We got ourselves a six-shooter, but only one chamber's got lead in it.\n", 2);
+    sendMsg("Each turn, someone’s gotta cock the hammer and PULL the trigger, pointin’ it right at their own head.\n", 2);
+    sendMsg("Feelin’ lucky? You can ROLL and give the cylinder a spin to shuffle things up—if you got the nerve.\n", 2);
+    sendMsg("But one way or another, you’ll have to pull that trigger!\n", 2);
+    sendMsg("Ain’t nothin’ to it... just a bit of good ol’ fashioned frontier luck.\n", 2);
+    sendMsg("What could go wrong ? Good luck fellers!\n", 2);
+}
+
+void Bot::launchRoulette(t_msg const & msg)
 {
     Gun gun;
     std::vector<int> players;
     std::vector<int>::iterator it;
-    std::string msg;
+    std::string new_msg;
     // std::string req;
 
-    printBear();
-    sendMsg(username + " just started a Russian Chat Roulette! LET'S GO!\n", 0);
-    sendMsg("It's a quite simple game. There's a 6 bullets gun loaded with only one bullet.\n", 2);
-    sendMsg("Each turn, each person picked will have to PULL the trigger and try shooting the gun to his/her face.\n", 2);
-    sendMsg("Alternatively, you can also ROLL the gun barrel and randomize the bullets inside.\n", 2);
-    sendMsg("But you will have to shoot the gun, eventually!\n", 2);
-    sendMsg("What could go wrong ? Good luck !\n", 2);
+
     // requete au serveur pour pick 6 joueurs random (max) dans le channel
     //  req = "1 3";
     players.push_back(1);
@@ -264,10 +270,10 @@ void Bot::launchRoulette(std::string const & username)
     intro.clear();
     intro = encapsulate(players[0]) + " will begin ! Would you rather PULL the trigger or ROLL the bullets ?\n";
     this->sendMsg(intro, 2);
-    while (!(msg = this->recvMsg()).empty())
+    while (!(new_msg = this->recvMsg()).empty())
     {
-
-        if (msg.find("PULL") != msg.npos)
+        
+        if (new_msg.find("PULL") != new_msg.npos)
         {
             if (!gun.checkBullet())
                 this->sendMsg("Survived\n", 0);
@@ -277,7 +283,7 @@ void Bot::launchRoulette(std::string const & username)
                 break;
             }
         }
-        else if (msg.find("ROLL") != msg.npos)
+        else if (new_msg.find("ROLL") != new_msg.npos)
         {
             gun.shuffleBullets();
             this->sendMsg("Bullets have been rolled !\n", 0);

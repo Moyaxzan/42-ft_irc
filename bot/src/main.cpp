@@ -15,6 +15,7 @@ int main(int argc, char **argv)
         
         while (!(recv_msg = bot.recvMsg()).empty())
         {
+            std::cout << recv_msg;
             t_msg msg = bot.parseMsg(recv_msg);
             bot.monitor(msg);
             bot.checkRoulette(msg);

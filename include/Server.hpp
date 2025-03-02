@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <sstream>
+#include <algorithm>
 #include "../include/argparsing.hpp"
 
 class Server {

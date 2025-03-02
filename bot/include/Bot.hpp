@@ -35,11 +35,13 @@ class Bot /* : public Client */
         void addProfanityDict(std::string filename);
         void initServerConnection_(char *port);
         void checkAddBadPerson(std::string username);
-        void launchRoulette(std::string const & username);
         void printBear(void);
         void fileError(void);
         bool checkBadContent(std::vector<std::string> & content, std::string const & bad_word);
         
+        void launchRoulette(t_msg const & msg);
+        void introRoulette(std::string username);
+
     public:
         Bot(char *port);
         Bot(Bot const & other);
