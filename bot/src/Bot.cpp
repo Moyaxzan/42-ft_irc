@@ -54,12 +54,18 @@ void Bot::initServerConnection_(char *port, char *pwd)
     std::string res = this->recvMsg();
     if (res.find("CAP END") != res.npos)        // Proper client authentification
     {
+        t_msg msg;
+
         this->sendMsg("PASS " + std::string(pwd), 0);
-        res = this->recvMsg();
-        if (res.find("Invalid password") != res.npos)
+        msg = parseMsg(this->recvMsg());
+        if (msg.content != "Password accepted")
             throw WrongPassword();
         this->sendMsg("NICK " + std::string("sheriff"), 0);
-        this->sendMsg("USER sheriff localhost localhost: le_sheriff", 0);
+        msg = parseMsg(this->recvMsg());
+        if (msg.content != "Nickname set to sheriff")
+            throw NickInUse();
+        this->sendMsg("USER sheriffa localhost localhost :sheriffa", 0);
+        // if (msg.content != "")
     }
 }
 
@@ -207,7 +213,6 @@ void Bot::checkRoulette(t_msg & msg)
     std::vector<std::string>::iterator it = msg.split_content.begin();
     while (it != msg.split_content.end())
     {
-        std::cout << "content = " << msg.content << "\n";
         if (msg.content == "START ROULETTE")
         {
             sendIntroRoulette(msg.author);
@@ -265,8 +270,6 @@ void Bot::rouletteLoop(std::vector<std::string> & players, Gun & gun)
         {
             parsed_msg = parseMsg(msg);
             this->monitor(parsed_msg);
-            std::cout << parsed_msg.author << "\n";
-            std::cout << "'" << parsed_msg.content << "'" << "\n";
             if (parsed_msg.author == players[0] && parsed_msg.content == "ROLL")
             {
                 this->sendMsg("Rolling barrel...\n", 0);

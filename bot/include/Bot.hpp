@@ -27,7 +27,7 @@ typedef struct s_msg
     std::vector<std::string> split_content;
 } t_msg;
 
-class Bot /* : public Client */
+class Bot
 {
     private:
         int socket_;
@@ -92,6 +92,12 @@ class WrongPassword : public std::exception
 {
     public:
         const char *what(void) const throw();
+};
+
+class NickInUse : public std::exception
+{
+    public:
+        const char * what() const throw();
 };
 
 #endif

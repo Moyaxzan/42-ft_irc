@@ -24,3 +24,8 @@ const char * WrongPassword::what() const throw()
 {
     return ("Connection failed : invalid password\n");
 }
+
+const char * NickInUse::what() const throw()
+{
+    return ("Connection failed : nickname already in use\n");
+}
