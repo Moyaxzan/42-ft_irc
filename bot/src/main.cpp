@@ -2,16 +2,20 @@
 
 int main(int argc, char **argv)
 {
-    if (argc != 2)
+    if (argc != 3)
+    {
+        std::cerr << "Usage is : ./Bot <port> <password>. Aborting..\n";
         return -1;
+    }
     try
     {
-        Bot bot(argv[1]);
+        Bot bot(argv[1], argv[2]);
         std::string recv_msg;    
         std::string bad_word;
         std::vector<std::string>::iterator it;
 
-        bot.sendMsg("Hey, i'm the bot! ready to moderate.\n", 0);
+        std::cout << "Connection accepted. Now monitoring\n";
+        bot.sendMsg("It looks like this city needed a sheriff.. and here I am.\n", 0);
         
         while (!(recv_msg = bot.recvMsg()).empty())
         {
@@ -20,7 +24,6 @@ int main(int argc, char **argv)
             bot.monitor(msg);
             bot.checkRoulette(msg);
         }
-        close(bot.getClientSocket());
     }
     catch (std::exception &e)
     {

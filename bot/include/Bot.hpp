@@ -33,17 +33,17 @@ class Bot /* : public Client */
         std::vector<BadPerson> bad_people;
         
         void addProfanityDict(std::string filename);
-        void initServerConnection_(char *port);
+        void initServerConnection_(char *port, char *pwd);
         void checkAddBadPerson(std::string username);
         void printBear(void);
         void fileError(void);
         bool checkBadContent(std::vector<std::string> & content, std::string const & bad_word);
         
         void launchRoulette(t_msg const & msg);
-        void introRoulette(std::string username);
+        void sendIntroRoulette(std::string username);
 
     public:
-        Bot(char *port);
+        Bot(char *port, char *pwd);
         Bot(Bot const & other);
         ~Bot(void);
         Bot & operator=(Bot const & other);
@@ -81,6 +81,12 @@ class SendError : public std::exception
 };
 
 class FileOpenError : public std::exception
+{
+    public:
+        const char *what(void) const throw();
+};
+
+class WrongPassword : public std::exception
 {
     public:
         const char *what(void) const throw();

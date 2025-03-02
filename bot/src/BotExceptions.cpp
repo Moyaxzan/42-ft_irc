@@ -19,3 +19,8 @@ const char * FileOpenError::what() const throw()
 {
     return ("Opening file failed\n");
 }
+
+const char * WrongPassword::what() const throw()
+{
+    return ("Connection failed : invalid password\n");
+}

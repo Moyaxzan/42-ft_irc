@@ -1,6 +1,6 @@
 #include "../include/Bot.hpp"
 
-Bot::Bot(char *port)
+Bot::Bot(char *port, char *pwd)
 {
     std::ifstream infile;
     std::string line;
@@ -16,7 +16,7 @@ Bot::Bot(char *port)
     }
     else
         std::cout << "No profanities file found!\n";
-    this->initServerConnection_(port);
+    this->initServerConnection_(port, pwd);
 }
 
 Bot::Bot(Bot const &other)
@@ -26,6 +26,7 @@ Bot::Bot(Bot const &other)
 
 Bot::~Bot(void)
 {
+    close(this->socket_);
 }
 
 Bot &Bot::operator=(Bot const &other)
@@ -35,7 +36,7 @@ Bot &Bot::operator=(Bot const &other)
     return *this;
 }
 
-void Bot::initServerConnection_(char *port)
+void Bot::initServerConnection_(char *port, char *pwd)
 {
     sockaddr_in server_infos;
     server_infos.sin_family = AF_INET;
@@ -53,7 +54,12 @@ void Bot::initServerConnection_(char *port)
     std::string res = this->recvMsg();
     if (res.find("CAP END") != res.npos)  // GOOD AUTH TO ADD BACK 
     {
-        this->sendMsg("PASS mdp\nNICK sheriff\nUSER le_sheriff", 0);
+        this->sendMsg("PASS " + std::string(pwd), 0);
+        res = this->recvMsg();
+        if (res.find("Invalid password") != res.npos)
+            throw WrongPassword();
+        this->sendMsg("NICK " + std::string("sheriff"), 0);
+        this->sendMsg("USER sheriff localhost localhost: le_sheriff", 0);
     }
 }
 
@@ -94,11 +100,11 @@ std::string Bot::recvMsg(void)
     while (full_msg.find("\r\n") == full_msg.npos)
     {
         err = recv(this->getClientSocket(), buffer, 512, 0);
+        full_msg += std::string(buffer);
+        if (err == 0 && full_msg.find("Invalid password"))
+            throw WrongPassword();
         if (err == 0)
             throw ConnectionError();
-        if (err == -1)
-            std::cout << "problem\n";       // need to throw something ?
-        full_msg += std::string(buffer);
         memset(buffer, '\0', 512);
     }
     return (full_msg);
@@ -227,7 +233,7 @@ int Bot::getClientSocket(void)
     return this->socket_;
 }
 
-void Bot::introRoulette(std::string username)
+void Bot::sendIntroRoulette(std::string username)
 {
     printBear();
     sendMsg(username + " just threw down the gauntlet for a game of Russian Roulette! Saddle up, folks!\n", 0);
@@ -247,6 +253,7 @@ void Bot::launchRoulette(t_msg const & msg)
     std::string new_msg;
     // std::string req;
 
+    (void) msg;
 
     // requete au serveur pour pick 6 joueurs random (max) dans le channel
     //  req = "1 3";

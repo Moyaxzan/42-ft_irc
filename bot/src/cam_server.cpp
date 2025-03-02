@@ -290,7 +290,6 @@ void Server::readClient(int fd) {
 		{
 			if (FD_ISSET(i, &readfds) && i != fd && i != this->serv_socket_)
 			{
-				
 				sendToClient(i, msg, "");
 			}
 		}
