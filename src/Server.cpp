@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <ctime>
 #include <sstream>
+#include <vector>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -59,6 +60,9 @@ Server::Server(const Server& other) {
 
 Server::~Server(void) {
 // close stuff
+	for (std::map<int, Client *>::iterator it = this->clients_.begin(); it != this->clients_.end(); it++) {
+		delete it->second;
+	}
 }
 
 // *************************************** OVERLOAD OPERATORS **************************************************************//
@@ -93,7 +97,7 @@ void Server::newClient_(void) {
 	FD_SET(accept_fd, &this->all_sockets_);
 	if (accept_fd > this->fd_max_)
 		this->fd_max_ = accept_fd;
-	this->clients_.insert(std::make_pair(accept_fd, Client(accept_fd)));
+	this->clients_.insert(std::make_pair(accept_fd, new Client(accept_fd)));
 	std::cout << "New client detected with fd: " << accept_fd << std::endl;
 }
 
@@ -126,27 +130,27 @@ void Server::broadcastMessage(const std::string &message, int sender_fd) {
 
 void	Server::ignoreCAP(int fd) {
 	DEBUG_LOG("Into ignoreCAP");
-	this->clients_[fd].sendMessage(SERV_NAME CAPRESP);
+	this->clients_[fd]->sendMessage(SERV_NAME CAPRESP);
 }
 
 bool	Server::checkPassword(int fd, std::string line) {
 	DEBUG_LOG("Into checkPassword function");
 	std::string	clientPass = line.substr(5);
 
-	if (this->clients_[fd].isPasswdSet()) {
-		this->clients_[fd].sendMessage(SERV_NAME ERR_ALREADYREGISTRED);
+	if (this->clients_[fd]->isPasswdSet()) {
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_ALREADYREGISTRED);
 		return (true); // return true or false ? check with irssi
 	}
 	if (clientPass.empty()) {
-		this->clients_[fd].sendMessage(SERV_NAME  ERR_NEEDMOREPARAMS "* PASS :Not enough parameters");
+		this->clients_[fd]->sendMessage(SERV_NAME  ERR_NEEDMOREPARAMS "* PASS :Not enough parameters");
 		return (false); // to check with irssi
 	}
 	if (clientPass == this->password_) {
-		this->clients_[fd].setPasswdSet(true);
-		this->clients_[fd].sendMessage(SERV_NAME CORRECTPASS);
+		this->clients_[fd]->setPasswdSet(true);
+		this->clients_[fd]->sendMessage(SERV_NAME CORRECTPASS);
     return (true);
 	} else {
-		this->clients_[fd].sendMessage(SERV_NAME ERR_WRONGPASS);
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_WRONGPASS);
 		disconnectClient(fd);
     return (false);
 	}
@@ -176,16 +180,16 @@ bool	correctChars(std::string nickname, char caller) {
 bool	Server::isValidNickname(int fd, std::string nickname) {
 	DEBUG_LOG("Into isValidNickname function");
 	if (nickname.empty()) {
-		this->clients_[fd].sendMessage(SERV_NAME ERR_NONICKNAMEGIVEN);
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_NONICKNAMEGIVEN);
 		return (false);
 	}
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (nickname.size() > 9 || !correctChars(nickname, 'n') || nickname == SERV_NAME) {
-		this->clients_[fd].sendMessage(SERV_NAME ERR_ERRONEUSNICKNAME + nickname + ERRONEUS);
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_ERRONEUSNICKNAME + nickname + ERRONEUS);
 		return (false);
 	}
 	if (this->nicknames_.count(nickname)) { // check if nickname is available
-		this->clients_[fd].sendMessage(SERV_NAME ERR_NICKNAMEINUSE + nickname + NICKINUSE);
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_NICKNAMEINUSE + nickname + NICKINUSE);
 		return (false);
 	}
 	return (true);
@@ -195,15 +199,15 @@ bool	Server::handleNick(int fd, std::string line) {
 	std::string	nickname = line.substr(5);
 
 	DEBUG_LOG("Into handleNick function");
-	if (!this->clients_[fd].isPasswdSet()) {
-		this->clients_[fd].sendMessage(SERV_NAME ERR_NOTREGISTEREDPASS);
+	if (!this->clients_[fd]->isPasswdSet()) {
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_NOTREGISTEREDPASS);
 		return (false);
 	}
 	if (!isValidNickname(fd, nickname))
 		return (false);
 	this->nicknames_.insert(nickname); // to lock the nickname
-	this->clients_[fd].setNick(nickname); // set the client nickname in its instance
-	this->clients_[fd].sendMessage(SERV_NAME NICKSET + nickname);
+	this->clients_[fd]->setNick(nickname); // set the client nickname in its instance
+	this->clients_[fd]->sendMessage(SERV_NAME NICKSET + nickname);
 	return (true);
 }
 
@@ -214,8 +218,8 @@ bool	Server::allUserElements(int fd, std::string line, std::string &username) {
 	iss >> cmd >> username >> hostname >> servername; // extraction of words one by one
 	std::getline(iss, realname);
 	if (username.empty() || hostname.empty() || servername.empty() || realname.empty()) {
-		std::string	nickname = this->clients_[fd].getNick();
-		this->clients_[fd].sendMessage(SERV_NAME ERR_NEEDMOREPARAMS + nickname + " USER :Not enough parameters");
+		std::string	nickname = this->clients_[fd]->getNick();
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_NEEDMOREPARAMS + nickname + " USER :Not enough parameters");
 		return (false);
 	}
 	//if (realname[0] == ':') if parsing of realname
@@ -229,8 +233,8 @@ bool	Server::isValidUsername(int fd, std::string line, std::string &username) {
 		return (false);
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (username.size() > 9 || !correctChars(username, 'u') || username == SERV_NAME) {
-		std::string	nickname = this->clients_[fd].getNick();
-		this->clients_[fd].sendMessage(SERV_NAME ERR_ERRONEUSUSERNAME + nickname + ERRONEUSUSERNAME);
+		std::string	nickname = this->clients_[fd]->getNick();
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_ERRONEUSUSERNAME + nickname + ERRONEUSUSERNAME);
 		return (false);
 	}
 	//parse hostname, servername and realname ?
@@ -239,21 +243,20 @@ bool	Server::isValidUsername(int fd, std::string line, std::string &username) {
 
 bool	Server::handleUser(int fd, std::string line) {
 	DEBUG_LOG("Into handleUser function");
-	if (!this->clients_[fd].isNickSet()) {
-		this->clients_[fd].sendMessage(SERV_NAME ERR_NOTREGISTEREDNICK);
+	if (!this->clients_[fd]->isNickSet()) {
+		this->clients_[fd]->sendMessage(SERV_NAME ERR_NOTREGISTEREDNICK);
 		return (false);
 	}
-	if (this->clients_[fd].isUsernameSet()) {
-		std::string nickname = this->clients_[fd].getNick();
-		this->clients_[fd].sendMessage(SERV_NAME "462 " + nickname + " :You may not reregister");
+	if (this->clients_[fd]->isUsernameSet()) {
+		std::string nickname = this->clients_[fd]->getNick();
+		this->clients_[fd]->sendMessage(SERV_NAME "462 " + nickname + " :You may not reregister");
 		return (true);
 	}
 	std::string	username;
 	if (!isValidUsername(fd, line, username))
 		return (false);
-	this->clients_[fd].setUser(username); // set the client nickname in its instance
-	this->clients_[fd].sendMessage(SERV_NAME USERSET + username);
-	this->sendWelcomeMessage_(fd);
+	this->clients_[fd]->setUser(username); // set the client nickname in its instance
+	this->clients_[fd]->sendMessage(SERV_NAME USERSET + username);
 	return (true);
 }
 
@@ -277,8 +280,10 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		if (!handleUser(fd, cmd))
 			return (false);
 	}
+	if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth()) {
+		this->sendWelcomeMessage_(fd);
+	}
 	return (true);
-	//}
 }
 
 // Verifier avec structure sever qu'on supprime bien tout
@@ -287,7 +292,7 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 // et une string pr le message à transférer
 void	Server::disconnectClient(int fd) {
 	DEBUG_LOG("Into disconnectClient");
-	std::string	nickname = this->clients_[fd].getNick();
+	std::string	nickname = this->clients_[fd]->getNick();
 	close (fd);
 	FD_CLR(fd, &this->all_sockets_);
 	this->nicknames_.erase(nickname); // to free the nickname
@@ -347,14 +352,15 @@ void Server::runServer(void)
 }
 
 void	Server::sendWelcomeMessage_(int fd) {
-	Client*		client = &this->clients_[fd];
+	Client*		client = this->clients_[fd];
     std::string	nick = client->getNick();
 
-    client->sendMessage(std::string(":") + SERV_NAME + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
-    client->sendMessage(std::string(":") + SERV_NAME + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
-    client->sendMessage(std::string(":") + SERV_NAME + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
-    client->sendMessage(std::string(":") + SERV_NAME + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
-    
+    client->sendMessage(std::string(SERV_NAME) + "001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
+    client->sendMessage(std::string(SERV_NAME) + "002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
+    client->sendMessage(std::string(SERV_NAME) + "003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
+    client->sendMessage(std::string(SERV_NAME) + "004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
+     
+	client->setWelcomeSent(true);
     // Message of the Day (MOTD) ?
     // client->sendMessage(std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
     // client->sendMessage(std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");

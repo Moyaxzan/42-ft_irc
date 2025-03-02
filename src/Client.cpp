@@ -1,6 +1,7 @@
 #include "../include/Client.hpp"
 #include <iostream>
 #include <sys/socket.h>
+#include <algorithm>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -13,6 +14,7 @@ Client::Client(void) {
 }
 
 Client::Client(int id) {
+	std::cout << "id = " << id << std::endl;
 	this->id_ = id;
 	this->passwdSet_ = false;
 	this->nickSet_ = false;
@@ -148,7 +150,10 @@ void	Client::rmJoinedChann(unsigned int channel) {
 
 void	Client::sendMessage(std::string message) const {
 	message += "\r\n";
-	send(this->id_, message.c_str(), message.size(), 0);
+	if (send(this->id_, message.c_str(), message.size(), 0) == -1) {
+		std::cout << "Couln't send message: \"" << message << "\" to " << this->id_ << std::endl;
+		return ;
+	}
 	if (this->nickSet_)
 		std::cout << "Message sent to client [" << this->nickname_ << "]: " << message << std::endl;
 	else

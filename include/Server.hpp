@@ -45,7 +45,7 @@ class Server {
 		std::string				creatTime_;
 		std::set<std::string>	nicknames_;
 		//std::set<std::string>	usernames_;
-		std::map<int, Client>	clients_;
+		std::map<int, Client *>	clients_;
 
 				//client management
 		void	newClient_(void);
