@@ -39,9 +39,12 @@ $(OBJS_DIR)%.o	:	%.cpp
 
 clean			:
 	rm -rf $(OBJS_DIR)
+	make -sC ./bot clean
 
 fclean			:	clean
+	make -sC "./bot" clean
 	rm -rf $(NAME)
+	rm -f ./bot/Bot
 
 re				:	fclean all
 
