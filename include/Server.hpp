@@ -34,6 +34,7 @@
 #define ERR_ERRONEUSUSERNAME "461 "
 #define ERRONEUSUSERNAME "USER :Invalid username"
 
+extern volatile sig_atomic_t g_stopSig;
 
 class Server {
 	private:

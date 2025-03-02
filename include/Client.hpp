@@ -7,7 +7,6 @@
 
 class Client {
 	private:
-
 		int										id_;
 		bool									passwdSet_;
 		bool									nickSet_;

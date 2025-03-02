@@ -60,6 +60,11 @@ Server::Server(const Server& other) {
 
 Server::~Server(void) {
 // close stuff
+  for (int i = 0; i <= this->fd_max_; i++) {
+		if (FD_ISSET(i, &this->all_sockets_)) {
+			close(i);
+		}
+	}
 	for (std::map<int, Client *>::iterator it = this->clients_.begin(); it != this->clients_.end(); it++) {
 		delete it->second;
 	}
@@ -333,12 +338,12 @@ void Server::readClient(int fd) {
 void Server::runServer(void)
 {
 	fd_set readfds;
-	while (1) {
+	while (!g_stopSig) {
 		readfds = this->all_sockets_;
-		if (select(this->fd_max_ + 1, &readfds, NULL, NULL, NULL) == -1) {
+		if (select(this->fd_max_ + 1, &readfds, NULL, NULL, NULL) == -1 && !g_stopSig) {
 			throw(SelectError());
 		}
-		for (int i = 0; i <= this->fd_max_; i++) {
+		for (int i = 0; !g_stopSig && i <= this->fd_max_; i++) {
 			if (FD_ISSET(i, &readfds)) {
 				if (i == this->serv_socket_) {
 					this->newClient_();
@@ -348,6 +353,7 @@ void Server::runServer(void)
 			}
 		}
 	}
+	std::cout << std::endl << "Exit" << std::endl;
 	return ;
 }
 
@@ -367,6 +373,7 @@ void	Server::sendWelcomeMessage_(int fd) {
     // client->sendMessage(std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
     // client->sendMessage(std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
 }
+
 /*
 ✔ Si le client se déconnecte volontairement (QUIT), il n'est pas nécessaire de lui envoyer un message, mais il faut notifier les autres clients.
 dans disconnectClient : + relayer un message du client qui s'est déconnecté aux autres en meme tps que la notification de déconnexion ?
