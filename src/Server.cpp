@@ -343,6 +343,7 @@ void Server::runServer(void)
 				if (i == this->serv_socket_) {
 					this->newClient_();
 				} else {
+                    DEBUG_LOG("message incoming");
 					this->readClient(i);
 				}
 			}

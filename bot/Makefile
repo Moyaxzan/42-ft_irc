@@ -1,18 +1,18 @@
 ####
 
-NAME = ircserv
+NAME = Bot
 
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD
 
-DEBUG_FLAGS = -g -DDEBUG=1
+DEBUG_FLAGS = -g3 -DDEBUG=1
 
 CXX = c++
 
-SRCS =	./src/main.cpp \
-		./src/exceptions.cpp \
-		./src/Server.cpp \
-		./src/argparsing.cpp \
-		./src/Client.cpp \
+SRCS =	./src/Bot.cpp \
+		./src/Gun.cpp \
+		./src/BadPerson.cpp \
+		./src/BotExceptions.cpp \
+		./src/main.cpp
 
 OBJS_DIR = .objs/
 
@@ -38,15 +38,11 @@ $(OBJS_DIR)%.o	:	%.cpp
 	mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-bonus			:	$(NAME)
-	make -sC ./bot/
 clean			:
 	rm -rf $(OBJS_DIR)
-	make -sC ./bot clean
 
 fclean			:	clean
 	rm -rf $(NAME)
-	make -sC "./bot" fclean
 
 re				:	fclean all
 
