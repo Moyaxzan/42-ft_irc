@@ -11,7 +11,8 @@ CXX = c++
 SRCS =	./src/main.cpp \
 		./src/exceptions.cpp \
 		./src/Server.cpp \
-		./src/argparsing.cpp
+		./src/argparsing.cpp \
+		./src/Client.cpp \
 
 OBJS_DIR = .objs/
 

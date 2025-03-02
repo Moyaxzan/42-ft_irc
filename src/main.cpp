@@ -25,7 +25,7 @@ void signalHandler(int signal) {
 	DEBUG_LOG("\nsignal recieved");
 }
 
-/* ecutable will be run as follows:
+/* executable will be run as follows:
 	./ircserv <port> <password> */
 int	main(int argc, char *argv[]) {
 	if (argc == 2 && std::string(argv[1]) == "--help") {
@@ -39,9 +39,23 @@ int	main(int argc, char *argv[]) {
 		signal(SIGQUIT, signalHandler);
 		serv.runServer();
 	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
+		std::cerr << "Error: " << e.what() << std::endl;
 		std::cerr << std::endl << "see --help for more informations..." << std::endl;
 		return (1);
 	}
 	return (0);
 }
+
+/*
+--> CAP LS 302 : CAP = CAPability negociation = mécanisme qui permet aux clients et serveurs de négocier des fonctionnalités avancées
+LS = List Server capabilities
+302 = version du protocole de négociation des capacités
+
+--> Waiting for CAP LS response : après avoir demandé la liste des capacités du serveur, le client attend un réponse du serveur du type :
+:<server> CAP <client_fd> LS :capability1 capability2 ...
+Sinon, le client reste bloqué
+
+--> Que répondre ? :
+Ignorer proprement les CAP, ne sont pas à gérer pour un IRC simple
+Répondre en précisant que le serveur n'offre pas de capacité spéciale
+*/
