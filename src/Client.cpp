@@ -55,6 +55,10 @@ Client& Client::operator=(const Client& other) {
 
 // *************************************** GETTERS ************************************************************************//
 
+int	Client::getId(void) const {
+	return (this->id_);
+}
+
 bool	Client::isPasswdSet(void) const {
 	return (this->passwdSet_);
 }

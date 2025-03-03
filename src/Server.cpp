@@ -1,5 +1,6 @@
 #include "../include/Server.hpp"
 #include "../include/debug.hpp"
+#include "../include/Command.hpp"
 #include <arpa/inet.h>
 #include <iostream>
 #include <cstdlib>
@@ -83,6 +84,19 @@ Server& Server::operator=(const Server& other) {
 
 // *************************************** GETTERS/SETTERS **************************************************************//
 
+const std::string&	Server::getPassword(void) const {
+	return (this->password_);
+}
+
+
+const std::set<std::string>&	Server::getNicknames(void) const {
+	return (this->nicknames_);
+}
+
+void	Server::addNickname(std::string nickname) {
+	this->nicknames_.insert(nickname);
+}
+
 void	Server::setCreatTime_(void) {
 	time_t now = time(NULL);  // Get current time
     struct tm *timeinfo = localtime(&now);  // Convert to local time
@@ -138,134 +152,6 @@ void	Server::ignoreCAP(int fd) {
 	this->clients_[fd]->sendMessage(SERV_NAME CAPRESP);
 }
 
-bool	Server::checkPassword(int fd, std::string line) {
-	DEBUG_LOG("Into checkPassword function");
-	std::string	clientPass = line.substr(5);
-
-	if (this->clients_[fd]->isPasswdSet()) {
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_ALREADYREGISTRED);
-		return (true); // return true or false ? check with irssi
-	}
-	if (clientPass.empty()) {
-		this->clients_[fd]->sendMessage(SERV_NAME  ERR_NEEDMOREPARAMS "* PASS :Not enough parameters");
-		return (false); // to check with irssi
-	}
-	if (clientPass == this->password_) {
-		this->clients_[fd]->setPasswdSet(true);
-		this->clients_[fd]->sendMessage(SERV_NAME CORRECTPASS);
-    return (true);
-	} else {
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_WRONGPASS);
-		disconnectClient(fd);
-    return (false);
-	}
-}
-
-bool	correctChars(std::string nickname, char caller) {
-	char	c;
-
-	if (!isalpha(nickname[0])) // nick has to begin with a letter
-		return (false);
-	for (unsigned int i = 1; i < nickname.size(); i++) {
-		c = nickname[i];
-		if (!isprint(c)) // check if chars are printable
-			return (false);
-		if (caller == 'n') {
-			if (!(isalnum(c) || c == '-' || c == '_' || c == '\\' || c == '|' || c == '[' || c == ']'))
-			return (false); // check if it is an allowed char
-		}
-		else {
-			if (!(isalnum(c) || c == '-' || c == '_' || c == '\\' || c == '|' || c == '[' || c == ']' || c == '{'  || c == '}'))
-			return (false); // check if it is an allowed char
-		}
-	}
-	return (true);
-}
-
-bool	Server::isValidNickname(int fd, std::string nickname) {
-	DEBUG_LOG("Into isValidNickname function");
-	if (nickname.empty()) {
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_NONICKNAMEGIVEN);
-		return (false);
-	}
-	// Ajouter vérification par le bot pour respecter la politique du serveur ?
-	if (nickname.size() > 9 || !correctChars(nickname, 'n') || nickname == SERV_NAME) {
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_ERRONEUSNICKNAME + nickname + ERRONEUS);
-		return (false);
-	}
-	if (this->nicknames_.count(nickname)) { // check if nickname is available
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_NICKNAMEINUSE + nickname + NICKINUSE);
-		return (false);
-	}
-	return (true);
-}
-
-bool	Server::handleNick(int fd, std::string line) {
-	std::string	nickname = line.substr(5);
-
-	DEBUG_LOG("Into handleNick function");
-	if (!this->clients_[fd]->isPasswdSet()) {
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_NOTREGISTEREDPASS);
-		return (false);
-	}
-	if (!isValidNickname(fd, nickname))
-		return (false);
-	this->nicknames_.insert(nickname); // to lock the nickname
-	this->clients_[fd]->setNick(nickname); // set the client nickname in its instance
-	this->clients_[fd]->sendMessage(SERV_NAME NICKSET + nickname);
-	return (true);
-}
-
-bool	Server::allUserElements(int fd, std::string line, std::string &username) {
-	std::istringstream	iss(line);
-	std::string			cmd, hostname, servername, realname;
-
-	iss >> cmd >> username >> hostname >> servername; // extraction of words one by one
-	std::getline(iss, realname);
-	if (username.empty() || hostname.empty() || servername.empty() || realname.empty()) {
-		std::string	nickname = this->clients_[fd]->getNick();
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_NEEDMOREPARAMS + nickname + " USER :Not enough parameters");
-		return (false);
-	}
-	//if (realname[0] == ':') if parsing of realname
-			//realname = realname.substr(1);
-	return (true);
-}
-
-// USER <username> <hostname> <servername> :<realname>
-bool	Server::isValidUsername(int fd, std::string line, std::string &username) {
-	if (!allUserElements(fd, line, username)) // check if 4 params or if empty (=needmore params)
-		return (false);
-	// Ajouter vérification par le bot pour respecter la politique du serveur ?
-	if (username.size() > 9 || !correctChars(username, 'u') || username == SERV_NAME) {
-		std::string	nickname = this->clients_[fd]->getNick();
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_ERRONEUSUSERNAME + nickname + ERRONEUSUSERNAME);
-		return (false);
-	}
-	//parse hostname, servername and realname ?
-	return (true);
-}
-
-bool	Server::handleUser(int fd, std::string line) {
-	DEBUG_LOG("Into handleUser function");
-	if (!this->clients_[fd]->isNickSet()) {
-		this->clients_[fd]->sendMessage(SERV_NAME ERR_NOTREGISTEREDNICK);
-		return (false);
-	}
-	if (this->clients_[fd]->isUsernameSet()) {
-		std::string nickname = this->clients_[fd]->getNick();
-		this->clients_[fd]->sendMessage(SERV_NAME "462 " + nickname + " :You may not reregister");
-		return (true);
-	}
-	std::string	username;
-	if (!isValidUsername(fd, line, username))
-		return (false);
-	this->clients_[fd]->setUser(username); // set the client nickname in its instance
-	this->clients_[fd]->sendMessage(SERV_NAME USERSET + username);
-	return (true);
-}
-
-
 bool	Server::handleCommand(int fd, std::string cmd) {
 	//std::vector<std::string> lines = splitLines(cmd);
 	DEBUG_LOG("Into handleCommand function");
@@ -274,15 +160,15 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	if (cmd.find("CAP LS") == 0) //Ignore "CAP LS *"
 		ignoreCAP(fd);
 	else if (cmd.find("PASS ") == 0) {
-		if (!checkPassword(fd, cmd))
+		if (!Command::pass(this->clients_[fd], this, cmd))
 			return (false); // blocking command
 	}
 	else if (cmd.find("NICK ") == 0) {
-		if (!handleNick(fd, cmd))
+		if (!Command::nick(this->clients_[fd], this, cmd))
 			return (false);
 	}
 	else if (cmd.find("USER ") == 0) {
-		if (!handleUser(fd, cmd))
+		if (!Command::user(this->clients_[fd], cmd))
 			return (false);
 	}
 	if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth()) {
