@@ -147,19 +147,14 @@ void Server::broadcastMessage(const std::string &message, int sender_fd) {
 }
 */
 
-void	Server::ignoreCAP(int fd) {
-	DEBUG_LOG("Into ignoreCAP");
-	this->clients_[fd]->sendMessage(SERV_NAME CAPRESP);
-}
-
 bool	Server::handleCommand(int fd, std::string cmd) {
 	//std::vector<std::string> lines = splitLines(cmd);
 	DEBUG_LOG("Into handleCommand function");
 	DEBUG_LOG("Command = " + cmd);
 	//for (size_t i = 0; i < lines.size(); i++) {
-	if (cmd.find("CAP LS") == 0) //Ignore "CAP LS *"
-		ignoreCAP(fd);
-	else if (cmd.find("PASS ") == 0) {
+	if (cmd.find("CAP LS") == 0) {
+		Command::cap(this->clients_[fd], cmd);
+	} else if (cmd.find("PASS ") == 0) {
 		if (!Command::pass(this->clients_[fd], this, cmd))
 			return (false); // blocking command
 	}
@@ -247,10 +242,10 @@ void	Server::sendWelcomeMessage_(int fd) {
 	Client*		client = this->clients_[fd];
     std::string	nick = client->getNick();
 
-    client->sendMessage(std::string(SERV_NAME) + "001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
-    client->sendMessage(std::string(SERV_NAME) + "002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
-    client->sendMessage(std::string(SERV_NAME) + "003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
-    client->sendMessage(std::string(SERV_NAME) + "004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
+    client->sendMessage(std::string(SERV_NAME) + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
+    client->sendMessage(std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
+    client->sendMessage(std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
+    client->sendMessage(std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
      
 	client->setWelcomeSent(true);
     // Message of the Day (MOTD) ?

@@ -25,7 +25,7 @@ bool Command::pass(Client *client, Server *server, std::string &line) {
 	std::string	clientPass = line.substr(5);
 
 	if (client->isPasswdSet()) {
-		client->sendMessage(ERR_ALREADYREGISTREDPASS);
+		client->sendMessage(ERR_ALREADYREGISTREDPASS());
 		return (true); // return true or false ? check with irssi
 	}
 	if (clientPass.empty()) {
@@ -78,6 +78,26 @@ bool Command::user(Client *client, std::string &line) {
 	return (true);
 }
  
+void Command::cap(Client *client, const std::string& line) {
+	DEBUG_LOG("Handling CAP command: " + line);
+
+	std::istringstream iss(line);
+	std::string command, subcommand;
+
+	iss >> command >> subcommand; // "CAP" -> command; "LS", "REQ", "END" -> subcommand
+
+	if (subcommand == "LS") {
+		// Announce supported capabilities : (empty for now ?)
+		client->sendMessage(CAPLS_RESP());
+	} else if (subcommand == "REQ") { // capability request
+		client->sendMessage(CAPREQ_RESP(line.substr(8))); // Extracts requested capabilities
+	} else if (subcommand == "END") {
+		DEBUG_LOG("CAP END received, proceeding with authentication.");
+	} else {
+		DEBUG_LOG("Unknown CAP subcommand: " + subcommand);
+	}
+}
+
 //***************	UTILS  FUNCTIONS		*************//
 
 // USER <username> <hostname> <servername> :<realname>
