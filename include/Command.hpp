@@ -32,8 +32,8 @@ class Command {
 #define SERV_NAME ":localhost"
 
 //****************************	  CAP MACROS	***********************************//
-#define CAPLS_RESP() (SERV_NAME "CAP * LS :")
-#define CAPREQ_RESP(requests) (SERV_NAME "CAP * NAK:" + (requests))
+#define CAPLS_RESP() (SERV_NAME " CAP * LS :")
+#define CAPREQ_RESP(requests) (SERV_NAME " CAP * NAK:" + (requests))
 
 //****************************	BAD AUTH MACROS	***********************************//
 #define ERR_NOTREGISTEREDPASS()  (SERV_NAME " 451 * :Please authenticate first with PASS command")
