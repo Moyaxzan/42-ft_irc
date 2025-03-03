@@ -26,6 +26,7 @@ class Client {
 		Client& operator=(const Client& other);
 		~Client(void);
 
+		int										getId(void) const;
 		bool									isPasswdSet(void) const;
 		bool									isNickSet(void) const;
 		bool									isUsernameSet(void) const;

@@ -13,6 +13,7 @@ SRCS =	./src/main.cpp \
 		./src/Server.cpp \
 		./src/argparsing.cpp \
 		./src/Client.cpp \
+		./src/Command.cpp
 
 OBJS_DIR = .objs/
 
