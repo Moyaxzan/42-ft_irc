@@ -12,12 +12,6 @@ class Command {
 		Command &operator=(const Command &other);
 		~Command();
 
-		static bool	isValidUsername(Client *client, std::string line, std::string &username);
-		static bool	isValidNickname(Client *client, Server* server, std::string nickname);
-
-		static bool	correctChars(std::string nickname, char caller);
-		static bool	allUserElements(Client *client, std::string line, std::string &username);
-
 	public:
 		static bool pass(Client *client, Server *server, std::string &line);
 		static bool nick(Client *client, Server *server, std::string &line);
@@ -27,6 +21,7 @@ class Command {
 		// static void privMsg(Client &client, Server &server, const std::vector<std::string> &args);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
 		static void cap(Client *client, const std::string& line);
+		static bool ping(Client *client, const std::string& line);
 };
 
 #define SERV_NAME ":localhost"
@@ -55,5 +50,8 @@ class Command {
 #define ERR_ERRONEUSUSERNAME(nick) (SERV_NAME " 461 " + (nick) + " USER :Invalid username")
 #define USERSET(user) (SERV_NAME " NOTICE AUTH :Username set to " + (user))
 #define ERR_NEEDMOREPARAMS(nick) (SERV_NAME " 461 " + (nick) + " :Not enough parameters")
+
+//****************************		PING MACRO	***********************************//
+#define PONG(target) ("PONG " + (target))
 
 #endif

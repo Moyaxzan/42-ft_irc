@@ -152,14 +152,15 @@ void	Client::rmJoinedChann(unsigned int channel) {
 	this->joinedChannels_.remove(channel);
 }
 
-void	Client::sendMessage(std::string message) const {
+bool	Client::sendMessage(std::string message) const {
 	message += "\r\n";
 	if (send(this->id_, message.c_str(), message.size(), 0) == -1) {
 		std::cout << "Couln't send message: \"" << message << "\" to " << this->id_ << std::endl;
-		return ;
+		return (false);
 	}
 	if (this->nickSet_)
 		std::cout << "Message sent to client [" << this->nickname_ << "]: " << message << std::endl;
 	else
 		std::cout << "Message sent to client [" << this->id_ << "]: " << message << std::endl;
+	return (true);
 }

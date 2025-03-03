@@ -13,7 +13,12 @@ SRCS =	./src/main.cpp \
 		./src/Server.cpp \
 		./src/argparsing.cpp \
 		./src/Client.cpp \
-		./src/Command.cpp
+		./src/Command.cpp \
+		./src/commands/cap.cpp \
+		./src/commands/nick.cpp \
+		./src/commands/pass.cpp \
+		./src/commands/ping.cpp \
+		./src/commands/user.cpp
 
 OBJS_DIR = .objs/
 

@@ -165,6 +165,8 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	else if (cmd.find("USER ") == 0) {
 		if (!Command::user(this->clients_[fd], cmd))
 			return (false);
+	} else if (cmd.find("PING ") == 0) {
+		return (Command::ping(this->clients_[fd], cmd));
 	}
 	if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth()) {
 		this->sendWelcomeMessage_(fd);
