@@ -8,6 +8,7 @@
 class Client {
 	private:
 		int										id_;
+		bool									invisible_;
 		bool									passwdSet_;
 		bool									nickSet_;
 		bool									usernameSet_;
@@ -27,6 +28,7 @@ class Client {
 		~Client(void);
 
 		int										getId(void) const;
+		bool									isInvisible(void) const;
 		bool									isPasswdSet(void) const;
 		bool									isNickSet(void) const;
 		bool									isUsernameSet(void) const;
@@ -38,6 +40,7 @@ class Client {
 
 		//SETTERS
 		void									setId(int id);
+		void									setInvisible(bool isInvisible);
 		void									setPasswdSet(bool passwdSet);
 		void									setNickSet(bool nickSet);
 		void									setUsernameSet(bool usernameSet);

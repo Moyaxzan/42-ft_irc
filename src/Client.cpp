@@ -10,6 +10,7 @@ Client::Client(void) {
 	this->nickSet_ = false;
 	this->usernameSet_ = false;
 	this->welcomeSent_ = false;
+	this->invisible_ = false;
 	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
@@ -20,12 +21,14 @@ Client::Client(int id) {
 	this->nickSet_ = false;
 	this->usernameSet_ = false;
 	this->welcomeSent_ = false;
+	this->invisible_ = false;
 	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
 Client::Client(std::string nickname, unsigned int id, std::string username) {
 	this->nickSet_ = true;
 	this->usernameSet_ = true;
+	this->invisible_ = false;
 	this->welcomeSent_ = false;
 	this->nickname_ = nickname;
 	this->username_ = username;
@@ -57,6 +60,10 @@ Client& Client::operator=(const Client& other) {
 
 int	Client::getId(void) const {
 	return (this->id_);
+}
+
+bool	Client::isInvisible(void) const {
+	return (this->invisible_);
 }
 
 bool	Client::isPasswdSet(void) const {
@@ -95,6 +102,10 @@ std::list<unsigned int>	Client::getJoinedChannels(void) const {
 
 void	Client::setId(int id) {
 	this->id_ = id;
+}
+
+void	Client::setInvisible(bool isInvisible) {
+	this->invisible_ = isInvisible;
 }
 
 void	Client::setPasswdSet(bool passwdSet) {

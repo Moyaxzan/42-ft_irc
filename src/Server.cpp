@@ -168,7 +168,7 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	} else if (cmd.find("PING ") == 0) {
 		return (Command::ping(this->clients_[fd], cmd));
 	} else if (cmd.find("MODE ") == 0) {
-		return (Command::mode(this->clients_[fd], this, cmd));
+		return (Command::mode(this->clients_[fd], cmd));
 	} else if (cmd.find("PRIVMSG ") == 0) {
 		return (Command::privMsg(this->clients_[fd], this, cmd));
 	}

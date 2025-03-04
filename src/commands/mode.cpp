@@ -35,11 +35,9 @@
  */
 
 
-bool Command::mode(Client *client, Server *server, const std::string& line) {
+bool Command::mode(Client *client, const std::string& line) {
 	DEBUG_LOG("in mode handler");
 
-	(void)client;
-	(void)server;
 	std::string command, nick, mode;
 	std::istringstream	iss(line);
 	iss >> command >> nick >> mode;
@@ -47,6 +45,7 @@ bool Command::mode(Client *client, Server *server, const std::string& line) {
 		// send error message ?
 		return (false);
 	}
+	client->setInvisible(true);
 	client->sendMessage(std::string(":") + nick + " MODE " + nick + " " + mode);
 	return (true);
 }
