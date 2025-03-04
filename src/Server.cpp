@@ -169,6 +169,8 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::ping(this->clients_[fd], cmd));
 	} else if (cmd.find("MODE ") == 0) {
 		return (Command::mode(this->clients_[fd], this, cmd));
+	} else if (cmd.find("PRIVMSG ") == 0) {
+		return (Command::privMsg(this->clients_[fd], this, cmd));
 	}
 	if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth()) {
 		this->sendWelcomeMessage_(fd);
@@ -250,6 +252,7 @@ void	Server::sendWelcomeMessage_(int fd) {
     client->sendMessage(std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
     client->sendMessage(std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
     client->sendMessage(std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
+	client->sendMessage(std::string(SERV_NAME) + " 005 " + nick + CACTUS);
      
 	client->setWelcomeSent(true);
     // Message of the Day (MOTD) ?

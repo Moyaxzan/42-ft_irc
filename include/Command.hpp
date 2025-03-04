@@ -4,6 +4,7 @@
 # include <string>
 # include "Client.hpp"
 # include "Server.hpp"
+# include "debug.hpp"
 
 class Command {
 	private:
@@ -21,7 +22,7 @@ class Command {
 		static bool mode(Client *client, Server *server, const std::string& line);
 		// static void join(Client *client, Server *server, std::string &line);
 		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
-		// static void privMsg(Client &client, Server &server, const std::vector<std::string> &args);
+		static bool privMsg(Client *client, Server *server, const std::string& line);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
 };
 
@@ -54,5 +55,25 @@ class Command {
 
 //****************************		PING MACRO	***********************************//
 #define PONG(target) ("PONG " + (target))
+
+
+# define CACTUS "\
+" RESET "     .   " GREEN "  _ " RESET "   +    .  " BROWN " ______" RESET "   .          .\n\
+" RESET "  (      " GREEN "/|\\" RESET "      .    " BROWN "|      \\" RESET "      .   +\n\
+" RESET "      . " GREEN "|||||     " BROWN "_    | |   | | ||" RESET "         .\n\
+" RESET " .      " GREEN "|||||    " BROWN "| |  _| | | | |_||" RESET "    .\n\
+    " GREEN "/\\  " GREEN "||||| .  " BROWN "| | |   | |      |" RESET "       .\n\
+" BROWN " __" GREEN "|||| |||||" BROWN "____| |_|_____________\\__________\n\
+" BROWN " . " GREEN "|||| |||||  /\\" BROWN "   _____      _____  .   .\n\
+   " GREEN "|||| ||||| ||||" BROWN "   .   .  .         ________\n\
+" BROWN "  . " GREEN "\\|`-'|||| ||||" BROWN "    __________       .    .\n\
+     " GREEN "\\__ |||| ||||" BROWN "      .          .     .\n\
+" BROWN "  __    " GREEN "||||`-'|||" BROWN "  .       .    __________\n\
+" BROWN " .    . " GREEN "|||| ___/" BROWN "  ___________             .\n\
+" BROWN "    . _ " GREEN "|||||" BROWN " . _               .   _________\n\
+" BROWN " _   ___" GREEN "|||||" BROWN "__  ____    __  .          _\n\
+" BROWN "      _ " GREEN "`---'" BROWN "    .   ___  .   _   .   .    .\n\
+" BROWN " _  ^      .  -    .    \n" RESET
+
 
 #endif

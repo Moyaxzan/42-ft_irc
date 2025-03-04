@@ -19,6 +19,7 @@ SRCS =	./src/main.cpp \
 		./src/commands/nick.cpp \
 		./src/commands/pass.cpp \
 		./src/commands/ping.cpp \
+		./src/commands/privMsg.cpp \
 		./src/commands/user.cpp
 
 OBJS_DIR = .objs/

@@ -2,11 +2,13 @@
 # define DEBUG_HPP
 
 
-# define RESET "\e[0m"
-# define GREEN "\e[32m"
-# define RED "\e[31m"
-# define YELLOW "\e[33m"
-# define BLUE "\e[34m"
+# define RESET	"\e[0m"
+# define GREEN	"\e[32m"
+# define RED	"\e[31m"
+# define YELLOW	"\e[33m"
+# define BLUE	"\e[34m"
+# define BROWN	"\e[38;5;130m"
+# define CYAN    "\e[36m"
 
 # ifndef DEBUG
 #  define DEBUG 0

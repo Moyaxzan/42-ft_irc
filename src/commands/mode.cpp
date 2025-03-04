@@ -3,6 +3,7 @@
 #include "../../include/Server.hpp"
 #include "../../include/Client.hpp"
 #include <iostream>
+#include <sstream>
 
 /**
  * MODE Command Handler
@@ -39,6 +40,13 @@ bool Command::mode(Client *client, Server *server, const std::string& line) {
 
 	(void)client;
 	(void)server;
-	(void)line;
+	std::string command, nick, mode;
+	std::istringstream	iss(line);
+	iss >> command >> nick >> mode;
+	if (nick != client->getNick()) {
+		// send error message ?
+		return (false);
+	}
+	client->sendMessage(std::string(":") + nick + " MODE " + nick + " " + mode);
 	return (true);
 }
