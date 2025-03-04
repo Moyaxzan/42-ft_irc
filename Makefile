@@ -15,6 +15,7 @@ SRCS =	./src/main.cpp \
 		./src/Client.cpp \
 		./src/Command.cpp \
 		./src/commands/cap.cpp \
+		./src/commands/mode.cpp \
 		./src/commands/nick.cpp \
 		./src/commands/pass.cpp \
 		./src/commands/ping.cpp \

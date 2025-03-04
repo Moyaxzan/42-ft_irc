@@ -16,12 +16,13 @@ class Command {
 		static bool pass(Client *client, Server *server, std::string &line);
 		static bool nick(Client *client, Server *server, std::string &line);
 		static bool user(Client *client, std::string &line);
+		static void cap(Client *client, const std::string& line);
+		static bool ping(Client *client, const std::string& line);
+		static bool mode(Client *client, Server *server, const std::string& line);
 		// static void join(Client *client, Server *server, std::string &line);
 		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
 		// static void privMsg(Client &client, Server &server, const std::vector<std::string> &args);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
-		static void cap(Client *client, const std::string& line);
-		static bool ping(Client *client, const std::string& line);
 };
 
 #define SERV_NAME ":localhost"
