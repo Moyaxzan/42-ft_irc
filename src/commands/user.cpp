@@ -35,7 +35,7 @@ bool Command::user(Client *client, std::string &line) {
 	std::string	username; 
 	if (!isValidUsername(client, line, username))
 		return (false);
-	client->setUser(username); // set the client nickname in its instance
+	client->setUser(username); // set the client username in its instance
 	client->sendMessage(USERSET(username));
 	return (true);
 }
@@ -43,7 +43,7 @@ bool Command::user(Client *client, std::string &line) {
 bool	validUserChars(std::string username) {
 	char	c;
 
-	if (!isalpha(username[0])) // nick has to begin with a letter
+	if (!isalpha(username[0])) // user has to begin with a letter
 		return (false);
 	for (unsigned int i = 1; i < username.size(); i++) {
 		c = username[i];
