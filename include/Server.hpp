@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: tsaint-p <tsaint-p@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/05 17:21:43 by tsaint-p          #+#    #+#             */
+/*   Updated: 2025/03/05 17:21:53 by tsaint-p         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
@@ -8,7 +20,8 @@
 #include <map>
 #include <set>
 #include "Client.hpp"
-#include "../include/argparsing.hpp"
+#include "argparsing.hpp"
+#include "Channel.hpp"
 
 #define SERV_IP "127.0.0.1"
 
@@ -25,6 +38,7 @@ class Server {
 		std::set<std::string>	nicknames_;
 		//std::set<std::string>	usernames_;
 		std::map<int, Client *>	clients_;
+		std::vector<Channel *>	channels_;
 
 		//client management
 		void	newClient_(void);

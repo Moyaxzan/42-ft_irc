@@ -20,7 +20,7 @@ class Command {
 		static void cap(Client *client, const std::string& line);
 		static bool ping(Client *client, const std::string& line);
 		static bool mode(Client *client, const std::string& line);
-		// static void join(Client *client, Server *server, std::string &line);
+		static bool join(Client *client, Server *server, std::string &line);
 		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
 		static bool privMsg(Client *client, Server *server, const std::string& line);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);

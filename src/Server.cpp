@@ -69,6 +69,9 @@ Server::~Server(void) {
 	for (std::map<int, Client *>::iterator it = this->clients_.begin(); it != this->clients_.end(); it++) {
 		delete it->second;
 	}
+	for (std::vector<Channel *>::iterator it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		delete *it;
+	}
 }
 
 // *************************************** OVERLOAD OPERATORS **************************************************************//

@@ -6,9 +6,11 @@
 
 class Channel {
 	private:
-		unsigned int		id_;
+		int		id_;
 		std::vector<int>	operators_;
 		std::list<int>		members_;
+		std::string			topic_;
+		std::string			name_;
 
 	public:
 		Channel(void);
@@ -17,17 +19,21 @@ class Channel {
 		Channel& operator=(Channel& other);
 		~Channel(void);
 
+		//GETTERS
+		unsigned int		getId(void) const ;
+		std::vector<int>	getOperators(void) const ;
+		std::list<int>		getMembers(void) const ;
+		std::string			getTopic(void) const ;
+		std::string			getName(void) const ;
 
-		unsigned int		getId(void);
-		std::vector<int>&	getOperators(void);
-		std::list<int>&		getMembers(void);
-
-		void	setId(unsigned int id);
-		void	addOperator(unsigned int operatorId);
-		void	addMember(unsigned int memberId);
-
-		void	removeOperator(unsigned int operatorId);
-		void	removeMember(unsigned int memberId);
+		// SETTERS
+		void				setId(int id);
+		void				setTopic(std::string topic);
+		void				setName(std::string name);
+		void				addOperator(int operatorId);
+		void				addMember(int memberId);
+		void				removeOperator(int operatorId);
+		void				removeMember(int memberId);
 };
 
 #endif
