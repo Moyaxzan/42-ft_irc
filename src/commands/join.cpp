@@ -1,6 +1,11 @@
 #include "../../include/Command.hpp"
 #include "../../include/debug.hpp"
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <cctype>
+
+bool isValidChannelName(const std::string &name);
 
 /*
 ** ---------------------------- JOIN COMMAND ----------------------------
@@ -26,10 +31,54 @@
 **
 */
 
+//
 bool Command::join(Client *client, Server *server, std::string &line) {
 
-	(void) client;
-	(void) server;
-	(void) line;
+	std::istringstream iss(line);
+	std::string command, channelName, password;
+
+	if (!(iss >> command)) {
+		return (false);
+	}
+	if (!(iss >> channelName)) {
+		return (false);
+	}
+	if (!(iss >> password)) {
+		password = "";
+	}
+	if (!isValidChannelName(channelName)) {
+		client->sendMessage(ERR_BADCHANNAME(client->getNick(), channelName));
+		return (false);
+	}
+	if (server->addChannel(channelName, client, password)) {
+		
+	}
 	return (true);
+}
+
+
+
+bool isValidChannelName(const std::string &name) {
+    if (name.empty()) 
+        return false;
+
+    // Check if it starts with '#'
+    if (name[0] != '#')
+        return false;
+
+    // Must have at least one character after the prefix
+    if (name.size() == 1)
+        return false;
+
+    // Check for invalid characters (spaces, commas, control characters)
+    for (size_t i = 1; i < name.size(); i++) {
+        if (name[i] == ' ' || name[i] == ',' || std::iscntrl(name[i]))
+            return false;
+    }
+
+    // Check length
+    if (name.size() > 50)
+        return false;
+
+    return true;
 }

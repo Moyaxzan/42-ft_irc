@@ -1,11 +1,13 @@
 #include "../include/Channel.hpp"
+#include "../include/Client.hpp"
 
 
 Channel::Channel(void) {
 }
 
-Channel::Channel(unsigned int id) {
+Channel::Channel(unsigned int id, std::string name) {
 	this->id_ = id;
+	this->name_ = name;
 }
 
 Channel::Channel(Channel& other) {
@@ -27,11 +29,10 @@ unsigned int		Channel::getId(void) const {
 	return (this->id_);
 }
 
-std::vector<int>	Channel::getOperators(void) const {
+std::vector<Client *>	Channel::getOperators(void) const {
 	return (this->operators_);
 }
-
-std::list<int>		Channel::getMembers(void) const {
+std::list<Client *>	Channel::getMembers(void) const {
 	return (this->members_);
 }
 
@@ -43,6 +44,9 @@ std::string	Channel::getName(void) const {
 	return (this->name_);
 }
 
+std::string	Channel::getPassword(void) const {
+	return (this->password_);
+}
 // SETTERS
 void	Channel::setId(int id) {
 	this->id_ = id;
@@ -56,28 +60,43 @@ void	Channel::setName(std::string name) {
 	this->name_ = name;
 }
 
-void	Channel::addOperator(int operatorId) {
-	this->operators_.push_back(operatorId);
+void	Channel::setPassword(std::string password) {
+	this->password_ = password;
+}
+void	Channel::addOperator(Client *opUser) {
+	this->operators_.push_back(opUser);
 }
 
-void	Channel::addMember(int memberId) {
-	this->members_.push_back(memberId);
+void	Channel::addMember(Client *user) {
+	this->members_.push_back(user);
 }
 
-void	Channel::removeOperator(int operatorId) {
-	for (std::vector<int>::iterator it = this->operators_.begin(); it == this->operators_.end(); it++) {
-		if (*it == operatorId) {
+void	Channel::removeOperator(Client *opUser) {
+	for (std::vector<Client *>::iterator it = this->operators_.begin(); it == this->operators_.end(); it++) {
+		if (*it == opUser) {
 			this->operators_.erase(it);
 			return ;
 		}
 	}
 }
 
-void	Channel::removeMember(int memberId) {
-	for (std::list<int>::iterator it = this->members_.begin(); it == this->members_.end(); it++) {
-		if (*it == memberId) {
+void	Channel::removeMember(Client *user) {
+	for (std::list<Client *>::iterator it = this->members_.begin(); it == this->members_.end(); it++) {
+		if (*it == user) {
 			this->members_.erase(it);
 			return ;
 		}
 	}
+}
+
+// *************************************** MEMBER FUNCTIONS **************************************************************//
+
+bool	Channel::broadcast(std::string message) {
+	for (
+		std::list<Client *>::iterator it = this->members_.begin();
+		it != this->members_.end();
+		it++) {
+		(*it)->sendMessage(message);
+	}
+	return (true);
 }

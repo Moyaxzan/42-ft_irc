@@ -96,8 +96,32 @@ const std::set<std::string>&	Server::getNicknames(void) const {
 	return (this->nicknames_);
 }
 
+const std::vector<Channel *>	Server::getChannels(void) const {
+	return (this->channels_);
+}
+
 void	Server::addNickname(std::string nickname) {
 	this->nicknames_.insert(nickname);
+}
+
+bool	Server::addChannel(std::string channelName, Client *creator, std::string passwd) {
+	int	id = 0;
+
+	for (
+		std::vector<Channel *>::iterator it = this->channels_.begin();
+		it != this->channels_.end();
+		it++) {
+		if ((*it)->getName() == channelName) {
+			return (false);		// in case channelName already exists
+		}
+		id++;
+	}
+	Channel *newChan = new Channel(id, channelName);
+	//add creator to the members & operators
+	newChan->addMember(creator);
+	newChan->addOperator(creator);
+	newChan->setPassword(passwd);
+	return (true);
 }
 
 void	Server::setCreatTime_(void) {

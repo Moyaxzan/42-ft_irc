@@ -28,6 +28,9 @@ class Command {
 
 #define SERV_NAME ":localhost"
 
+//****************************	 JOIN MACROS	***********************************//
+#define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
+
 //****************************	  CAP MACROS	***********************************//
 #define CAPLS_RESP() (SERV_NAME " CAP * LS :")
 #define CAPREQ_RESP(requests) (SERV_NAME " CAP * NAK:" + (requests))
