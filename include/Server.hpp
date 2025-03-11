@@ -16,15 +16,16 @@ extern volatile sig_atomic_t g_stopSig;
 
 class Server {
 	private:
-		fd_set					all_sockets_;
-		int						serv_socket_;
-		int						fd_max_;
-		sockaddr_in				socket_infos_;
-		std::string				password_;
-		std::string				creatTime_;
-		std::set<std::string>	nicknames_;
-		//std::set<std::string>	usernames_;
-		std::map<int, Client *>	clients_;
+		fd_set						all_sockets_;
+		int							serv_socket_;
+		int							fd_max_;
+		sockaddr_in					socket_infos_;
+		std::string					password_;
+		std::string					creatTime_;
+		std::set<std::string>		nicknames_;
+		//std::set<std::string>		usernames_;
+		std::map<std::string, int>	nickFd_;
+		std::map<int, Client *>		clients_;
 
 		//client management
 		void	newClient_(void);
@@ -44,10 +45,12 @@ class Server {
 		~Server(void);
 
 		//getters
-		const std::string&				getPassword(void) const;
-		const std::set<std::string>&	getNicknames(void) const;
+		const std::string&					getPassword(void) const;
+		const std::set<std::string>&		getNicknames(void) const;
+		const std::map<std::string, int>&	getNickFd(void) const;
+		//const std::map<int, Client *>&	getClients(void) const;
 		//setters
-		void							addNickname(std::string nickname);
+		void							addNickname(std::string nickname, int fd);
 		//member functions
 
 		void							runServer(void);

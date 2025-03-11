@@ -11,6 +11,7 @@ bool	isValidUsername(Client *client, std::string line, std::string &username);
  * USER Command Handler
  *
  * Usage: USER <username> 0 * <realname>
+ * 		  USER <username> <hostname> <servername> :<realname>
  * Example: USER cowboy 0 * "Billy the Kid"
  * 
  * Sets the user's metadata during registration. Only accepted once.
@@ -22,6 +23,7 @@ bool	isValidUsername(Client *client, std::string line, std::string &username);
  * Required for completing registration along with NICK.
  */
 
+// Add the server's instance in arguments if this : std::set<std::string>	usernames_; is needed for privmsg
 bool Command::user(Client *client, std::string &line) {
 	DEBUG_LOG("Into handleUser function");
 	if (!client->isNickSet()) {
@@ -35,7 +37,7 @@ bool Command::user(Client *client, std::string &line) {
 	std::string	username; 
 	if (!isValidUsername(client, line, username))
 		return (false);
-	client->setUser(username); // set the client username in its instance
+	client->setUser(username); // set the client's username in its instance
 	client->sendMessage(USERSET(username));
 	return (true);
 }
@@ -62,8 +64,7 @@ bool	allUserElements(Client *client, std::string line, std::string &username) {
 	iss >> cmd >> username >> hostname >> servername; // extraction of words one by one
 	std::getline(iss, realname);
 	if (username.empty() || hostname.empty() || servername.empty() || realname.empty()) {
-		std::string	nickname = client->getNick();
-		client->sendMessage(ERR_NEEDMOREPARAMS(nickname));
+		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick()));
 		return (false);
 	}
 	//if (realname[0] == ':') if parsing of realname
@@ -71,14 +72,12 @@ bool	allUserElements(Client *client, std::string line, std::string &username) {
 	return (true);
 }
 
-// USER <username> <hostname> <servername> :<realname>
 bool	isValidUsername(Client *client, std::string line, std::string &username) {
 	if (!allUserElements(client, line, username)) // check if 4 params or if empty (=needmore params)
 		return (false);
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (username.size() > 9 || !validUserChars(username) || username == SERV_NAME) {
-		std::string	nickname = client->getNick();
-		client->sendMessage(ERR_ERRONEUSUSERNAME(nickname));
+		client->sendMessage(ERR_ERRONEUSUSERNAME(client->getNick()));
 		return (false);
 	}
 	//parse hostname, servername and realname ?

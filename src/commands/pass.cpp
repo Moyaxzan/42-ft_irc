@@ -9,7 +9,7 @@
  * Example: PASS secret123
  * 
  * Provides a password for authentication before registration.
- * - <password>: The server password (if required).
+ * - <password>: The server password (if required). Only accepted once.
  *
  * This command must be sent before NICK and USER to complete registration.
  * If the password is incorrect or missing, the server responds with 

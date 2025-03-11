@@ -28,11 +28,13 @@ class Command {
 
 #define SERV_NAME ":localhost"
 
+// :serverName CODE <client> <argument> :message
 //****************************	  CAP MACROS	***********************************//
 #define CAPLS_RESP() (SERV_NAME " CAP * LS :")
 #define CAPREQ_RESP(requests) (SERV_NAME " CAP * NAK:" + (requests))
 
 //****************************	BAD AUTH MACROS	***********************************//
+#define ERR_NOTREGISTERED() (SERV_NAME " 451 * :Please authenticate first")
 #define ERR_NOTREGISTEREDPASS()  (SERV_NAME " 451 * :Please authenticate first with PASS command")
 #define ERR_NOTREGISTEREDNICK()  (SERV_NAME " 451 * :Please authenticate first with NICK command")
 #define ERR_ALREADYREGISTREDPASS() (SERV_NAME " 462 * :You may not reregister")
@@ -47,6 +49,7 @@ class Command {
 #define ERR_NICKNAMEINUSE(nick) (SERV_NAME " 433 " + (nick) + " :Nickname is already in use")
 #define ERR_ERRONEUSNICKNAME(nick) (SERV_NAME " 432 " + (nick) + " :Erroneous nickname")
 #define NICKSET(nick) (SERV_NAME " NOTICE AUTH :Nickname set to " + (nick))
+// ERR_NOSUCHNICK (401) <nickname> :No such nick/channel
 
 //****************************	USERNAME MACROS	***********************************//
 #define ERR_ERRONEUSUSERNAME(nick) (SERV_NAME " 461 " + (nick) + " USER :Invalid username")
@@ -55,6 +58,13 @@ class Command {
 
 //****************************		PING MACRO	***********************************//
 #define PONG(target) ("PONG " + (target))
+
+//****************************		PRIVMSG MACRO	***********************************//
+#define ERR_NOTEXTTOSEND(nick) (SERV_NAME " 412 " + (nick) + " :No text to send")
+#define ERR_INPUTTOOLONG(nick) ( SERV_NAME " 417 " + (nick) + " :Input line is too long") // no an official code of the IRC protocol
+#define ERR_NOSUCHNICK(nick) (SERV_NAME " 401 " + (nick) + " :No such nick")
+#define ERR_NOSUCHCHANNEL(nick) (SERV_NAME " 401 " + (nick) + " :No such channel")
+#define ERR_CANNOTSENDTOSELF(nick) (SERV_NAME " 431 " + (nick) + " :You cannot send a message to yourself")
 
 
 # define CACTUS "\

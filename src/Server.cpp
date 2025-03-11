@@ -88,13 +88,17 @@ const std::string&	Server::getPassword(void) const {
 	return (this->password_);
 }
 
-
 const std::set<std::string>&	Server::getNicknames(void) const {
 	return (this->nicknames_);
 }
 
-void	Server::addNickname(std::string nickname) {
+const std::map<std::string, int>&	Server::getNickFd(void) const {
+	return (this->nickFd_);
+}
+
+void	Server::addNickname(std::string nickname, int fd) {
 	this->nicknames_.insert(nickname);
+	this->nickFd_.insert(std::make_pair(nickname, fd));
 }
 
 void	Server::setCreatTime_(void) {
@@ -148,32 +152,28 @@ void Server::broadcastMessage(const std::string &message, int sender_fd) {
 */
 
 bool	Server::handleCommand(int fd, std::string cmd) {
-	//std::vector<std::string> lines = splitLines(cmd);
 	DEBUG_LOG("Into handleCommand function");
 	DEBUG_LOG("Command = " + cmd);
-	//for (size_t i = 0; i < lines.size(); i++) {
+	
 	if (cmd.find("CAP LS") == 0) {
 		Command::cap(this->clients_[fd], cmd);
 	} else if (cmd.find("PASS ") == 0) {
 		if (!Command::pass(this->clients_[fd], this, cmd))
 			return (false); // blocking command
-	}
-	else if (cmd.find("NICK ") == 0) {
+	} else if (cmd.find("NICK ") == 0) {
 		if (!Command::nick(this->clients_[fd], this, cmd))
 			return (false);
-	}
-	else if (cmd.find("USER ") == 0) {
+	} else if (cmd.find("USER ") == 0) {
 		if (!Command::user(this->clients_[fd], cmd))
 			return (false);
+		if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth())
+			this->sendWelcomeMessage_(fd);
 	} else if (cmd.find("PING ") == 0) {
 		return (Command::ping(this->clients_[fd], cmd));
 	} else if (cmd.find("MODE ") == 0) {
 		return (Command::mode(this->clients_[fd], cmd));
 	} else if (cmd.find("PRIVMSG ") == 0) {
 		return (Command::privMsg(this->clients_[fd], this, cmd));
-	}
-	if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth()) {
-		this->sendWelcomeMessage_(fd);
 	}
 	return (true);
 }
@@ -185,10 +185,11 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 void	Server::disconnectClient(int fd) {
 	DEBUG_LOG("Into disconnectClient");
 	std::string	nickname = this->clients_[fd]->getNick();
-	close (fd);
 	FD_CLR(fd, &this->all_sockets_);
+	close (fd);
 	this->nicknames_.erase(nickname); // to free the nickname
-	this->clients_.erase(fd); // destroys the instance Client
+	delete this->clients_[fd]; // delete the allocated client instance
+	this->clients_.erase(fd);
 	//change fd_max_ if it is equal to fd and look for the new higher fd
 	// signaler aux autres clients la déconnexion du client actuel (avec broadcastmessage ?)
 	if (nickname.empty())
@@ -198,8 +199,6 @@ void	Server::disconnectClient(int fd) {
 }
 
 // Gérer autres commandes
-// :serveur CODE <client> <paramètre> :message
-// 401 ERR_NOSUCHNICK	"No such nick/channel" = tentative d'envoi d'un msg à un nick inexistant
 void Server::readClient(int fd) {
 	char		buffer[1024] = {'\0'};
 	int			recv_res = recv(fd, buffer, 1023, 0);
@@ -220,6 +219,7 @@ void Server::readClient(int fd) {
 	}
 }
 
+// IMposer des noms de channels commençant par "#"
 // see https://www.codequoi.com/programmation-reseau-via-socket-en-c/#c%C3%B4t%C3%A9-serveur--accepter-des-connexions-client-via-socket
 // for guideline
 void Server::runServer(void)
