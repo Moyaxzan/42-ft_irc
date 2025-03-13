@@ -96,6 +96,10 @@ const std::map<std::string, int>&	Server::getNickFd(void) const {
 	return (this->nickFd_);
 }
 
+const std::map<int, Client *>&		Server::getClients(void) const {
+	return (this->clients_);
+}
+
 void	Server::addNickname(std::string nickname, int fd) {
 	this->nicknames_.insert(nickname);
 	this->nickFd_.insert(std::make_pair(nickname, fd));

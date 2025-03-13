@@ -48,7 +48,7 @@ class Server {
 		const std::string&					getPassword(void) const;
 		const std::set<std::string>&		getNicknames(void) const;
 		const std::map<std::string, int>&	getNickFd(void) const;
-		//const std::map<int, Client *>&	getClients(void) const;
+		const std::map<int, Client *>&		getClients(void) const;
 		//setters
 		void							addNickname(std::string nickname, int fd);
 		//member functions

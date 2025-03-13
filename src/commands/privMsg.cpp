@@ -17,34 +17,25 @@
  * - #channel: The tageted channel's name
  */
 
-// Carriage Return = '\r' ; Line Feed = '\n' | rename function
-void	removeCRLF(std::string &message) {
-	DEBUG_LOG("Into removeCRLF()");
+// Carriage Return = '\r' | Line Feed = '\n'
+void	cleanMsg(std::string &message) {
+	DEBUG_LOG("Into cleanMsg()");
 	if (!message.empty() && message[0] == ' ')
-		message = message.erase(0, 1);
+		message.erase(0, 1);
 	if (!message.empty() && message[0] == ':')
-		message = message.erase(0, 1);
-	if (message.size() >= 2 && message.substr(message.size() - 1) == "\r")
-		message = message.erase(message.size() - 1);
+		message.erase(0, 1);
+	if (!message.empty() && message[message.size() - 1] == '\r')
+		message.erase(message.size() - 1);
 }
 
 bool	correctMsg(std::string line, std::string &message, Client *client) {
 	DEBUG_LOG("Into correctMsg()");
-	removeCRLF(message);
-	if (message.empty())
+	if (line.size() > 512) // good IRC clients should already prevent this error by cutting the message before sending it
+		return (client->sendMessage(ERR_INPUTTOOLONG(client->getNick())), false);
+	cleanMsg(message);
+	if (message.empty()) // inutile, vérifier plutot que le message ne comporte pas que des espaces
 		return (client->sendMessage(ERR_NOTEXTTOSEND(client->getNick())), false);
-	// Les clients IRC bien codés coupent déjà leurs messages à cette limite avant de les envoyer
-	if (line.size() > 512)
-		return (client->sendMessage(ERR_NOTEXTTOSEND(client->getNick())), false);
-	return (true);
 	// Ajouter vérification par le bot
-}
-
-bool	isValidTarget(std::string target, Client *client, Server *server) {
-	if (!server->getNicknames().count(target))
-		return (client->sendMessage(ERR_NOSUCHNICK(client->getNick())), false);
-	if (target == client->getNick())
-		return (client->sendMessage(ERR_CANNOTSENDTOSELF(client->getNick())), false);
 	return (true);
 }
 
@@ -55,21 +46,50 @@ int	getTargetFd(const std::map<std::string, int> &nickFd, const std::string &tar
 	return (-1);  // returns -1 if no client with the target nickname is found
 }
 
+int	isValidTarget(std::string target, Client *client, Server *server) {
+	DEBUG_LOG("Inside isValidTarget()");
+	if (!server->getNicknames().count(target))
+		return (client->sendMessage(ERR_NOSUCHNICK(client->getNick())), -1);
+	if (target == client->getNick())
+		return (client->sendMessage(ERR_CANNOTSENDTOSELF(client->getNick())), -1);
+
+	int	targetFd = getTargetFd(server->getNickFd(), target);
+	if (targetFd == -1)
+		return (-1); // useful ?
+	std::map<int, Client*> clients_ = server->getClients();
+	if (!clients_[targetFd]->isWelcomeSent())// check if targeted client is fully authenticated
+		return (client->sendMessage(ERR_TARGETNOTAUTH(client->getNick(), target)) , -1);
+	return (targetFd);
+}
+
+void	handleSendError(int targetFd, std::string target, Client *client, Server *server) {
+	std::cout << "Error: send() function failed" << std::endl;
+	if (errno == EPIPE || errno == ECONNRESET) {
+		client->sendMessage(ERR_TARGETDISCONNECTED(client->getNick(), target));
+		server->disconnectClient(targetFd);
+	} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+		client->sendMessage(ERR_BUFFERFULL(client->getNick(), target));
+	} else {
+		client->sendMessage(ERR_CANNOTSENDMSG(client->getNick(), target));
+	}
+	return ;
+}
+
 // :<nickname!username@hostname> PRIVMSG <target> :<message>
 void	sendPrivMsg(std::string target, std::string message, Client *client, Server *server) {
 	DEBUG_LOG("Inside sendPrivMsg");
-	if (!isValidTarget(target, client, server))
-		return ;
-	int targetFd = getTargetFd(server->getNickFd(), target);
-	//if (targetFd == -1)
-		//return ;
-	DEBUG_LOG("target fd:");
-	DEBUG_LOG(targetFd);
+
+	int targetFd = isValidTarget(target, client, server);
+	if (targetFd == -1)
+		return ;	
 	std::string sender = client->getNick() + "!" + client->getUsername() + "@127.0.0.1";
 	std::string	privMsg = ":" + sender + " PRIVMSG " + target + " :" + message + "\r\n";
-	if (send(targetFd, privMsg.c_str(), privMsg.size(), 0) == -1)
-		std::cout << "Couldn't send private message: \"" << privMsg << "\" from " << client->getNick() << " to " << targetFd << std::endl;
-	std::cout << "Message: \"" << privMsg << "\" sent from " << client->getNick() << " to " << target << " with fd = " << targetFd << std::endl;
+	if (send(targetFd, privMsg.c_str(), privMsg.size(), 0) == -1) {
+		handleSendError(targetFd, target, client, server);
+		return ;
+	}
+	std::cout << "Private message successfully sent from " << client->getNick() << " to " << target << " with fd = " << targetFd << " :" << std::endl;
+	std::cout << "|" << privMsg << "|" << std::endl;
 	return ;
 }
 
@@ -83,22 +103,16 @@ bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 
 	iss >> cmd >> target;	
 	std::getline(iss, message);
-	std::cout << "Message before correctMsg(): \"" << message << "\"" << std::endl;
 	if (!correctMsg(line, message, client))
 		return (false);
-	std::cout << "Message after correctMsg() : \"" << message << "\"" << std::endl;
 	if (target[0] == '#')
 		;// handle channel messages
 	else
 		sendPrivMsg(target, message, client, server);
 	return (true);
-	/*
-	2) -> sendPrivMsg : get the target fd and send the message: :<sender> PRIVMSG <target> :<message>
-	if client is +i mode (invisible = true), message can be sent only by the target's friends or by someone from the same channel
+	/* if client is +i mode (invisible = true), message can be sent only by the target's friends or by someone from the same channel
 
-	-> broadcastPrivmsg : check if the channel exists and if the sender belongs to the channel ; send the message to all the channel's clients except the sender
-	ERR_CANNOTSENDTOCHAN (404) <channel> :Cannot send to channel
-	ERR_NOSUCHCHANNEL (403) <channel> :No such channel
-	ERR_NOTONCHANNEL (442) <channel> :You're not on that channel
+	/!\ SEGFAULT FOUND : when a client has nick registered only but an other client tries to send him a message
+	OU err msg fonctionne mais créé qd mm fenetre chez sender
 	*/
 }

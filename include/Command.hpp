@@ -64,8 +64,11 @@ class Command {
 #define ERR_INPUTTOOLONG(nick) ( SERV_NAME " 417 " + (nick) + " :Input line is too long") // no an official code of the IRC protocol
 #define ERR_NOSUCHNICK(nick) (SERV_NAME " 401 " + (nick) + " :No such nick")
 #define ERR_NOSUCHCHANNEL(nick) (SERV_NAME " 401 " + (nick) + " :No such channel")
-#define ERR_CANNOTSENDTOSELF(nick) (SERV_NAME " 431 " + (nick) + " :You cannot send a message to yourself")
-
+#define ERR_CANNOTSENDTOSELF(nick) (SERV_NAME " 431 " + (nick) + " :Cannot send a message to yourself")
+#define ERR_TARGETNOTAUTH(nick, target) (SERV_NAME " 484 " + (nick) + " " + (target) + " :Cannot send message to user (not fully registered)")
+#define ERR_TARGETDISCONNECTED(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (target disconnected unexpectedly)")
+#define ERR_BUFFERFULL(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (buffer full)")
+#define ERR_CANNOTSENDMSG(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (unknown send() funct error)")
 
 # define CACTUS "\
 " RESET "     .   " GREEN "  _ " RESET "   +    .  " BROWN " ______" RESET "   .          .\n\
