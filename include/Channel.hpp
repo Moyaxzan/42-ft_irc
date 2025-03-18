@@ -8,12 +8,14 @@
 
 class Channel {
 	private:
+		bool					inviteOnly_;
 		int						id_;
 		std::string				topic_;
 		std::string				name_;
 		std::string				password_;
 		std::list<Client *>		members_;
 		std::vector<Client *>	operators_;
+		std::vector<Client *>	invited_;
 
 	public:
 		Channel(void);
@@ -23,6 +25,7 @@ class Channel {
 		~Channel(void);
 
 		//GETTERS
+		bool					isInviteOnly(void) const;
 		unsigned int			getId(void) const ;
 		std::vector<Client *>	getOperators(void) const ;
 		std::list<Client *>		getMembers(void) const ;
@@ -31,18 +34,24 @@ class Channel {
 		std::string				getPassword(void) const;
 
 		// SETTERS
+		void					setInviteOnly(bool inviteOnly);
 		void					setId(int id);
 		void					setTopic(std::string topic);
 		void					setName(std::string name);
 		void					setPassword(std::string password);
 		void					addOperator(Client *opUser);
-		void					addMember(Client *user);
 		void					removeOperator(Client *opUser);
+		bool					addMember(Client *user);
 		void					removeMember(Client *user);
+		void					addInvited(Client *user);
+		void					removeInvited(Client *user);
 
 
 		//MEMBER FUNCTIONS
+		bool					isOperator(Client *user);
+		bool					isInvited(Client *user);
 		bool					broadcast(std::string message);
+		std::string				getNames(void);
 };
 
 

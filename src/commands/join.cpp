@@ -23,8 +23,8 @@ bool isValidChannelName(const std::string &name);
 **
 ** Expected Server Response:
 **	:nick!user@host JOIN :#channel_name       					; Confirmation of joining
-**	:server_name 332 nick #channel_name :Topic of the channel   ; Topic (if set)
 **	:server_name 331 nick #channel_name :No topic is set        ; If no topic exists
+**	:server_name 332 nick #channel_name :Topic of the channel   ; Topic (if set)
 **	:server_name 353 nick = #channel_name :@OpUser User1 User2  ; List of users
 **	:server_name 366 nick #channel_name :End of /NAMES list.    ; End of user list
 **	:server_name 324 nick #channel_name +nt                     ; Channel modes (optional)
@@ -50,35 +50,57 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 		client->sendMessage(ERR_BADCHANNAME(client->getNick(), channelName));
 		return (false);
 	}
-	if (server->addChannel(channelName, client, password)) {
-		
+	Channel *chan;
+	server->addChannel(channelName, client, password);
+	chan = server->getChannelByName(channelName);
+	if (!chan) {
+		DEBUG_LOG("chan not here\n");
+		return (false);
 	}
+	chan->addMember(client);
+	std::string	nick = client->getNick();
+	std::string user = client->getUsername();
+	if (chan->isInviteOnly() && !chan->isInvited(client)) {
+		client->sendMessage(ERR_INVITEONLYCHAN(client->getNick(), channelName));
+	} else if (chan->getPassword() != password) {
+		client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
+	} else {
+		client->sendMessage(JOINCONFIRMED(nick, user, channelName));
+		if (!chan->getTopic().length()) {
+			client->sendMessage(TOPICNOTSET(nick, channelName));
+		} else {
+			client->sendMessage(JOINTOPIC(nick, channelName, chan->getTopic()));
+		}
+		client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));
+		client->sendMessage(ENDOFNAMES(nick, channelName));
+	}
+	DEBUG_LOG("out of join\n");
 	return (true);
 }
 
 
 
 bool isValidChannelName(const std::string &name) {
-    if (name.empty()) 
-        return false;
+	if (name.empty()) 
+		return false;
 
-    // Check if it starts with '#'
-    if (name[0] != '#')
-        return false;
+	// Check if it starts with '#'
+	if (name[0] != '#')
+		return false;
 
-    // Must have at least one character after the prefix
-    if (name.size() == 1)
-        return false;
+	// Must have at least one character after the prefix
+	if (name.size() == 1)
+		return false;
 
-    // Check for invalid characters (spaces, commas, control characters)
-    for (size_t i = 1; i < name.size(); i++) {
-        if (name[i] == ' ' || name[i] == ',' || std::iscntrl(name[i]))
-            return false;
-    }
+	// Check for invalid characters (spaces, commas, control characters)
+	for (size_t i = 1; i < name.size(); i++) {
+		if (name[i] == ' ' || name[i] == ',' || std::iscntrl(name[i]))
+			return false;
+	}
 
-    // Check length
-    if (name.size() > 50)
-        return false;
+	// Check length
+	if (name.size() > 50)
+		return false;
 
-    return true;
+	return true;
 }

@@ -6,7 +6,7 @@
 /*   By: tsaint-p <tsaint-p@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 17:21:43 by tsaint-p          #+#    #+#             */
-/*   Updated: 2025/03/05 18:28:41 by taospa           ###   ########.fr       */
+/*   Updated: 2025/03/17 15:28:05 by tsaint-p         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 
 #define SERV_IP "127.0.0.1"
 
-extern volatile __sig_atomic_t g_stopSig;
+extern volatile sig_atomic_t g_stopSig;
 
 class Server {
 	private:
@@ -61,6 +61,7 @@ class Server {
 		const std::string&				getPassword(void) const;
 		const std::set<std::string>&	getNicknames(void) const;
 		const std::vector<Channel *>	getChannels(void) const;
+		Channel*						getChannelByName(const std::string &name);
 		//setters
 		void							addNickname(std::string nickname);
 		bool							addChannel(std::string channelName, Client *creator, std::string passwd);
