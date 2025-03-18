@@ -65,6 +65,7 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 		client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
 	} else {
 		client->sendMessage(JOINCONFIRMED(nick, user, channelName));
+		chan->broadcast(client, JOINCONFIRMED(nick, user, channelName));
 		if (!chan->getTopic().length()) {
 			client->sendMessage(TOPICNOTSET(nick, channelName));
 		} else {
