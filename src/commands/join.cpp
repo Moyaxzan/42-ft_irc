@@ -56,7 +56,6 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 	if (!chan) {
 		return (false);
 	}
-	chan->addMember(client);
 	std::string	nick = client->getNick();
 	std::string user = client->getUsername();
 	if (chan->isInviteOnly() && !chan->isInvited(client)) {
@@ -64,6 +63,7 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 	} else if (chan->getPassword() != password) {
 		client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
 	} else {
+		chan->addMember(client);
 		client->sendMessage(JOINCONFIRMED(nick, user, channelName));
 		chan->broadcast(client, JOINCONFIRMED(nick, user, channelName));
 		if (!chan->getTopic().length()) {
