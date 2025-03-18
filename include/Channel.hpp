@@ -50,7 +50,7 @@ class Channel {
 		//MEMBER FUNCTIONS
 		bool					isOperator(Client *user);
 		bool					isInvited(Client *user);
-		bool					broadcast(std::string message);
+		bool					broadcast(Client *sender, std::string message);
 		std::string				getNames(void);
 };
 

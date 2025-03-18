@@ -148,12 +148,12 @@ bool	Channel::isInvited(Client *user) {
 	return (false);
 }
 
-bool	Channel::broadcast(std::string message) {
-	for (
-		std::list<Client *>::iterator it = this->members_.begin();
-		it != this->members_.end();
-		it++) {
-		(*it)->sendMessage(message);
+bool	Channel::broadcast(Client *sender, std::string message) {
+	std::list<Client *>::iterator membr;
+	for (membr = this->members_.begin(); membr != this->members_.end(); membr++) {
+		if ((*membr)->getNick() != sender->getNick()) {
+			(*membr)->sendMessage(message);
+		}
 	}
 	return (true);
 }
