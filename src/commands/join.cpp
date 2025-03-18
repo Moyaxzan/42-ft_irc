@@ -54,7 +54,6 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 	server->addChannel(channelName, client, password);
 	chan = server->getChannelByName(channelName);
 	if (!chan) {
-		DEBUG_LOG("chan not here\n");
 		return (false);
 	}
 	chan->addMember(client);
@@ -74,7 +73,6 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 		client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));
 		client->sendMessage(ENDOFNAMES(nick, channelName));
 	}
-	DEBUG_LOG("out of join\n");
 	return (true);
 }
 

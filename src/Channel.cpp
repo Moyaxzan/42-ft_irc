@@ -96,7 +96,7 @@ void	Channel::removeOperator(Client *opUser) {
 
 bool	Channel::addMember(Client *user) {
 	for (std::list<Client *>::iterator it = this->members_.begin(); it != this->members_.end(); it++) {
-		if (*it == user) {
+		if ((*it)->getNick() == user->getNick()) {
 			return (false);
 		}
 	}
@@ -106,7 +106,7 @@ bool	Channel::addMember(Client *user) {
 
 void	Channel::removeMember(Client *user) {
 	for (std::list<Client *>::iterator it = this->members_.begin(); it != this->members_.end(); it++) {
-		if (*it == user) {
+		if ((*it)->getNick() == user->getNick()) {
 			this->members_.erase(it);
 			return ;
 		}
@@ -164,12 +164,11 @@ std::string	Channel::getNames(void) {
 		if (usr != this->members_.begin()) {
 			res += " ";
 		}
-		DEBUG_LOG((*usr)->getNick());
 		if (this->isOperator(*usr)) {
 			res += "@";
-			res += (*usr)->getUsername();
+			res += (*usr)->getNick();
 		} else {
-			res += (*usr)->getUsername();
+			res += (*usr)->getNick();
 		}
 	}
 	return (res);
