@@ -8,7 +8,8 @@
 #include <map>
 #include <set>
 #include "Client.hpp"
-#include "../include/argparsing.hpp"
+#include "argparsing.hpp"
+#include "Channel.hpp"
 
 #define SERV_IP "127.0.0.1"
 
@@ -26,6 +27,7 @@ class Server {
 		//std::set<std::string>		usernames_;
 		std::map<std::string, int>	nickFd_;
 		std::map<int, Client *>		clients_;
+		std::vector<Channel *>		channels_;
 
 		//client management
 		void	newClient_(void);
@@ -49,10 +51,12 @@ class Server {
 		const std::set<std::string>&		getNicknames(void) const;
 		const std::map<std::string, int>&	getNickFd(void) const;
 		const std::map<int, Client *>&		getClients(void) const;
+		const std::vector<Channel *>		getChannels(void) const;
+		Channel*							getChannelByName(const std::string &name);
 		//setters
 		void							addNickname(std::string nickname, int fd);
+		bool							addChannel(std::string channelName, Client *creator, std::string passwd);
 		//member functions
-
 		void							runServer(void);
 		void							disconnectClient(int fd);
 

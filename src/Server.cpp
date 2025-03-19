@@ -69,6 +69,9 @@ Server::~Server(void) {
 	for (std::map<int, Client *>::iterator it = this->clients_.begin(); it != this->clients_.end(); it++) {
 		delete it->second;
 	}
+	for (std::vector<Channel *>::iterator it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		delete *it;
+	}
 }
 
 // *************************************** OVERLOAD OPERATORS **************************************************************//
@@ -92,6 +95,20 @@ const std::set<std::string>&	Server::getNicknames(void) const {
 	return (this->nicknames_);
 }
 
+const std::vector<Channel *>	Server::getChannels(void) const {
+	return (this->channels_);
+}
+
+Channel *Server::getChannelByName(const std::string &name) {
+	std::vector<Channel *>::iterator it;
+	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		if ((*it)->getName() == name) {
+			return *it;
+		}
+	}
+	return (NULL);
+}
+
 const std::map<std::string, int>&	Server::getNickFd(void) const {
 	return (this->nickFd_);
 }
@@ -103,6 +120,52 @@ const std::map<int, Client *>&		Server::getClients(void) const {
 void	Server::addNickname(std::string nickname, int fd) {
 	this->nicknames_.insert(nickname);
 	this->nickFd_.insert(std::make_pair(nickname, fd));
+}
+
+bool	Server::addChannel(std::string channelName, Client *creator, std::string passwd) {
+	int	id = 0;
+	std::vector<Channel *>::iterator it;
+
+	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		id++;
+	}
+	if (this->getChannelByName(channelName) != NULL) {
+		return (false);
+	}
+	Channel *newChan = new Channel(id, channelName);
+	if (!newChan) {
+		return (false);
+	}
+	//add creator to the members & operators
+	newChan->addOperator(creator);
+	newChan->addMember(creator);
+	newChan->setPassword(passwd);
+	this->channels_.push_back(newChan);
+	std::vector<Client *> ops = newChan->getOperators();
+	return (true);
+}
+
+bool	Server::addChannel(std::string channelName, Client *creator, std::string passwd) {
+	int	id = 0;
+	std::vector<Channel *>::iterator it;
+
+	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		id++;
+	}
+	if (this->getChannelByName(channelName) != NULL) {
+		return (false);
+	}
+	Channel *newChan = new Channel(id, channelName);
+	if (!newChan) {
+		return (false);
+	}
+	//add creator to the members & operators
+	newChan->addOperator(creator);
+	newChan->addMember(creator);
+	newChan->setPassword(passwd);
+	this->channels_.push_back(newChan);
+	std::vector<Client *> ops = newChan->getOperators();
+	return (true);
 }
 
 void	Server::setCreatTime_(void) {
@@ -141,7 +204,6 @@ std::vector<std::string>	splitLines(std::string msg) {
 	return (lines);
 }
 
-
 /*
 envoie un message à tous les clients sauf le client emetteur
 void Server::broadcastMessage(const std::string &message, int sender_fd) {
@@ -178,6 +240,8 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::mode(this->clients_[fd], cmd));
 	} else if (cmd.find("PRIVMSG ") == 0) {
 		return (Command::privMsg(this->clients_[fd], this, cmd));
+	} else if (cmd.find("JOIN ") == 0) {
+		return (Command::join(this->clients_[fd], this, cmd));
 	}
 	return (true);
 }
