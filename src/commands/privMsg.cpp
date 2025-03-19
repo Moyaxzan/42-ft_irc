@@ -43,7 +43,7 @@ int	getTargetFd(const std::map<std::string, int> &nickFd, const std::string &tar
 	std::map<std::string, int>::const_iterator it = nickFd.find(target);
 	if (it != nickFd.end())
 		return (it->second); // returns fd associated to the nickname
-	return (-1);  // returns -1 if no client with the target nickname is found
+	return (-1);  // returns -1 if no client with the targeted nickname is found
 }
 
 int	isValidTarget(std::string target, Client *client, Server *server) {
@@ -55,7 +55,7 @@ int	isValidTarget(std::string target, Client *client, Server *server) {
 
 	int	targetFd = getTargetFd(server->getNickFd(), target);
 	if (targetFd == -1)
-		return (-1); // useful ?
+		return (-1); // useful ? 
 	std::map<int, Client*> clients_ = server->getClients();
 	if (!clients_[targetFd]->isWelcomeSent())// check if targeted client is fully authenticated
 		return (client->sendMessage(ERR_TARGETNOTAUTH(client->getNick(), target)) , -1);
@@ -96,7 +96,7 @@ void	sendPrivMsg(std::string target, std::string message, Client *client, Server
 bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 	DEBUG_LOG("Inside privMsg handler");
 
-	if (!client->isWelcomeSent())
+	if (!client->isWelcomeSent()) // irssi seems to already be handling this case
 		return (client->sendMessage(ERR_NOTREGISTERED()), false);
 	std::istringstream	iss(line);
 	std::string			cmd, target, message;
@@ -110,9 +110,4 @@ bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 	else
 		sendPrivMsg(target, message, client, server);
 	return (true);
-	/* if client is +i mode (invisible = true), message can be sent only by the target's friends or by someone from the same channel
-
-	/!\ SEGFAULT FOUND : when a client has nick registered only but an other client tries to send him a message
-	OU err msg fonctionne mais créé qd mm fenetre chez sender
-	*/
 }
