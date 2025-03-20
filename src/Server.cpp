@@ -219,15 +219,16 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::privMsg(this->clients_[fd], this, cmd));
 	} else if (cmd.find("JOIN ") == 0) {
 		return (Command::join(this->clients_[fd], this, cmd));
-	}/* else if (cmd.find("INVITE ") == 0) {
+	} else if (cmd.find("TOPIC ") == 0) {
+		return (Command::topic(this->clients_[fd], this, cmd));
+    /* else if (cmd.find("INVITE ") == 0) {
 		return (Command::invite(this->clients_[fd], this, cmd));
 	} else if (cmd.find("KICK ") == 0) {
 		return (Command::kick(this->clients_[fd], this, cmd));
-	} else if (cmd.find("TOPIC ") == 0) {
-		return (Command::topic(this->clients_[fd], this, cmd));
 	}else if (cmd.find("MODE ") == 0) {
 		return (Command::mode(this->clients_[fd], this, cmd));
 	}*/
+    }
 	return (true);
 }
 

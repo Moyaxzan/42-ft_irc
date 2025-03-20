@@ -32,72 +32,88 @@ bool isValidChannelName(const std::string &name);
 */
 
 //
-bool Command::join(Client *client, Server *server, std::string &line) {
+bool Command::join(Client *client, Server *server, std::string &line)
+{
 
-	std::istringstream iss(line);
-	std::string command, channelName, password;
+    std::istringstream iss(line);
+    std::string command, channelName, password;
 
-	if (!(iss >> command)) {
-		return (false);
-	}
-	if (!(iss >> channelName)) {
-		return (false);
-	}
-	if (!(iss >> password)) {
-		password = "";
-	}
-	if (!isValidChannelName(channelName)) {
-		client->sendMessage(ERR_BADCHANNAME(client->getNick(), channelName));
-		return (false);
-	}
-	Channel *chan;
-	server->addChannel(channelName, client, password);
-	chan = server->getChannelByName(channelName);
-	if (!chan) {
-		return (false);
-	}
-	std::string	nick = client->getNick();
-	std::string user = client->getUsername();
-	if (chan->isInviteOnly() && !chan->isInvited(client)) {
-		client->sendMessage(ERR_INVITEONLYCHAN(client->getNick(), channelName));
-	} else if (chan->getPassword() != password) {
-		client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
-	} else {
-		chan->addMember(client);
-		client->sendMessage(JOINCONFIRMED(nick, user, channelName));
-		chan->broadcast(client, JOINCONFIRMED(nick, user, channelName));
-		if (!chan->getTopic().length()) {
-			client->sendMessage(TOPICNOTSET(nick, channelName));
-		} else {
-			client->sendMessage(JOINTOPIC(nick, channelName, chan->getTopic()));
-		}
-		client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));
-		client->sendMessage(ENDOFNAMES(nick, channelName));
-	}
-	return (true);
+    if (!(iss >> command))
+    {
+        return (false);
+    }
+    if (!(iss >> channelName))
+    {
+        return (false);
+    }
+    if (!(iss >> password))
+    {
+        password = "";
+    }
+    if (!isValidChannelName(channelName))
+    {
+        client->sendMessage(ERR_BADCHANNAME(client->getNick(), channelName));
+        return (false);
+    }
+    Channel *chan;
+    server->addChannel(channelName, client, password);
+    chan = server->getChannelByName(channelName);
+    if (!chan)
+    {
+        return (false);
+    }
+    std::string nick = client->getNick();
+    std::string user = client->getUsername();
+    if (chan->isInviteOnly() && !chan->isInvited(client))
+    {
+        client->sendMessage(ERR_INVITEONLYCHAN(client->getNick(), channelName));
+    }
+    else if (chan->getPassword() != password)
+    {
+        client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
+    }
+    else
+    {
+        chan->addMember(client);
+        client->sendMessage(JOINCONFIRMED(nick, user, channelName));
+        chan->broadcast(client, JOINCONFIRMED(nick, user, channelName));
+        if (!chan->getTopic().length())
+        {
+            client->sendMessage(RPL_NOTOPIC(nick, channelName));
+        }
+        else
+        {
+            client->sendMessage(RPL_TOPIC(nick, channelName, chan->getTopic()));
+        }
+        client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));
+        client->sendMessage(ENDOFNAMES(nick, channelName));
+    }
+    return (true);
 }
 
-bool isValidChannelName(const std::string &name) {
-	if (name.empty()) // Test with only spaces
-		return false;
+bool isValidChannelName(const std::string &name)
+{
+    if (name.empty()) // Test with only spaces
+        return false;
 
-	// Check if it starts with '#'
-	if (name[0] != '#')
-		return (false);
+    // Check if it starts with '#'
+    if (name[0] != '#')
+        return (false);
 
-	// Must have at least one character after the prefix
-	if (name.size() == 1)
-		return (false);
+    // Must have at least one character after the prefix
+    if (name.size() == 1)
+        return (false);
 
-	// Check for invalid characters (spaces, commas, control characters)
-	for (size_t i = 1; i < name.size(); i++) {
-		if (name[i] == ' ' || name[i] == ',' || std::iscntrl(name[i]))
-			return (false);
-	}
+    // Check for invalid characters (spaces, commas, control characters)
+    for (size_t i = 1; i < name.size(); i++)
+    {
+        if (name[i] == ' ' || name[i] == ',' || std::iscntrl(name[i]))
+            return (false);
+    }
 
-	// Check length
-	if (name.size() > 50)
-		return (false);
+    // Check length
+    if (name.size() > 50)
+        return (false);
 
-	return (true);
+    return (true);
 }
