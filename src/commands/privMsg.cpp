@@ -105,13 +105,23 @@ bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 	std::istringstream	iss(line);
 	std::string			cmd, target, message;
 
-	iss >> cmd >> target;	
+	iss >> cmd >> target;
 	std::getline(iss, message);
 	if (!correctMsg(line, message, client))
 		return (false);
-	if (target[0] == '#')
-		;// handle channel messages
-	else
+	if (target[0] != '#') {
 		sendPrivMsg(target, message, client, server);
+	} else {
+		Channel* chan = server->getChannelByName(&target[0]);
+		if (!chan) {
+			client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), chan->getName()));
+			return (false);
+		}
+		chan->broadcast(client, PRIVMSG(
+			client->getNick(),
+			client->getUsername(),
+			chan->getName(),
+			message));
+	}
 	return (true);
 }

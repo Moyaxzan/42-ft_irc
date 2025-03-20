@@ -255,21 +255,24 @@ void	Server::disconnectClient(int fd) {
 void Server::readClient(int fd) {
 	char		buffer[1024] = {'\0'};
 	int			recv_res = recv(fd, buffer, 1023, 0);
-	std::string	msg(buffer);
  
 	DEBUG_LOG("Into readClient");
-	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
  	// cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
 	if (recv_res <= 0) {
 		DEBUG_LOG("Into previous recv_res == 0");
 		disconnectClient(fd);
 		return ;
 	}
+	std::string	msg(buffer);
+	if (msg.length() == 0)
+		return ;
 	std::vector<std::string> lines = splitLines(msg);
-	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
-		if (!handleCommand(fd, *line))
-			break ;
+	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
+	for (size_t i = 0; i < lines.size(); i++) {
+		if (!handleCommand(fd, lines[i]))
+			break;
 	}
+
 }
 
 // IMposer des noms de channels commençant par "#"

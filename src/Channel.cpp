@@ -149,6 +149,9 @@ bool	Channel::isInvited(Client *user) {
 }
 
 bool	Channel::broadcast(Client *sender, std::string message) {
+	if (this->members_.empty()) {
+		return (false);
+	}
 	std::list<Client *>::iterator membr;
 	for (membr = this->members_.begin(); membr != this->members_.end(); membr++) {
 		if ((*membr)->getNick() != sender->getNick()) {
@@ -157,6 +160,7 @@ bool	Channel::broadcast(Client *sender, std::string message) {
 	}
 	return (true);
 }
+
 std::string	Channel::getNames(void) {
 	std::string res = "";
 	std::list<Client *>::iterator usr;
