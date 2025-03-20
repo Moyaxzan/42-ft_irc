@@ -24,6 +24,10 @@ class Command {
 		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
 		static bool privMsg(Client *client, Server *server, const std::string& line);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
+		//static bool invite(Client *client, Server *server, const std::string& line);
+		//static bool kick(Client *client, Server *server, const std::string& line);
+		//static bool topic(Client *client, Server *server, const std::string& line);
+		//static bool mode(Client *client, Server *server, const std::string& line);
 };
 
 #define SERV_NAME ":localhost"

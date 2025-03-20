@@ -126,34 +126,11 @@ bool	Server::addChannel(std::string channelName, Client *creator, std::string pa
 	int	id = 0;
 	std::vector<Channel *>::iterator it;
 
-	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
-		id++;
-	}
 	if (this->getChannelByName(channelName) != NULL) {
 		return (false);
 	}
-	Channel *newChan = new Channel(id, channelName);
-	if (!newChan) {
-		return (false);
-	}
-	//add creator to the members & operators
-	newChan->addOperator(creator);
-	newChan->addMember(creator);
-	newChan->setPassword(passwd);
-	this->channels_.push_back(newChan);
-	std::vector<Client *> ops = newChan->getOperators();
-	return (true);
-}
-
-bool	Server::addChannel(std::string channelName, Client *creator, std::string passwd) {
-	int	id = 0;
-	std::vector<Channel *>::iterator it;
-
 	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
 		id++;
-	}
-	if (this->getChannelByName(channelName) != NULL) {
-		return (false);
 	}
 	Channel *newChan = new Channel(id, channelName);
 	if (!newChan) {
@@ -242,7 +219,15 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::privMsg(this->clients_[fd], this, cmd));
 	} else if (cmd.find("JOIN ") == 0) {
 		return (Command::join(this->clients_[fd], this, cmd));
-	}
+	}/* else if (cmd.find("INVITE ") == 0) {
+		return (Command::invite(this->clients_[fd], this, cmd));
+	} else if (cmd.find("KICK ") == 0) {
+		return (Command::kick(this->clients_[fd], this, cmd));
+	} else if (cmd.find("TOPIC ") == 0) {
+		return (Command::topic(this->clients_[fd], this, cmd));
+	}else if (cmd.find("MODE ") == 0) {
+		return (Command::mode(this->clients_[fd], this, cmd));
+	}*/
 	return (true);
 }
 

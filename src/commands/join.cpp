@@ -77,29 +77,27 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 	return (true);
 }
 
-
-
 bool isValidChannelName(const std::string &name) {
-	if (name.empty()) 
+	if (name.empty()) // Test with only spaces
 		return false;
 
 	// Check if it starts with '#'
 	if (name[0] != '#')
-		return false;
+		return (false);
 
 	// Must have at least one character after the prefix
 	if (name.size() == 1)
-		return false;
+		return (false);
 
 	// Check for invalid characters (spaces, commas, control characters)
 	for (size_t i = 1; i < name.size(); i++) {
 		if (name[i] == ' ' || name[i] == ',' || std::iscntrl(name[i]))
-			return false;
+			return (false);
 	}
 
 	// Check length
 	if (name.size() > 50)
-		return false;
+		return (false);
 
-	return true;
+	return (true);
 }

@@ -21,20 +21,6 @@
 **
 */
 
-/**
- * PRIVMSG Command Handler
- * 
- * Irssi command : /msg <nickname> <message> OR (/msg #channel <message> || /join #channel )
- *																			Bonjour tout le monde !
- *
- * Usage:   PRIVMSG <nickname> :<message>				OR		PRIVMSG #channel :<message>
- * Example: PRIVMSG camelia :Salut, comment ça va ?		OR		PRIVMSG #channel :Bonjour tout le monde !
- * 
- * Sends a message to a client or to a channel's clients
- * - <nickname>: The tageted client's nickname
- * - #channel: The tageted channel's name
- */
-
 // Carriage Return = '\r' | Line Feed = '\n'
 void	cleanMsg(std::string &message) {
 	DEBUG_LOG("Into cleanMsg()");
