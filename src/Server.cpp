@@ -13,6 +13,7 @@
 #include <ctime>
 #include <sstream>
 #include <vector>
+#include <list>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -237,14 +238,25 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 // et une string pr le message à transférer
 void	Server::disconnectClient(int fd) {
 	DEBUG_LOG("Into disconnectClient");
-	std::string	nickname = this->clients_[fd]->getNick();
+	Client					*client = this->clients_[fd];
+	std::list<unsigned int>	chans = client->getJoinedChannels();
+
+	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end(); it++) {
+		Channel* channel = this->channels_[*it];
+		;
+		if (!channel->disconnectClient(client)) {
+			delete channel;
+			this->channels_.erase(this->channels_.begin() + *it);
+		}
+	}
+
+	std::string	nickname = client->getNick();
 	FD_CLR(fd, &this->all_sockets_);
 	close (fd);
-	this->nicknames_.erase(nickname); // to free the nickname
-	delete this->clients_[fd]; // delete the allocated client instance
+	this->nicknames_.erase(nickname);	//useful ??
+	delete client;						//free client
 	this->clients_.erase(fd);
 	//change fd_max_ if it is equal to fd and look for the new higher fd
-	// signaler aux autres clients la déconnexion du client actuel (avec broadcastmessage ?)
 	if (nickname.empty())
 		std::cout << "Client " << fd << " disconnected" << std::endl;
 	else

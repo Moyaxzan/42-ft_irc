@@ -88,6 +88,7 @@ void	Channel::addOperator(Client *opUser) {
 void	Channel::removeOperator(Client *opUser) {
 	for (std::vector<Client *>::iterator it = this->operators_.begin(); it != this->operators_.end(); it++) {
 		if (*it == opUser) {
+			//TODO broadcast message of deconnexion
 			this->operators_.erase(it);
 			return ;
 		}
@@ -108,6 +109,7 @@ void	Channel::removeMember(Client *user) {
 	for (std::list<Client *>::iterator it = this->members_.begin(); it != this->members_.end(); it++) {
 		if ((*it)->getNick() == user->getNick()) {
 			this->members_.erase(it);
+			//TODO broadcast message of deconnexion
 			return ;
 		}
 	}
@@ -157,6 +159,18 @@ bool	Channel::broadcast(Client *sender, std::string message) {
 		if ((*membr)->getNick() != sender->getNick()) {
 			(*membr)->sendMessage(message);
 		}
+	}
+	return (true);
+}
+
+//returns false if it was the last client
+//what happens when last operator leaves ? -> give operator rights to another member
+bool	Channel::disconnectClient(Client *client) {
+	DEBUG_LOG("disconnecting client " + client->getUsername() + " from " + this->name_);
+	this->removeMember(client);
+	this->removeOperator(client);
+	if (this->getMembers().empty() && this->getOperators().empty()) {
+		return (false);
 	}
 	return (true);
 }

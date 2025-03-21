@@ -74,6 +74,7 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 		client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));
 		client->sendMessage(ENDOFNAMES(nick, channelName));
 	}
+	client->addJoinedChann(chan->getId());
 	return (true);
 }
 
