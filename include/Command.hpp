@@ -89,6 +89,7 @@ bool isValidChannelName(const std::string &name);
 #define ERR_CANNOTSENDMSG(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (unknown send() funct error)")
 
 //**************************** TOPIC MACRO ***********************************//
+#define UNSET_TOPIC(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 TOPIC " + channel + " :")
 #define RPL_NOTOPIC(nick, channel) (SERV_NAME " 331 " + (nick) + " " + (channel) + " :No topic is set")
 #define RPL_TOPIC(nick, channel, topic) (SERV_NAME " 332 " + (nick) + " " + (channel) + " :" + topic)
 
