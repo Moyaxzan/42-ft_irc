@@ -74,7 +74,11 @@ class Command {
 //****************************		PING MACRO	***********************************//
 #define PONG(target) ("PONG " + (target))
 
-//****************************		PRIVMSG MACRO	***********************************//
+//****************************		PART MACRO	***********************************//
+#define PARTNOREASON(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 PART " + (channel))
+#define PART(nick, user, channel, reason) (":" + (nick) + "!" + (user) + "@127.0.0.1 PART " + (channel) + " :" + (reason))
+
+//****************************	PRIVMSG MACRO	***********************************//
 #define ERR_NOTEXTTOSEND(nick) (SERV_NAME " 412 " + (nick) + " :No text to send")
 #define ERR_INPUTTOOLONG(nick) ( SERV_NAME " 417 " + (nick) + " :Input line is too long") // no an official code of the IRC protocol
 #define ERR_NOSUCHNICK(nick) (SERV_NAME " 401 " + (nick) + " :No such nick")

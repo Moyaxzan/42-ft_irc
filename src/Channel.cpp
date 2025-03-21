@@ -1,6 +1,7 @@
 #include "../include/Channel.hpp"
 #include "../include/Client.hpp"
 #include "../include/debug.hpp"
+#include "../include/Command.hpp"
 #include <iostream>
 
 
@@ -88,7 +89,6 @@ void	Channel::addOperator(Client *opUser) {
 void	Channel::removeOperator(Client *opUser) {
 	for (std::vector<Client *>::iterator it = this->operators_.begin(); it != this->operators_.end(); it++) {
 		if (*it == opUser) {
-			//TODO broadcast message of deconnexion
 			this->operators_.erase(it);
 			return ;
 		}
@@ -109,7 +109,6 @@ void	Channel::removeMember(Client *user) {
 	for (std::list<Client *>::iterator it = this->members_.begin(); it != this->members_.end(); it++) {
 		if ((*it)->getNick() == user->getNick()) {
 			this->members_.erase(it);
-			//TODO broadcast message of deconnexion
 			return ;
 		}
 	}
@@ -156,7 +155,7 @@ bool	Channel::broadcast(Client *sender, std::string message) {
 	}
 	std::list<Client *>::iterator membr;
 	for (membr = this->members_.begin(); membr != this->members_.end(); membr++) {
-		if ((*membr)->getNick() != sender->getNick()) {
+		if (!sender || (*membr)->getNick() != sender->getNick()) {
 			(*membr)->sendMessage(message);
 		}
 	}
@@ -165,12 +164,18 @@ bool	Channel::broadcast(Client *sender, std::string message) {
 
 //returns false if it was the last client
 //what happens when last operator leaves ? -> give operator rights to another member
-bool	Channel::disconnectClient(Client *client) {
+bool	Channel::disconnectClient(Client *client, std::string reason) {
 	DEBUG_LOG("disconnecting client " + client->getUsername() + " from " + this->name_);
 	this->removeMember(client);
 	this->removeOperator(client);
 	if (this->getMembers().empty() && this->getOperators().empty()) {
 		return (false);
+	}
+	//TODO broadcast message of deconnexion
+	if (reason.length() == 0) {
+		this->broadcast(NULL, PARTNOREASON(client->getNick(), client->getUsername(), this->name_));
+	} else {
+		this->broadcast(NULL, PART(client->getNick(), client->getUsername(), this->name_, reason));
 	}
 	return (true);
 }
