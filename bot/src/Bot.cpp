@@ -52,15 +52,16 @@ void Bot::initServerConnection_(char *port, char *pwd)
 
     this->sendMsg("CAP LS 302", 0);
     std::string res = this->recvMsg();
-    if (res.find("CAP END") != res.npos)  // GOOD AUTH TO ADD BACK 
-    {
-        this->sendMsg("PASS " + std::string(pwd), 0);
+    // if (res.find("CAP END" ) != res.npos)  // GOOD AUTH TO ADD BACK // plus d'actualite 
+    // {
+        this->sendMsg("PASS " + std::string(pwd), 1);
         res = this->recvMsg();
         if (res.find("Invalid password") != res.npos)
             throw WrongPassword();
-        this->sendMsg("NICK " + std::string("sheriff"), 0);
-        this->sendMsg("USER sheriff localhost localhost: le_sheriff", 0);
-    }
+        this->sendMsg("NICK " + std::string("sheriff"), 1);
+        this->sendMsg("USER sheriff localhost localhost: le_sheriff", 1);
+        this->sendMsg("JOIN #newchannel", 10);
+    // }
 }
 
 std::vector<std::vector<std::string> > &Bot::getDicts(void)
