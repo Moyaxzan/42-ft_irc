@@ -39,7 +39,7 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
         client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick()));
         return false;
     }
-    if (!chan->isInvited(client) && !chan->isOperator(client))
+    if (!chan->isOperator(client))
     {
         client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         return false;
