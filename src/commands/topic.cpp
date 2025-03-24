@@ -36,11 +36,18 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
         // std::cout << *it << "\n";
     if (!isValidChannelName(cmd_vec[0]) || !(chan = server->getChannelByName(cmd_vec[0])))
     {
-        client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick()));
+        client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
         return false;
     }
-    if (!chan->isOperator(client))
+    std::list<unsigned int> joined_chans = client->getJoinedChannels();
+    std::list<unsigned int>::iterator it2;
+    for (it2 = joined_chans.begin(); it2 != joined_chans.end(); it2++)
     {
+        std::cout << "joined chans = " << *it2 << "\n";
+    }
+    if (!client->joined(chan->getId()))
+    {
+        std::cout << "NOT MEMBER\n";
         client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         return false;
     }
@@ -91,24 +98,22 @@ std::string str_join(std::vector<std::string> strs)
 
 void static broadcast_RPLTOPIC(Channel *chan)
 {
-    std::list<Client *> chan_members;
-    std::list<Client *>::iterator it2;
+    std::list<Client *> chan_members = chan->getMembers();
+    std::list<Client *>::iterator it;
 
-    chan_members = chan->getMembers();
-    for (it2 = chan_members.begin(); it2 != chan_members.end(); it2++)
-        (*it2)->sendMessage(RPL_TOPIC((*it2)->getNick(), chan->getName(), chan->getTopic()));
+    for (it = chan_members.begin(); it != chan_members.end(); it++)
+        (*it)->sendMessage(RPL_TOPIC((*it)->getNick(), chan->getName(), chan->getTopic()));
 }
 
 void static broadcast_UNSET_TOPIC(Channel *chan)
 {
-    std::list<Client *> chan_members;
-    std::list<Client *>::iterator it2;
+    std::list<Client *> chan_members = chan->getMembers();
+    std::list<Client *>::iterator it;
 
-    chan_members = chan->getMembers();
-    for (it2 = chan_members.begin(); it2 != chan_members.end(); it2++)
+    for (it = chan_members.begin(); it != chan_members.end(); it++)
     {
-        (*it2)->sendMessage(UNSET_TOPIC((*it2)->getNick(), (*it2)->getUsername(), chan->getName()));
-        std::cout << UNSET_TOPIC((*it2)->getNick(), (*it2)->getUsername(), chan->getName()) << "\n";
+        (*it)->sendMessage(UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()));
+        std::cout << UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()) << "\n";
     }
 }
 
