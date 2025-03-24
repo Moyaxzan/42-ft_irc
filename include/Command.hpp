@@ -19,7 +19,7 @@ class Command {
 		static bool user(Client *client, std::string &line);
 		static void cap(Client *client, const std::string& line);
 		static bool ping(Client *client, const std::string& line);
-		static bool mode(Client *client, const std::string& line);
+		static bool mode(Server *server, Client *client, const std::string& line);
 		static bool join(Client *client, Server *server, std::string &line);
 		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
 		static bool privMsg(Client *client, Server *server, const std::string& line);
@@ -69,7 +69,7 @@ class Command {
 //****************************	USERNAME MACROS	***********************************//
 #define ERR_ERRONEUSUSERNAME(nick) (SERV_NAME " 461 " + (nick) + " USER :Invalid username")
 #define USERSET(user) (SERV_NAME " NOTICE AUTH :Username set to " + (user))
-#define ERR_NEEDMOREPARAMS(nick) (SERV_NAME " 461 " + (nick) + " :Not enough parameters")
+#define ERR_NEEDMOREPARAMS(nick, function) (SERV_NAME " 461 " + (nick) + " " + (function) + " :Not enough parameters")
 
 //****************************		PING MACRO	***********************************//
 #define PONG(target) ("PONG " + (target))

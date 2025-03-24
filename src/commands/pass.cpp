@@ -25,7 +25,7 @@ bool Command::pass(Client *client, Server *server, std::string &line) {
 		return (true); // return true or false ? check with irssi
 	}
 	if (clientPass.empty()) {
-		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick()));
+		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick(), "PASS");
 		return (false); // to check with irssi
 	}
 	if (clientPass == server->getPassword()) {

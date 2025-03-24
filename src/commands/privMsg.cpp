@@ -2,6 +2,8 @@
 #include "../../include/debug.hpp"
 #include <iostream>
 #include <sstream>
+#include <cerrno>
+
 /*
 ** --------------------------- PRIVMSG COMMAND ---------------------------
 **

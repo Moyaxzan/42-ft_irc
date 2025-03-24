@@ -64,7 +64,7 @@ bool	allUserElements(Client *client, std::string line, std::string &username) {
 	iss >> cmd >> username >> hostname >> servername; // extraction of words one by one
 	std::getline(iss, realname);
 	if (username.empty() || hostname.empty() || servername.empty() || realname.empty()) {
-		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick()));
+		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick(), "USER"));
 		return (false);
 	}
 	//if (realname[0] == ':') if parsing of realname

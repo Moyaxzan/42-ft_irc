@@ -21,10 +21,10 @@
  *
  * Common Modes:
  * - +i (Invisible): User is invisible to others, meaning they won't show up in the user list.
+ * - +t (Topic Protection): Only channel operators can change the topic of the channel.
+ * - +k <password>: Sets a password for a channel. Only users who know the password can join.
  * - +o (Operator): Grants operator status to the target (user or channel).
  * - +l <limit>: Sets a maximum number of users allowed in a channel. If the limit is reached, no more users can join.
- * - +k <password>: Sets a password for a channel. Only users who know the password can join.
- * - +t (Topic Protection): Only channel operators can change the topic of the channel.
  *
  * Example:
  * - MODE MyNick +i  // Sets the "invisible" mode for user "MyNick"
@@ -35,17 +35,27 @@
  */
 
 
-bool Command::mode(Client *client, const std::string& line) {
+bool Command::mode(Server* server, Client *client, const std::string& line) {
 	DEBUG_LOG("in mode handler");
 
-	std::string command, nick, mode;
+	std::string command, target, mode;
 	std::istringstream	iss(line);
-	iss >> command >> nick >> mode;
-	if (nick != client->getNick()) {
-		// send error message ?
+	if (!(iss >> command >> target >> mode)) {
+		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
 		return (false);
 	}
-	client->setInvisible(true);
-	client->sendMessage(std::string(":") + nick + " MODE " + nick + " " + mode);
+	if (target[0] == '#') {
+		Channel* channel = server->getChannelByName(target);
+		if (!channel) {
+			client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), target));
+		}
+	} else {
+		if (target != client->getNick()) {
+			// send error message ?
+			return (false);
+		}
+		client->setInvisible(true);
+		client->sendMessage(std::string(":") + target + " MODE " + target + " " + mode);
+	}
 	return (true);
 }
