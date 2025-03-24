@@ -35,24 +35,25 @@
  */
 
 
-static bool isValidMode(const std::string &mode) {
-	if (mode.empty() || (mode[0] != '+' && mode[0] != '-'))
-		return false;
+// static bool isValidMode(const std::string &mode) {
+// 	if (mode.empty() || (mode[0] != '+' && mode[0] != '-'))
+// 		return false;
 
-	// Check each mode character
-	for (size_t i = 1; i < mode.size(); i++) {
-		if (mode[i] != 'i' && mode[i] != 'o' && mode[i] != 'l' &&
-			mode[i] != 'k' && mode[i] != 't') {
-			return false;
-		}
-	}
-	return true;
-}
+// 	// Check each mode character
+// 	for (size_t i = 1; i < mode.size(); i++) {
+// 		if (mode[i] != 'i' && mode[i] != 'o' && mode[i] != 'l' &&
+// 			mode[i] != 'k' && mode[i] != 't') {
+// 			return false;
+// 		}
+// 	}
+// 	return true;
+// }
 
 static bool handleChannelMode(Server* server, Client* client, Channel* channel, const std::string& mode) {
 	char modeType = mode[0];  // '+' or '-'
 	char modeFlag = mode[1];
 
+	(void) server;
 	switch (modeFlag) {
 		case 'i': 
 			channel->setInviteOnly(modeType == '+');
@@ -89,9 +90,10 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 			client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), target));
 		} else if (client->joined(channel->getId()) == false) {
 			client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), target));
-		} else if (isValidMode(mode) == false) {
-			client->sendMessage(ERR_UNKNOWNMODE(client->getNick(), mode));
 		}
+		// } else if (isValidMode(mode) == false) {
+		// 	client->sendMessage(ERR_UNKNOWNMODE(client->getNick(), mode));
+		// }
 		return handleChannelMode(server, client, channel, mode);
 	} else {
 		if (target != client->getNick()) {

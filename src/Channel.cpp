@@ -15,6 +15,7 @@ Channel::Channel(unsigned int id, std::string name) {
 	this->restrictedTopic_ = true;
 	this->password_ = "";
 	this->topic_ = "";
+	this->userLimit_ = -1;
 }
 
 Channel::Channel(Channel& other) {
