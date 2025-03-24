@@ -67,9 +67,7 @@ bool Command::join(Client *client, Server *server, std::string &line)
         chan->addMember(client);
         client->sendMessage(JOINCONFIRMED(nick, user, channelName));
         chan->broadcast(client, JOINCONFIRMED(nick, user, channelName));
-        if (!chan->getTopic().length()) {
-            client->sendMessage(RPL_NOTOPIC(nick, channelName));
-        } else {
+        if (chan->getTopic().length()) {
             client->sendMessage(RPL_TOPIC(nick, channelName, chan->getTopic()));
         }
         client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));

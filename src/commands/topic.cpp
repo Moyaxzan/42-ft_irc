@@ -32,22 +32,13 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
     Channel *chan;
     
     cmd_vec.erase(cmd_vec.begin() + 0);
-    // for (it = cmd_vec.begin(); it != cmd_vec.end(); it++)
-        // std::cout << *it << "\n";
     if (!isValidChannelName(cmd_vec[0]) || !(chan = server->getChannelByName(cmd_vec[0])))
     {
         client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
         return false;
     }
-    std::list<unsigned int> joined_chans = client->getJoinedChannels();
-    std::list<unsigned int>::iterator it2;
-    for (it2 = joined_chans.begin(); it2 != joined_chans.end(); it2++)
-    {
-        std::cout << "joined chans = " << *it2 << "\n";
-    }
     if (!client->joined(chan->getId()))
     {
-        std::cout << "NOT MEMBER\n";
         client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         return false;
     }
@@ -55,16 +46,13 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
     if (cmd_vec[0] == ":")
     {
         chan->setTopic("");
-        // client->sendMessage(":lekix!lekix@127.0.0.1 TOPIC #newchannel :");
         broadcast_UNSET_TOPIC(chan);
         return true ;
     }
     if (cmd_vec[0][0] == ':')
         cmd_vec[0].erase(cmd_vec[0].begin() + 0);
     chan->setTopic(str_join(cmd_vec));
-    // std::cout << "Channel found : " << chan->getName() << "\n";
     broadcast_RPLTOPIC(chan);
-    // broadcast_RPLNOTOPIC(chan);
     return true;
 }
 
@@ -116,9 +104,3 @@ void static broadcast_UNSET_TOPIC(Channel *chan)
         std::cout << UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()) << "\n";
     }
 }
-
-// void static topicMessage(const std::string& usermask, const std::string& channelName, const std::string& topic) {
-//     std::ostringstream stream;
-//     stream << ":" << usermask << " " << TOPIC << " " << channelName << " :" << topic;
-//     return stream.str();
-// }
