@@ -20,13 +20,24 @@ class Command {
 		static void cap(Client *client, const std::string& line);
 		static bool ping(Client *client, const std::string& line);
 		static bool mode(Client *client, const std::string& line);
-		// static void join(Client *client, Server *server, std::string &line);
+		static bool join(Client *client, Server *server, std::string &line);
 		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
 		static bool privMsg(Client *client, Server *server, const std::string& line);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
 };
 
 #define SERV_NAME ":localhost"
+
+//****************************	 JOIN MACROS	***********************************//
+#define JOINCONFIRMED(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 JOIN :" + channel)
+#define TOPICNOTSET(nick, channel) (SERV_NAME " 331 " + (nick) + " " + (channel) + " :No topic is set")
+#define JOINTOPIC(nick, channel, topic) (SERV_NAME " 332 " + (nick) + " " + (channel) + " :" + topic)
+#define LISTNAMES(nick, channel, names) (SERV_NAME " 353 " + (nick) + " = " + (channel) + " :" + (names))
+#define ENDOFNAMES(nick, channel) (SERV_NAME " 366 " + (nick) + " " + (channel) + " :End of /NAMES list.")
+// #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel) + ":Cannot join channel (+l)")
+#define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
+#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
+#define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel) + ":Cannot join channel (+k)")
 
 //****************************	  CAP MACROS	***********************************//
 #define CAPLS_RESP() (SERV_NAME " CAP * LS :")

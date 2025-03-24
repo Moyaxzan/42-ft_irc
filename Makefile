@@ -2,19 +2,21 @@
 
 NAME = ircserv
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -fsanitize=address
 
 DEBUG_FLAGS = -g -DDEBUG=1
 
 CXX = c++
 
-SRCS =	./src/main.cpp \
-		./src/exceptions.cpp \
-		./src/Server.cpp \
-		./src/argparsing.cpp \
+SRCS =	./src/argparsing.cpp \
+		./src/Channel.cpp \
 		./src/Client.cpp \
 		./src/Command.cpp \
+		./src/exceptions.cpp \
+		./src/main.cpp \
+		./src/Server.cpp \
 		./src/commands/cap.cpp \
+		./src/commands/join.cpp \
 		./src/commands/mode.cpp \
 		./src/commands/nick.cpp \
 		./src/commands/pass.cpp \

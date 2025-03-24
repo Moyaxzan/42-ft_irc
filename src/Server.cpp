@@ -69,6 +69,9 @@ Server::~Server(void) {
 	for (std::map<int, Client *>::iterator it = this->clients_.begin(); it != this->clients_.end(); it++) {
 		delete it->second;
 	}
+	for (std::vector<Channel *>::iterator it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		delete *it;
+	}
 }
 
 // *************************************** OVERLOAD OPERATORS **************************************************************//
@@ -93,8 +96,46 @@ const std::set<std::string>&	Server::getNicknames(void) const {
 	return (this->nicknames_);
 }
 
+const std::vector<Channel *>	Server::getChannels(void) const {
+	return (this->channels_);
+}
+
+Channel *Server::getChannelByName(const std::string &name) {
+	std::vector<Channel *>::iterator it;
+	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		if ((*it)->getName() == name) {
+			return *it;
+		}
+	}
+	return (NULL);
+}
+
+
 void	Server::addNickname(std::string nickname) {
 	this->nicknames_.insert(nickname);
+}
+
+bool	Server::addChannel(std::string channelName, Client *creator, std::string passwd) {
+	int	id = 0;
+	std::vector<Channel *>::iterator it;
+
+	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		id++;
+	}
+	if (this->getChannelByName(channelName) != NULL) {
+		return (false);
+	}
+	Channel *newChan = new Channel(id, channelName);
+	if (!newChan) {
+		return (false);
+	}
+	//add creator to the members & operators
+	newChan->addOperator(creator);
+	newChan->addMember(creator);
+	newChan->setPassword(passwd);
+	this->channels_.push_back(newChan);
+	std::vector<Client *> ops = newChan->getOperators();
+	return (true);
 }
 
 void	Server::setCreatTime_(void) {
@@ -171,6 +212,8 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::mode(this->clients_[fd], cmd));
 	} else if (cmd.find("PRIVMSG ") == 0) {
 		return (Command::privMsg(this->clients_[fd], this, cmd));
+	} else if (cmd.find("JOIN ") == 0) {
+		return (Command::join(this->clients_[fd], this, cmd));
 	}
 	if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth()) {
 		this->sendWelcomeMessage_(fd);
