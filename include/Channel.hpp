@@ -9,6 +9,8 @@
 class Channel {
 	private:
 		bool					inviteOnly_;
+		bool					restrictedTopic_; // new
+		unsigned int			userLimit_; // new
 		int						id_;
 		std::string				topic_;
 		std::string				name_;
@@ -26,6 +28,7 @@ class Channel {
 
 		//GETTERS
 		bool					isInviteOnly(void) const;
+		bool					isTopicRestricted(void) const;
 		unsigned int			getId(void) const ;
 		std::vector<Client *>	getOperators(void) const ;
 		std::list<Client *>		getMembers(void) const ;
@@ -35,6 +38,7 @@ class Channel {
 
 		// SETTERS
 		void					setInviteOnly(bool inviteOnly);
+		void					setRestrictedTopic(bool restrictedTopic);
 		void					setId(int id);
 		void					setTopic(std::string topic);
 		void					setName(std::string name);

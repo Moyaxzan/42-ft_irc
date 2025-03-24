@@ -12,6 +12,7 @@ Channel::Channel(unsigned int id, std::string name) {
 	this->id_ = id;
 	this->name_ = name;
 	this->inviteOnly_ = false;
+	this->restrictedTopic_ = true;
 	this->password_ = "";
 	this->topic_ = "";
 }
@@ -22,6 +23,7 @@ Channel::Channel(Channel& other) {
 
 Channel& Channel::operator=(Channel& other) {
 	this->inviteOnly_ = other.inviteOnly_;
+	this->restrictedTopic_ = other.restrictedTopic_;
 	this->id_ = other.id_;
 	this->topic_ = other.topic_;
 	this->name_ = other.name_;
@@ -37,6 +39,10 @@ Channel::~Channel(void) {
 // GETTERS
 bool	Channel::isInviteOnly(void) const {
 	return (this->inviteOnly_);
+}
+
+bool	Channel::isTopicRestricted(void) const {
+	return (this->restrictedTopic_);
 }
 
 unsigned int		Channel::getId(void) const {
@@ -64,6 +70,10 @@ std::string	Channel::getPassword(void) const {
 // SETTERS
 void	Channel::setInviteOnly(bool inviteOnly) {
 	this->inviteOnly_ = inviteOnly;
+}
+
+void	Channel::setRestrictedTopic(bool restrictedTopic) {
+	this->restrictedTopic_ = restrictedTopic;
 }
 
 void	Channel::setId(int id) {

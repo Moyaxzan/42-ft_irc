@@ -29,7 +29,6 @@ private:
 		//static bool invite(Client *client, Server *server, const std::string& line);
 		//static bool kick(Client *client, Server *server, const std::string& line);
 		static bool topic(Client *client, Server *server, const std::string& line);
-		//static bool mode(Client *client, Server *server, const std::string& line);
 };
 
 bool isValidChannelName(const std::string &name);
@@ -97,6 +96,9 @@ bool isValidChannelName(const std::string &name);
 #define UNSET_TOPIC(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 TOPIC " + channel + " :")
 #define RPL_NOTOPIC(nick, channel) (SERV_NAME " 331 " + (nick) + " " + (channel) + " :No topic is set")
 #define RPL_TOPIC(nick, channel, topic) (SERV_NAME " 332 " + (nick) + " " + (channel) + " :" + topic)
+
+//**************************** MODE MACRO ***********************************//
+#define ERR_UNKNOWNMODE(nick, mode) (SERV_NAME " 472 " + (nick) + " " + (mode) + " :is unknown mode")
 
 #define CACTUS "\
 " RESET "     .   " GREEN "  _ " RESET "   +    .  " BROWN " ______" RESET "   .          .\n\
