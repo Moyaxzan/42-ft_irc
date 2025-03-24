@@ -5,6 +5,8 @@
 #include <exception>
 #include <sys/types.h>
 #include <sys/select.h>
+#include <signal.h>
+#include <cerrno>
 #include <map>
 #include <set>
 #include "Client.hpp"
