@@ -85,7 +85,7 @@ bool isValidChannelName(const std::string &name);
 #define ERR_NOTEXTTOSEND(nick) (SERV_NAME " 412 " + (nick) + " :No text to send")
 #define ERR_INPUTTOOLONG(nick) (SERV_NAME " 417 " + (nick) + " :Input line is too long") // no an official code of the IRC protocol
 #define ERR_NOSUCHNICK(nick) (SERV_NAME " 401 " + (nick) + " :No such nick")
-#define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 403 " + (nick) + (channel) + " :No such channel")
+#define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 403 " + (nick) + " " + (channel) + " :No such channel")
 #define ERR_CANNOTSENDTOSELF(nick) (SERV_NAME " 431 " + (nick) + " :Cannot send a message to yourself")
 #define ERR_TARGETNOTAUTH(nick, target) (SERV_NAME " 484 " + (nick) + " " + (target) + " :Cannot send message to user (not fully registered)")
 #define ERR_TARGETDISCONNECTED(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (target disconnected unexpectedly)")
@@ -95,7 +95,7 @@ bool isValidChannelName(const std::string &name);
 
 //**************************** TOPIC MACRO ***********************************//
 #define UNSET_TOPIC(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 TOPIC " + channel + " :")
-#define RPL_NOTOPIC(nick, channel) (SERV_NAME " 331 " + (nick) + " " + (channel) + " :No topic is set")
+#define RPL_NOTOPIC(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :No topic is set")
 #define RPL_TOPIC(nick, channel, topic) (SERV_NAME " 332 " + (nick) + " " + (channel) + " :" + topic)
 
 #define CACTUS "\
