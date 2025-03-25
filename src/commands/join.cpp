@@ -51,7 +51,9 @@ bool Command::join(Client *client, Server *server, std::string &line)
         return (false);
     }
     Channel *chan;
-    server->addChannel(channelName, client, password);
+    if (server->addChannel(channelName, client, password)) {
+		server->log("INFO", "CHANNEL", "new channel " BLUE + channelName + RESET " created");
+	}
     chan = server->getChannelByName(channelName);
     if (!chan) {
         return (false);
@@ -64,7 +66,7 @@ bool Command::join(Client *client, Server *server, std::string &line)
         client->sendMessage(server, ERR_BADCHANNELKEY(client->getNick(), channelName));
     } else {
         chan->addMember(client);
-		server->log("INFO", "JOIN", client->getNick() + " has joined " + channelName);
+		server->log("INFO", "JOIN", client->getNick() + " has joined " BLUE + channelName + RESET);
         client->sendMessage(server, JOINCONFIRMED(nick, user, channelName));
         chan->broadcast(server, client, JOINCONFIRMED(nick, user, channelName));
         if (!chan->getTopic().length()) {

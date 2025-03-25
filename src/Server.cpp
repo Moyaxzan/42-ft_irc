@@ -232,8 +232,8 @@ void	Server::disconnectClient(int fd) {
 
 	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end(); it++) {
 		Channel* channel = this->channels_[*it];
-		;
 		if (!channel->disconnectClient(this, client, "")) {
+			this->log("INFO", "CHANNEL", "channel " BLUE + channel->getName() + RESET " destroyed");
 			delete channel;
 			this->channels_.erase(this->channels_.begin() + *it);
 		}

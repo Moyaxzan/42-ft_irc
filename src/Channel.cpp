@@ -165,7 +165,7 @@ bool	Channel::broadcast(Server* server, Client *sender, std::string message) {
 //returns false if it was the last client
 //what happens when last operator leaves ? -> give operator rights to another member
 bool	Channel::disconnectClient(Server *server, Client *client, std::string reason) {
-	server->log("INFO", "PART", client->getNick() + " has left " + this->name_);
+	server->log("INFO", "PART", client->getNick() + " has left " BLUE + this->name_ + RESET);
 	this->removeMember(client);
 	this->removeOperator(client);
 	if (this->getMembers().empty() && this->getOperators().empty()) {
