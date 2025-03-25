@@ -18,5 +18,4 @@
 	std::cout << GREEN << "DEBUG: " << s << RESET << std::endl; \
 }
 
-
 #endif

@@ -30,6 +30,7 @@ class Channel {
 		bool					isInviteOnly(void) const;
 		bool					isTopicRestricted(void) const;
 		unsigned int			getId(void) const ;
+		int						getUserLimit(void) const ;
 		std::vector<Client *>	getOperators(void) const ;
 		std::list<Client *>		getMembers(void) const ;
 		std::string				getTopic(void) const ;
@@ -49,6 +50,7 @@ class Channel {
 		void					removeMember(Client *user);
 		void					addInvited(Client *user);
 		void					removeInvited(Client *user);
+		void					setUserLimit(int limit);
 
 
 		//MEMBER FUNCTIONS
@@ -57,6 +59,7 @@ class Channel {
 		bool					broadcast(Client *sender, std::string message);
 		bool					disconnectClient(Client *client, std::string reason);
 		std::string				getNames(void);
+		Client					*findMember(std::string client_nick);
 };
 
 

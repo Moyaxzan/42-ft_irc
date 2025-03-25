@@ -55,11 +55,13 @@ class Server {
 		const std::map<int, Client *>&		getClients(void) const;
 		const std::vector<Channel *>		getChannels(void) const;
 		Channel*							getChannelByName(const std::string &name);
+		Channel*							getChannelById(unsigned int id);
 		//setters
 		void							addNickname(std::string nickname, int fd);
 		bool							addChannel(std::string channelName, Client *creator, std::string passwd);
 		//member functions
 		void							runServer(void);
+		void							checkChannelsPromoteOP(Client *client);
 		void							disconnectClient(int fd);
 
 };

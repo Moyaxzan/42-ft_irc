@@ -50,6 +50,10 @@ unsigned int		Channel::getId(void) const {
 	return (this->id_);
 }
 
+int Channel::getUserLimit(void) const {
+	return (this->userLimit_);
+}
+
 std::vector<Client *>	Channel::getOperators(void) const {
 	return (this->operators_);
 }
@@ -138,6 +142,10 @@ void	Channel::removeInvited(Client *user) {
 	}
 }
 
+void	Channel::setUserLimit(int limit) {
+	this->userLimit_ = limit;
+}
+
 // *************************************** MEMBER FUNCTIONS **************************************************************//
 
 bool	Channel::isOperator(Client *user) {
@@ -206,4 +214,17 @@ std::string	Channel::getNames(void) {
 		}
 	}
 	return (res);
+}
+
+Client *Channel::findMember(std::string client_nick)
+{
+	std::list<Client *> members = this->getMembers();
+	std::list<Client *>::iterator it;
+
+	for (it = members.begin(); it != members.end(); it++)
+	{
+		if ((*it)->getNick() == client_nick)
+			return (*it);
+	}
+	return NULL;
 }

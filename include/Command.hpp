@@ -40,12 +40,6 @@ bool isValidChannelName(const std::string &name);
 #define JOINCONFIRMED(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 JOIN :" + channel)
 #define LISTNAMES(nick, channel, names) (SERV_NAME " 353 " + (nick) + " = " + (channel) + " :" + (names))
 #define ENDOFNAMES(nick, channel) (SERV_NAME " 366 " + (nick) + " " + (channel) + " :End of /NAMES list.")
-// #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel) + ":Cannot join channel (+l)")
-#define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
-#define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
-#define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're not channel operator")
-#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
-#define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel) + ":Cannot join channel (+k)")
 
 //****************************	  CAP MACROS	***********************************//
 #define CAPLS_RESP() (SERV_NAME " CAP * LS :")
@@ -100,6 +94,23 @@ bool isValidChannelName(const std::string &name);
 
 //**************************** MODE MACRO ***********************************//
 #define ERR_UNKNOWNMODE(nick, mode) (SERV_NAME " 472 " + (nick) + " " + (mode) + " :is unknown mode")
+
+//**************************** CHANNEL MACRO ***********************************//
+#define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
+#define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel))
+#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
+#define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel))
+#define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
+#define ERR_BADCHANLIMIT(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Bad channel limit")
+#define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're no one to try to dictate your own law, feller! You aint operator 'round here")
+#define ERR_CHANOPNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're the last operator, can't remove your rights")
+#define RPL_YOUREOPER(nick) (SERV_NAME " " + (nick) + " :You are now an IRC operator")
+#define NOTICE_OPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, <" + GREEN + nick + RESET + ">. You’ve been deputized. Keep the outlaws in check, and don’t go startin’ no trouble yourself. 🤠")
+#define NOTICE_UNOPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :The sun sets on <" + GREEN + nick + RESET + ">’s time as Sheriff. The badge is off, the dust settles… and the law moves on. Hope they don’t turn outlaw. 🤠🌵")
+#define NOTICE_ALREADYOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Son, you tryna promote <" + GREEN + nick + RESET + ">? They’re already the Sheriff ‘round here! Might wanna check your whiskey before makin’ decisions. 🥃")
+#define NOTICE_NOTOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, partner... you tryin’ to strip <" + GREEN + nick + RESET + "> of a badge they never had? That’s like takin’ boots off a barefoot man. Ain’t much to remove. 👢")
+
+
 
 #define CACTUS "\
 " RESET "     .   " GREEN "  _ " RESET "   +    .  " BROWN " ______" RESET "   .          .\n\

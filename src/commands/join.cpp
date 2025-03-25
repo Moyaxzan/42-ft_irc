@@ -34,7 +34,6 @@ bool isValidChannelName(const std::string &name);
 //
 bool Command::join(Client *client, Server *server, std::string &line)
 {
-
     std::istringstream iss(line);
     std::string command, channelName, password;
 
@@ -63,6 +62,8 @@ bool Command::join(Client *client, Server *server, std::string &line)
         client->sendMessage(ERR_INVITEONLYCHAN(client->getNick(), channelName));
     } else if (chan->getPassword() != password) {
         client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
+    } else if (chan->getUserLimit() != -1 && (unsigned int)chan->getUserLimit() < chan->getMembers().size() + 1) {
+        client->sendMessage(ERR_CHANNELFULL(client->getNick(), channelName));
     } else {
         chan->addMember(client);
         client->sendMessage(JOINCONFIRMED(nick, user, channelName));
@@ -74,8 +75,8 @@ bool Command::join(Client *client, Server *server, std::string &line)
         }
         client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));
         client->sendMessage(ENDOFNAMES(nick, channelName));
+        client->addJoinedChann(chan->getId());
     }
-    client->addJoinedChann(chan->getId());
     return (true);
 }
 

@@ -1,5 +1,7 @@
 {
   "files.associations": {
+    "*.c": "c",
+    "*.h": "c",
     "*.embeddedhtml": "html",
     "array": "cpp",
     "atomic": "cpp",
@@ -46,6 +48,14 @@
     "streambuf": "cpp",
     "typeinfo": "cpp",
     "cwctype": "cpp",
-    "numbers": "cpp"
+    "numbers": "cpp",
+    "csignal": "cpp",
+    "cstdarg": "cpp",
+    "cstring": "cpp",
+    "ctime": "cpp",
+    "deque": "cpp",
+    "numeric": "cpp",
+    "ranges": "cpp",
+    "span": "cpp"
   }
 }

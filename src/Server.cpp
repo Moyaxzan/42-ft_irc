@@ -1,6 +1,7 @@
 #include "../include/Server.hpp"
 #include "../include/debug.hpp"
 #include "../include/Command.hpp"
+
 #include <arpa/inet.h>
 #include <iostream>
 #include <cstdlib>
@@ -108,6 +109,17 @@ Channel *Server::getChannelByName(const std::string &name) {
 		}
 	}
 	return (NULL);
+}
+
+Channel *Server::getChannelById(unsigned int channel_id)
+{
+	std::vector<Channel *>::iterator it;
+	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
+		if ((*it)->getId() == channel_id) {
+			return *it;
+		}
+	}
+	return NULL;
 }
 
 const std::map<std::string, int>&	Server::getNickFd(void) const {
@@ -233,6 +245,44 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	return (true);
 }
 
+// Promeut un nouvel operateur en cas de deconnexion client si celui-ci etait dernier operateur client
+// == check tous les channels dont fait partie le client et check s'il etait dernier op sur le channel
+
+void static promoteNewOperator(Channel *channel, Client *lastOP)
+{
+	std::list<Client *> members = channel->getMembers();
+	std::list<Client *>::iterator it;
+
+	for (it = members.begin(); it != members.end(); it++)
+	{
+		if ((*it)->getId() != lastOP->getId())
+		{
+			channel->addOperator(*it);
+			channel->broadcast(NULL, NOTICE_OPER((*it)->getNick(), channel->getName()));
+			return ;
+		}
+	}
+}
+
+void Server::checkChannelsPromoteOP(Client *client)
+{
+	std::list<unsigned int> chans_id = client->getJoinedChannels();
+	std::list<unsigned int>::iterator it;
+	std::list<Channel *> joined_chans;
+	std::list<Channel *>::iterator it2;
+	
+	for (it = chans_id.begin(); it != chans_id.end(); it++)
+		joined_chans.push_back(this->getChannelById(*it));
+	for (it2 = joined_chans.begin(); it2 != joined_chans.end(); it2++)
+	{
+		if ((*it2)->isOperator(client) && (*it2)->getOperators().size() == 1 && (*it2)->getMembers().size() > 1)
+		{
+			promoteNewOperator(*it2, client);
+			return ;
+		}
+	}
+}
+
 // Verifier avec structure sever qu'on supprime bien tout
 // Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel
 // message aux autres clients en cas de déconnexion volontaire avec un int pr le type de déconnexion
@@ -242,6 +292,7 @@ void	Server::disconnectClient(int fd) {
 	Client					*client = this->clients_[fd];
 	std::list<unsigned int>	chans = client->getJoinedChannels();
 
+	checkChannelsPromoteOP(client);
 	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end(); it++) {
 		Channel* channel = this->channels_[*it];
 		;
@@ -250,7 +301,6 @@ void	Server::disconnectClient(int fd) {
 			this->channels_.erase(this->channels_.begin() + *it);
 		}
 	}
-
 	std::string	nickname = client->getNick();
 	FD_CLR(fd, &this->all_sockets_);
 	close (fd);

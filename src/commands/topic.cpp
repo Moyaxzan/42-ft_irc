@@ -34,9 +34,6 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
     cmd_vec.erase(cmd_vec.begin() + 0);
     if (!isValidChannelName(cmd_vec[0]) || !(chan = server->getChannelByName(cmd_vec[0])))
     {
-        std::cout << cmd_vec[0] << "\n";
-        isValidChannelName(cmd_vec[0]) ? std::cout << "true\n" : std::cout << "false\n";
-        chan ? std::cout << "true\n" : std::cout << "false\n";
         client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
         return false;
     }
