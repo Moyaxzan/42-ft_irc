@@ -184,9 +184,7 @@ std::vector<std::string>	splitLines(std::string msg) {
 }
 
 bool	Server::handleCommand(int fd, std::string cmd) {
-	DEBUG_LOG("Into handleCommand function");
-	DEBUG_LOG("Command = " + cmd);
-	
+	DEBUG_LOG("Handling command: " + cmd);
 	if (cmd.find("CAP LS") == 0) {
 		Command::cap(this, this->clients_[fd], cmd);
 	} else if (cmd.find("PASS ") == 0) {
@@ -198,8 +196,10 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	} else if (cmd.find("USER ") == 0) {
 		if (!Command::user(this, this->clients_[fd], cmd))
 			return (false);
-		if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth())
+		if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth()) {
 			this->sendWelcomeMessage_(fd);
+			this->log("INFO", "AUTH", this->clients_[fd]->getNick() + " successfully authentified");
+		}
 	} else if (cmd.find("PING ") == 0) {
 		return (Command::ping(this, this->clients_[fd], cmd));
 	} else if (cmd.find("MODE ") == 0) {
@@ -210,14 +210,14 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::join(this->clients_[fd], this, cmd));
 	} else if (cmd.find("TOPIC ") == 0) {
 		return (Command::topic(this->clients_[fd], this, cmd));
+	}
     /* else if (cmd.find("INVITE ") == 0) {
 		return (Command::invite(this->clients_[fd], this, cmd));
 	} else if (cmd.find("KICK ") == 0) {
 		return (Command::kick(this->clients_[fd], this, cmd));
-	}else if (cmd.find("MODE ") == 0) {
-		return (Command::mode(this->clients_[fd], this, cmd));
-	}*/
-    }
+    } else if (cmd.find("PART ") == 0) {
+		return (Command::part(this->clients_[fd], this, cmd));
+	} */
 	return (true);
 }
 
