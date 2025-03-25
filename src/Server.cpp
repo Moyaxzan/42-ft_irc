@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
+#include <string>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -14,6 +15,7 @@
 #include <sstream>
 #include <vector>
 #include <list>
+#include <stdlib.h>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
@@ -30,7 +32,6 @@ Server::Server(t_args& args) {
     this->socket_infos_.sin_addr.s_addr = inet_addr(SERV_IP);
     size = sizeof(this->socket_infos_);
 
-    DEBUG_LOG("Starting server!");
 	this->serv_socket_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->serv_socket_ == -1) {
 		throw(SocketError());
@@ -38,7 +39,7 @@ Server::Server(t_args& args) {
 
 	// get creation time and date 
 	setCreatTime_();
-	DEBUG_LOG("startup time: " + this->creatTime_);
+	this->log("INFO", "STARTUP", "server has started !");
 
 	//bind fd and ip::port
 	int	opt = 1;
@@ -166,7 +167,7 @@ void Server::newClient_(void) {
 	if (accept_fd > this->fd_max_)
 		this->fd_max_ = accept_fd;
 	this->clients_.insert(std::make_pair(accept_fd, new Client(accept_fd)));
-	std::cout << "New client detected with fd: " << accept_fd << std::endl;
+	this->log("INFO", "AUTH", "new connection on " SERV_IP);
 }
 
 std::vector<std::string>	splitLines(std::string msg) {
@@ -182,25 +183,12 @@ std::vector<std::string>	splitLines(std::string msg) {
 	return (lines);
 }
 
-/*
-envoie un message à tous les clients sauf le client emetteur
-void Server::broadcastMessage(const std::string &message, int sender_fd) {
-    std::map<int, Client>::iterator it;
-    for (it = this->clients_.begin(); it != this->clients_.end(); ++it) {
-        int client_fd = it->first;
-        if (client_fd != sender_fd) { // Ne pas renvoyer le message à l'émetteur
-            send(client_fd, message.c_str(), message.size(), 0);
-        }
-    }
-}
-*/
-
 bool	Server::handleCommand(int fd, std::string cmd) {
 	DEBUG_LOG("Into handleCommand function");
 	DEBUG_LOG("Command = " + cmd);
 	
 	if (cmd.find("CAP LS") == 0) {
-		Command::cap(this->clients_[fd], cmd);
+		Command::cap(this, this->clients_[fd], cmd);
 	} else if (cmd.find("PASS ") == 0) {
 		if (!Command::pass(this->clients_[fd], this, cmd))
 			return (false); // blocking command
@@ -208,12 +196,12 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		if (!Command::nick(this->clients_[fd], this, cmd))
 			return (false);
 	} else if (cmd.find("USER ") == 0) {
-		if (!Command::user(this->clients_[fd], cmd))
+		if (!Command::user(this, this->clients_[fd], cmd))
 			return (false);
 		if (!this->clients_[fd]->isWelcomeSent() && this->clients_[fd]->isAuth())
 			this->sendWelcomeMessage_(fd);
 	} else if (cmd.find("PING ") == 0) {
-		return (Command::ping(this->clients_[fd], cmd));
+		return (Command::ping(this, this->clients_[fd], cmd));
 	} else if (cmd.find("MODE ") == 0) {
 		return (Command::mode(this, this->clients_[fd], cmd));
 	} else if (cmd.find("PRIVMSG ") == 0) {
@@ -245,7 +233,7 @@ void	Server::disconnectClient(int fd) {
 	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end(); it++) {
 		Channel* channel = this->channels_[*it];
 		;
-		if (!channel->disconnectClient(client, "")) {
+		if (!channel->disconnectClient(this, client, "")) {
 			delete channel;
 			this->channels_.erase(this->channels_.begin() + *it);
 		}
@@ -258,10 +246,13 @@ void	Server::disconnectClient(int fd) {
 	delete client;						//free client
 	this->clients_.erase(fd);
 	//change fd_max_ if it is equal to fd and look for the new higher fd
-	if (nickname.empty())
-		std::cout << "Client " << fd << " disconnected" << std::endl;
-	else
-		std::cout << "Client " << nickname << " disconnected" << std::endl;
+	if (nickname.empty()) {
+		std::ostringstream oss;
+		oss << fd;
+		this->log("WARN", "DISCONNECT", "client [" + oss.str() + "] disconnected from server");
+	} else {
+		this->log("WARN", "DISCONNECT", nickname + " disconnected from server");
+	}
 }
 
 // Gérer autres commandes
@@ -269,10 +260,8 @@ void Server::readClient(int fd) {
 	char		buffer[1024] = {'\0'};
 	int			recv_res = recv(fd, buffer, 1023, 0);
  
-	DEBUG_LOG("Into readClient");
  	// cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
 	if (recv_res <= 0) {
-		DEBUG_LOG("Into previous recv_res == 0");
 		disconnectClient(fd);
 		return ;
 	}
@@ -280,12 +269,17 @@ void Server::readClient(int fd) {
 	if (msg.length() == 0)
 		return ;
 	std::vector<std::string> lines = splitLines(msg);
-	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
+	if (this->clients_[fd]->isAuth()) {
+		DEBUG_LOG(this->clients_[fd]->getNick() + ": " + msg);
+	} else {
+		std::ostringstream	oss;
+		oss << fd;
+		DEBUG_LOG("[" + oss.str() + "]: " + msg);
+	}
 	for (size_t i = 0; i < lines.size(); i++) {
 		if (!handleCommand(fd, lines[i]))
 			break;
 	}
-
 }
 
 // IMposer des noms de channels commençant par "#"
@@ -309,7 +303,8 @@ void Server::runServer(void)
 			}
 		}
 	}
-	std::cout << std::endl << "Exit" << std::endl;
+	std::cout << std::endl;
+	this->log("WARN", "EXIT", "server interrupted by SIGINT signal");
 	return ;
 }
 
@@ -317,20 +312,40 @@ void	Server::sendWelcomeMessage_(int fd) {
 	Client*		client = this->clients_[fd];
     std::string	nick = client->getNick();
 
-    client->sendMessage(std::string(SERV_NAME) + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
-    client->sendMessage(std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
-    client->sendMessage(std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
-    client->sendMessage(std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
-	client->sendMessage(std::string(SERV_NAME) + " 005 " + nick + CACTUS);
+    client->sendMessage(this, std::string(SERV_NAME) + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
+    client->sendMessage(this, std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
+    client->sendMessage(this, std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
+    client->sendMessage(this, std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
+	client->sendMessage(this, std::string(SERV_NAME) + " 005 " + nick + CACTUS);
      
 	client->setWelcomeSent(true);
     // Message of the Day (MOTD) ?
-    // client->sendMessage(std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
-    // client->sendMessage(std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
-    // client->sendMessage(std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
-    // client->sendMessage(std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
+    // client->sendMessage(this, std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
+    // client->sendMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
+    // client->sendMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
+    // client->sendMessage(this, std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
 }
 
+void	Server::log(const std::string& level, const std::string& category, const std::string message) {
+	std::string color;
+	if (level == "INFO") {
+		color = GREEN;
+	} else if (level == "WARN") {
+		color = YELLOW;
+	} else if (level == "ERROR") {
+		color = RED;
+	} else if (level == "MSG") {
+		color = BLUE;
+	}
+
+	time_t now = time(NULL);  // Get current time
+    struct tm *timeinfo = localtime(&now);  // Convert to local time
+
+    char timestamp[80];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", timeinfo);  // Format time
+
+	std::cout << "[" << timestamp << "]" << color << " [" << level << "] [" << category << "] " << RESET << message << std::endl;
+}
 /*
 ✔ Si le client se déconnecte volontairement (QUIT), il n'est pas nécessaire de lui envoyer un message, mais il faut notifier les autres clients.
 dans disconnectClient : + relayer un message du client qui s'est déconnecté aux autres en meme tps que la notification de déconnexion ?

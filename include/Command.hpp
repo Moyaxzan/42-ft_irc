@@ -7,20 +7,19 @@
 #include "Server.hpp"
 #include "debug.hpp"
 
-class Command
-{
-private:
-    Command();
-    Command(const Command &other);
-    Command &operator=(const Command &other);
-    ~Command();
+class Command {
+	private:
+		Command();
+		Command(const Command &other);
+		Command &operator=(const Command &other);
+		~Command();
 
 	public:
 		static bool pass(Client *client, Server *server, std::string &line);
 		static bool nick(Client *client, Server *server, std::string &line);
-		static bool user(Client *client, std::string &line);
-		static void cap(Client *client, const std::string& line);
-		static bool ping(Client *client, const std::string& line);
+		static bool user(Server *server, Client *client, std::string &line);
+		static void cap(Server *server, Client *client, const std::string& line);
+		static bool ping(Server *server, Client *client, const std::string& line);
 		static bool mode(Server *server, Client *client, const std::string& line);
 		static bool join(Client *client, Server *server, std::string &line);
 		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
@@ -29,7 +28,6 @@ private:
 		//static bool invite(Client *client, Server *server, const std::string& line);
 		//static bool kick(Client *client, Server *server, const std::string& line);
 		static bool topic(Client *client, Server *server, const std::string& line);
-		//static bool mode(Client *client, Server *server, const std::string& line);
 };
 
 bool isValidChannelName(const std::string &name);

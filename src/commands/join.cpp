@@ -34,7 +34,6 @@ bool isValidChannelName(const std::string &name);
 //
 bool Command::join(Client *client, Server *server, std::string &line)
 {
-
     std::istringstream iss(line);
     std::string command, channelName, password;
 
@@ -48,7 +47,7 @@ bool Command::join(Client *client, Server *server, std::string &line)
         password = "";
     }
     if (!isValidChannelName(channelName)) {
-        client->sendMessage(ERR_BADCHANNAME(client->getNick(), channelName));
+        client->sendMessage(server, ERR_BADCHANNAME(client->getNick(), channelName));
         return (false);
     }
     Channel *chan;
@@ -60,20 +59,21 @@ bool Command::join(Client *client, Server *server, std::string &line)
     std::string nick = client->getNick();
     std::string user = client->getUsername();
     if (chan->isInviteOnly() && !chan->isInvited(client)) {
-        client->sendMessage(ERR_INVITEONLYCHAN(client->getNick(), channelName));
+        client->sendMessage(server, ERR_INVITEONLYCHAN(client->getNick(), channelName));
     } else if (chan->getPassword() != password) {
-        client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
+        client->sendMessage(server, ERR_BADCHANNELKEY(client->getNick(), channelName));
     } else {
         chan->addMember(client);
-        client->sendMessage(JOINCONFIRMED(nick, user, channelName));
-        chan->broadcast(client, JOINCONFIRMED(nick, user, channelName));
+		server->log("INFO", "JOIN", client->getNick() + " has joined " + channelName);
+        client->sendMessage(server, JOINCONFIRMED(nick, user, channelName));
+        chan->broadcast(server, client, JOINCONFIRMED(nick, user, channelName));
         if (!chan->getTopic().length()) {
-            client->sendMessage(RPL_NOTOPIC(nick, channelName));
+            client->sendMessage(server, RPL_NOTOPIC(nick, channelName));
         } else {
-            client->sendMessage(RPL_TOPIC(nick, channelName, chan->getTopic()));
+            client->sendMessage(server, RPL_TOPIC(nick, channelName, chan->getTopic()));
         }
-        client->sendMessage(LISTNAMES(nick, channelName, chan->getNames()));
-        client->sendMessage(ENDOFNAMES(nick, channelName));
+        client->sendMessage(server, LISTNAMES(nick, channelName, chan->getNames()));
+        client->sendMessage(server, ENDOFNAMES(nick, channelName));
     }
     client->addJoinedChann(chan->getId());
     return (true);

@@ -5,6 +5,8 @@
 # include <string>
 # include <string>
 
+class Server;
+
 class Client {
 	private:
 		int										id_;
@@ -54,8 +56,7 @@ class Client {
 		bool									joined(unsigned int channel) const;		// return if user joined channel
 		void									addJoinedChann(unsigned int channel);	// add channel to the joined channel list
 		void									rmJoinedChann(unsigned int channel);	// removes channel from the joined channel list
-		bool									sendMessage(std::string message) const;
-        bool	                                sendMessageTest(std::string message) const;
+		bool									sendMessage(Server* server, std::string message) const;
 
 };
 

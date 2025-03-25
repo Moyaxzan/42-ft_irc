@@ -3,8 +3,8 @@
 
 std::vector<std::string> split(std::string str, std::string delim);
 std::string str_join(std::vector<std::string> strs);
-void static broadcast_RPLTOPIC(Channel *chan);
-void static broadcast_UNSET_TOPIC(Channel *chan);
+void static broadcast_RPLTOPIC(Server *server, Channel *chan);
+void static broadcast_UNSET_TOPIC(Server *server, Channel *chan);
 
 /**
  * TOPIC Command Handler
@@ -36,7 +36,7 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
         // std::cout << *it << "\n";
     if (!isValidChannelName(cmd_vec[0]) || !(chan = server->getChannelByName(cmd_vec[0])))
     {
-        client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
+        client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
         return false;
     }
     std::list<unsigned int> joined_chans = client->getJoinedChannels();
@@ -48,22 +48,22 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
     if (!client->joined(chan->getId()))
     {
         std::cout << "NOT MEMBER\n";
-        client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
+        client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         return false;
     }
     cmd_vec.erase(cmd_vec.begin() + 0);
     if (cmd_vec[0] == ":")
     {
         chan->setTopic("");
-        // client->sendMessage(":lekix!lekix@127.0.0.1 TOPIC #newchannel :");
-        broadcast_UNSET_TOPIC(chan);
+        // client->sendMessage(server, ":lekix!lekix@127.0.0.1 TOPIC #newchannel :");
+        broadcast_UNSET_TOPIC(server, chan);
         return true ;
     }
     if (cmd_vec[0][0] == ':')
         cmd_vec[0].erase(cmd_vec[0].begin() + 0);
     chan->setTopic(str_join(cmd_vec));
     // std::cout << "Channel found : " << chan->getName() << "\n";
-    broadcast_RPLTOPIC(chan);
+    broadcast_RPLTOPIC(server, chan);
     // broadcast_RPLNOTOPIC(chan);
     return true;
 }
@@ -96,23 +96,23 @@ std::string str_join(std::vector<std::string> strs)
     return final_str;
 }
 
-void static broadcast_RPLTOPIC(Channel *chan)
+void static broadcast_RPLTOPIC(Server *server, Channel *chan)
 {
     std::list<Client *> chan_members = chan->getMembers();
     std::list<Client *>::iterator it;
 
     for (it = chan_members.begin(); it != chan_members.end(); it++)
-        (*it)->sendMessage(RPL_TOPIC((*it)->getNick(), chan->getName(), chan->getTopic()));
+        (*it)->sendMessage(server, RPL_TOPIC((*it)->getNick(), chan->getName(), chan->getTopic()));
 }
 
-void static broadcast_UNSET_TOPIC(Channel *chan)
+void static broadcast_UNSET_TOPIC(Server *server, Channel *chan)
 {
     std::list<Client *> chan_members = chan->getMembers();
     std::list<Client *>::iterator it;
 
     for (it = chan_members.begin(); it != chan_members.end(); it++)
     {
-        (*it)->sendMessage(UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()));
+        (*it)->sendMessage(server, UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()));
         std::cout << UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()) << "\n";
     }
 }

@@ -50,8 +50,8 @@ class Channel {
 		//MEMBER FUNCTIONS
 		bool					isOperator(Client *user);
 		bool					isInvited(Client *user);
-		bool					broadcast(Client *sender, std::string message);
-		bool					disconnectClient(Client *client, std::string reason);
+		bool					broadcast(Server* server, Client *sender, std::string message);
+		bool					disconnectClient(Server *server, Client *client, std::string reason);
 		std::string				getNames(void);
 };
 
