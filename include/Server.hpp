@@ -61,7 +61,7 @@ class Server {
 		//member functions
 		void							runServer(void);
 		void							disconnectClient(int fd);
-
+		void							log(const std::string& level, const std::string& category, const std::string message);
 };
 
 class SocketError : public std::exception {

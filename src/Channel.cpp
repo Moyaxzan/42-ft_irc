@@ -149,14 +149,14 @@ bool	Channel::isInvited(Client *user) {
 	return (false);
 }
 
-bool	Channel::broadcast(Client *sender, std::string message) {
+bool	Channel::broadcast(Server* server, Client *sender, std::string message) {
 	if (this->members_.empty()) {
 		return (false);
 	}
 	std::list<Client *>::iterator membr;
 	for (membr = this->members_.begin(); membr != this->members_.end(); membr++) {
 		if (!sender || (*membr)->getNick() != sender->getNick()) {
-			(*membr)->sendMessage(message);
+			(*membr)->sendMessage(server, message);
 		}
 	}
 	return (true);
@@ -164,8 +164,8 @@ bool	Channel::broadcast(Client *sender, std::string message) {
 
 //returns false if it was the last client
 //what happens when last operator leaves ? -> give operator rights to another member
-bool	Channel::disconnectClient(Client *client, std::string reason) {
-	DEBUG_LOG("disconnecting client " + client->getUsername() + " from " + this->name_);
+bool	Channel::disconnectClient(Server *server, Client *client, std::string reason) {
+	server->log("INFO", "PART", client->getNick() + " has left " BLUE + this->name_ + RESET);
 	this->removeMember(client);
 	this->removeOperator(client);
 	if (this->getMembers().empty() && this->getOperators().empty()) {
@@ -173,9 +173,9 @@ bool	Channel::disconnectClient(Client *client, std::string reason) {
 	}
 	//TODO broadcast message of deconnexion
 	if (reason.length() == 0) {
-		this->broadcast(NULL, PARTNOREASON(client->getNick(), client->getUsername(), this->name_));
+		this->broadcast(server, NULL, PARTNOREASON(client->getNick(), client->getUsername(), this->name_));
 	} else {
-		this->broadcast(NULL, PART(client->getNick(), client->getUsername(), this->name_, reason));
+		this->broadcast(server, NULL, PART(client->getNick(), client->getUsername(), this->name_, reason));
 	}
 	return (true);
 }
