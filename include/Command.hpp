@@ -113,7 +113,7 @@ bool isValidChannelName(const std::string &name);
 
 //****************************		KICK MACROS	***********************************//
 #define ERR_USERNOTINCHANNEL(nick, target, channel) (SERV_NAME " 441 " + (nick) + " " + (target) + " " + (channel) + " :Target is not in channel")
-#define BROADKICK(nick, user, channel, target, reason) (":" + (nick) + "!" + (user) +  "@127.0.0.1 KICK " + (channel) + " " + (target) + " " + (reason))
+#define BROADKICK(nick, user, channel, target, reason) (":" + (nick) + "!" + (user) +  "@127.0.0.1 KICK " + (channel) + " " + (target) + " :" + (reason))
 #define NOTIFYKICK(nick, channel, kicker, reason)  (SERV_NAME " 403 " + (nick) + " " + (channel) + " :You have been kicked by " + (kicker) + " (" + (reason) + ")")
 #define PRIVMSG(nick, user, channel, message) (":" + (nick) + "!" + (user) + "@127.0.0.1 PRIVMSG " + (channel) + " :" + (message))
 

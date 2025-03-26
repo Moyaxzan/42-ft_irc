@@ -87,6 +87,7 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 			removeClientFromChannel(chan, target);
 			chan->broadcast(client, BROADKICK(kickerNick, kickerUsername, channel, targetsNick[i], reason));
 			target->sendMessage(NOTIFYKICK(targetsNick[i], channel, kickerNick, reason));
+			// target->sendMessage(kickerNick + "!" + kickerUsername + "@127.0.0.1 KICK " + chan->getName() + " " + target->getNick() + " " + reason);
 		}
 	}
 	return (true);

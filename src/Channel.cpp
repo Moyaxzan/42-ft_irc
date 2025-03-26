@@ -200,6 +200,7 @@ bool	Channel::broadcast(Client *sender, std::string message) {
 	std::list<Client *>::iterator membr;
 	for (membr = this->members_.begin(); membr != this->members_.end(); membr++) {
 		if (!sender || (*membr)->getNick() != sender->getNick()) {
+            std::cout << "Ca seeeend\n";
 			(*membr)->sendMessage(message);
 		}
 	}
