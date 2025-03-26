@@ -18,6 +18,8 @@
 
 class BadPerson;
 
+extern std::string channel;
+
 typedef struct s_msg
 {
     std::string original;
@@ -52,7 +54,7 @@ class Bot /* : public Client */
         int  getClientSocket(void);
         
         t_msg parseMsg(std::string msg);
-        void sendMsg(std::string const & to_send, int time);
+        void sendMsg(std::string const & to_send, int time, bool server);
         std::string recvMsg(void);
         
         void monitor(t_msg & msg);

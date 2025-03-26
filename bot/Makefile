@@ -12,7 +12,8 @@ SRCS =	./src/Bot.cpp \
 		./src/Gun.cpp \
 		./src/BadPerson.cpp \
 		./src/BotExceptions.cpp \
-		./src/main.cpp
+		./src/main.cpp \
+		./src/global.cpp
 
 OBJS_DIR = .objs/
 

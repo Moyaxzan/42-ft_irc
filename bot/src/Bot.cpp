@@ -1,4 +1,5 @@
 #include "../include/Bot.hpp"
+#include "../include/global.hpp"
 
 Bot::Bot(char *port, char *pwd)
 {
@@ -6,12 +7,12 @@ Bot::Bot(char *port, char *pwd)
     std::string line;
     DIR *profanities_dir;
     dirent *curr;
-
+    
     profanities_dir = opendir("./profanities");
     if (profanities_dir)
     {
         while ((curr = readdir(profanities_dir)))
-            addProfanityDict(std::string(curr->d_name));
+        addProfanityDict(std::string(curr->d_name));
         closedir(profanities_dir);
     }
     else
@@ -50,18 +51,14 @@ void Bot::initServerConnection_(char *port, char *pwd)
     if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
         throw ConnectionError();
 
-    this->sendMsg("CAP LS 302", 0);
+    this->sendMsg("CAP LS 302", 0, true);
     std::string res = this->recvMsg();
-    // if (res.find("CAP END" ) != res.npos)  // GOOD AUTH TO ADD BACK // plus d'actualite 
-    // {
-        this->sendMsg("PASS " + std::string(pwd), 1);
-        res = this->recvMsg();
-        if (res.find("Invalid password") != res.npos)
-            throw WrongPassword();
-        this->sendMsg("NICK " + std::string("sheriff"), 1);
-        this->sendMsg("USER sheriff localhost localhost: le_sheriff", 1);
-        this->sendMsg("JOIN #newchannel", 10);
-    // }
+    this->sendMsg("PASS " + std::string(pwd), 1, true);
+    res = this->recvMsg();
+    if (res.find("Invalid password") != res.npos)
+        throw WrongPassword();
+    this->sendMsg("NICK " + std::string("sheriff"), 1, true);
+    this->sendMsg("USER sheriff localhost localhost: le_sheriff", 1, true);
 }
 
 std::vector<std::vector<std::string> > &Bot::getDicts(void)
@@ -69,11 +66,16 @@ std::vector<std::vector<std::string> > &Bot::getDicts(void)
     return this->profanities_;
 }
 
-void Bot::sendMsg(std::string const &to_send, int time)
+void Bot::sendMsg(std::string const &to_send, int time, bool server)
 {
+    std::string final_str;
+    if (!server)  // wont be necessary after invite
+        final_str = "PRIVMSG " + channel + " :" + to_send;
+    else
+        final_str = to_send;
+    int str_len = final_str.length();
+    const char *str = final_str.c_str();
     int bytes_sent = 0;
-    int str_len = to_send.length();
-    const char *str = to_send.c_str();
     int send_res;
 
     while (bytes_sent < str_len)
@@ -142,13 +144,16 @@ void Bot::checkAddBadPerson(std::string username)
             if ((*it).getStrike() == 1)
             {
                 (*it).incStrike();
-                this->sendMsg("BOT: This is your last warning " + username + "! Next time you're getting some time off.\n", 0);
+                this->sendMsg("Last damn chance, " RED + username + RESET + ". " + UNDERLINE + "Step wrong again, you’re gone.\n", 0, false);
                 return ;
             }
             else if ((*it).getStrike() == 2)
             {
-                this->sendMsg("BOT: That's it " + username + " ! You are out! OUT !\n", 0);
-                this->sendMsg("BOT: KICK MESSAGE SERVEUR " + username + "\n", 0);
+                this->sendMsg(BOLD "That's it " RED BLINK + username + RESET BOLD ". I'm kicking you out, feller. And don’t you dare crawl back." + RESET + "\n", 0, false);
+                username.erase(0, 1);
+                username.erase(username.size() - 1);
+                std::cout << "KICK " + channel + " " + username << "\n";
+                this->sendMsg("KICK " + channel + " " + username + " :so rude", 0, true);
                 this->bad_people.erase(it);
                 return ;
             }
@@ -156,7 +161,7 @@ void Bot::checkAddBadPerson(std::string username)
     }
     BadPerson first_warning(username);
     this->bad_people.push_back(username);
-    this->sendMsg("BOT: First warning " + username + ". This is my channel and we're being polite around here.\n", 0);
+    this->sendMsg("Watch your mouth, cowboy. One more word outta line, and you’re dust. Understood, " ORANGE + username + RESET +"?\n", 0, false);
 }
 
 t_msg Bot::parseMsg(std::string recv_msg)
@@ -176,6 +181,7 @@ t_msg Bot::parseMsg(std::string recv_msg)
     it->erase(0, 1);
     split_msg.begin()->erase(0, 1);
     final_msg.username = *split_msg.begin();
+    final_msg.username = "<" + final_msg.username.substr(0, final_msg.username.find("!")) + ">";
     while (it != split_msg.end())
     {
         std::string tmp = *it;
@@ -237,13 +243,13 @@ int Bot::getClientSocket(void)
 void Bot::sendIntroRoulette(std::string username)
 {
     printBear();
-    sendMsg(username + " just threw down the gauntlet for a game of Russian Roulette! Saddle up, folks!\n", 0);
-    sendMsg("The rules are simple, partner. We got ourselves a six-shooter, but only one chamber's got lead in it.\n", 2);
-    sendMsg("Each turn, someone’s gotta cock the hammer and PULL the trigger, pointin’ it right at their own head.\n", 2);
-    sendMsg("Feelin’ lucky? You can ROLL and give the cylinder a spin to shuffle things up—if you got the nerve.\n", 2);
-    sendMsg("But one way or another, you’ll have to pull that trigger!\n", 2);
-    sendMsg("Ain’t nothin’ to it... just a bit of good ol’ fashioned frontier luck.\n", 2);
-    sendMsg("What could go wrong ? Good luck fellers!\n", 2);
+    sendMsg(username + " just threw down the gauntlet for a game of Russian Roulette! Saddle up, folks!\n", 0, false);
+    sendMsg("The rules are simple, partner. We got ourselves a six-shooter, but only one chamber's got lead in it.\n", 2, false);
+    sendMsg("Each turn, someone’s gotta cock the hammer and PULL the trigger, pointin’ it right at their own head.\n", 2, false);
+    sendMsg("Feelin’ lucky? You can ROLL and give the cylinder a spin to shuffle things up—if you got the nerve.\n", 2, false);
+    sendMsg("But one way or another, you’ll have to pull that trigger!\n", 2, false);
+    sendMsg("Ain’t nothin’ to it... just a bit of good ol’ fashioned frontier luck.\n", 2, false);
+    sendMsg("What could go wrong ? Good luck fellers!\n", 2, false);
 }
 
 void Bot::launchRoulette(t_msg const & msg)
@@ -272,29 +278,29 @@ void Bot::launchRoulette(t_msg const & msg)
             intro += player_nb + ", ";
     }
     intro += "have been selected !\n";
-    this->sendMsg(intro, 2);
+    this->sendMsg(intro, 2, false);
     std::srand(std::time(0));
     std::random_shuffle(players.begin(), players.end());
     intro.clear();
     intro = encapsulate(players[0]) + " will begin ! Would you rather PULL the trigger or ROLL the bullets ?\n";
-    this->sendMsg(intro, 2);
+    this->sendMsg(intro, 2, false);
     while (!(new_msg = this->recvMsg()).empty())
     {
         
         if (new_msg.find("PULL") != new_msg.npos)
         {
             if (!gun.checkBullet())
-                this->sendMsg("Survived\n", 0);
+                this->sendMsg("Survived\n", 0, false);
             else
             {
-                this->sendMsg("Dead!\n", 0);
+                this->sendMsg("Dead!\n", 0, false);
                 break;
             }
         }
         else if (new_msg.find("ROLL") != new_msg.npos)
         {
             gun.shuffleBullets();
-            this->sendMsg("Bullets have been rolled !\n", 0);
+            this->sendMsg("Bullets have been rolled !\n", 0, false);
         }
     }
     std::cout << "Looks like someone died !\n";
@@ -337,36 +343,6 @@ void Bot::printBear(void)
     if (!bear.is_open())
         return ;
     while (std::getline(bear, line, '\0'))
-        this->sendMsg(line, 1);
+        this->sendMsg(line, 1, false);
     bear.close();
 }
-
-// std::vector<std::string> split(std::string str, std::string delim)
-// {
-//     std::vector<std::string> tokens;
-//     std::string token;
-
-//     str.resize(str.length() - 3);
-//     while (str.find(delim) != str.npos)
-//     {
-//         // std::cout << "begin loop str = " << str << "\n";
-//         token = str.substr(0, str.find(delim));
-//         if (*token.begin() == ':')
-//             token.erase(0, 1);
-//         if (*token.end() == '\n')
-//         {
-//             // std::cout << "one token backslash" << std::endl;
-//             token.resize(str.length() - 1);
-//         }
-//         // std::cout << "pushing token = '" << token << "'" << "\n";
-//         tokens.push_back(token);
-//         str.erase(0, str.find(delim) + delim.length());
-//         // std::cout << "str after erase = '" << str << "'" << "\n";
-//     }
-//     if (*str.begin() == ':')
-//         str.erase(0, 1);
-//     // std::cout << "token = '" << str << "'" << "\n";
-//     tokens.push_back(str);
-//     // std::vector<std::string>::iterator it = tokens.begin();
-//     return tokens;
-// }
