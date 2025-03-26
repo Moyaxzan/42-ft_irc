@@ -52,7 +52,7 @@ int	getTargetFd(const std::map<std::string, int> &nickFd, const std::string &tar
 	return (-1);  // returns -1 if no client with the targeted nickname is found
 }
 
-int	isValidTarget(std::string target, Client *client, Server *server) {
+int	Command::isValidTarget(std::string target, Client *client, Server *server) {
 	DEBUG_LOG("Inside isValidTarget()");
 	if (!server->getNicknames().count(target))
 		return (client->sendMessage(ERR_NOSUCHNICK(client->getNick(), target)), -1);
@@ -85,7 +85,7 @@ void	handleSendError(int targetFd, std::string target, Client *client, Server *s
 void	sendPrivMsg(std::string target, std::string message, Client *client, Server *server) {
 	DEBUG_LOG("Inside sendPrivMsg");
 
-	int targetFd = isValidTarget(target, client, server);
+	int targetFd = Command::isValidTarget(target, client, server);
 	if (targetFd == -1)
 		return ;	
 	std::string sender = client->getNick() + "!" + client->getUsername() + "@127.0.0.1";

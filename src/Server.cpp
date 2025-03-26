@@ -101,11 +101,21 @@ const std::vector<Channel *>	Server::getChannels(void) const {
 	return (this->channels_);
 }
 
-Channel *Server::getChannelByName(const std::string &name) {
+Channel	*Server::getChannelByName(const std::string &name) {
 	std::vector<Channel *>::iterator it;
 	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
 		if ((*it)->getName() == name) {
-			return *it;
+			return (*it);
+		}
+	}
+	return (NULL);
+}
+
+Client	*Server::getClientByNick(const std::string &name) {
+	std::map<int, Client *>::iterator it;
+	for (it = this->clients_.begin(); it != this->clients_.end(); it++) {
+		if (it->second->getNick() == name) {
+			return (it->second);
 		}
 	}
 	return (NULL);
@@ -181,6 +191,7 @@ void Server::newClient_(void) {
 	std::cout << "New client detected with fd: " << accept_fd << std::endl;
 }
 
+/*
 std::vector<std::string>	splitLines(std::string msg) {
 	std::vector<std::string>	lines;
 	std::stringstream			ss(msg);
@@ -192,18 +203,6 @@ std::vector<std::string>	splitLines(std::string msg) {
 		lines.push_back(line);
 	}
 	return (lines);
-}
-
-/*
-envoie un message à tous les clients sauf le client emetteur
-void Server::broadcastMessage(const std::string &message, int sender_fd) {
-    std::map<int, Client>::iterator it;
-    for (it = this->clients_.begin(); it != this->clients_.end(); ++it) {
-        int client_fd = it->first;
-        if (client_fd != sender_fd) { // Ne pas renvoyer le message à l'émetteur
-            send(client_fd, message.c_str(), message.size(), 0);
-        }
-    }
 }
 */
 
@@ -234,14 +233,13 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::join(this->clients_[fd], this, cmd));
 	} else if (cmd.find("TOPIC ") == 0) {
 		return (Command::topic(this->clients_[fd], this, cmd));
-    /* else if (cmd.find("INVITE ") == 0) {
+    } else if (cmd.find("INVITE ") == 0) {
 		return (Command::invite(this->clients_[fd], this, cmd));
 	} else if (cmd.find("KICK ") == 0) {
 		return (Command::kick(this->clients_[fd], this, cmd));
 	}else if (cmd.find("MODE ") == 0) {
-		return (Command::mode(this->clients_[fd], this, cmd));
-	}*/
-    }
+		return (Command::mode(this, this->clients_[fd], cmd));
+	}
 	return (true);
 }
 
@@ -308,6 +306,8 @@ void	Server::disconnectClient(int fd) {
 	delete client;						//free client
 	this->clients_.erase(fd);
 	//change fd_max_ if it is equal to fd and look for the new higher fd
+	// supprimer le client de tous les canaux où il était présent et lui enlevers son dstatut d'opérateur
+	// signaler aux autres clients présents dans les meme canaux la déconnexion du client actuel (avec broadcastmessage ?)
 	if (nickname.empty())
 		std::cout << "Client " << fd << " disconnected" << std::endl;
 	else
@@ -326,19 +326,16 @@ void Server::readClient(int fd) {
 		disconnectClient(fd);
 		return ;
 	}
-	std::string	msg(buffer);
-	if (msg.length() == 0)
-		return ;
-	std::vector<std::string> lines = splitLines(msg);
-	std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
-	for (size_t i = 0; i < lines.size(); i++) {
-		if (!handleCommand(fd, lines[i]))
-			break;
+	//std::vector<std::string> lines = splitLines(msg);
+	std::vector<std::string> lines = split(msg, '\n');
+	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
+		if (!handleCommand(fd, *line))
+			break ;
 	}
 
 }
 
-// IMposer des noms de channels commençant par "#"
+// Imposer des noms de channels commençant par "#"
 // see https://www.codequoi.com/programmation-reseau-via-socket-en-c/#c%C3%B4t%C3%A9-serveur--accepter-des-connexions-client-via-socket
 // for guideline
 void Server::runServer(void)
@@ -381,12 +378,3 @@ void	Server::sendWelcomeMessage_(int fd) {
     // client->sendMessage(std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
 }
 
-/*
-✔ Si le client se déconnecte volontairement (QUIT), il n'est pas nécessaire de lui envoyer un message, mais il faut notifier les autres clients.
-dans disconnectClient : + relayer un message du client qui s'est déconnecté aux autres en meme tps que la notification de déconnexion ?
-std::string quitMsg = ":" + this->clients_[fd].getNick() + " QUIT :Client exited\r\n";
-broadcastMessage(quitMsg, fd); // Fonction qui envoie un message à tous les autres clients
-
-✔ Si la déconnexion est forcée par le serveur, il est préférable d’envoyer un message ERROR. (créer une fonction pour y faire appel)
-✔ Utilise broadcastMessage() pour prévenir les autres utilisateurs d’un départ.
-*/

@@ -148,10 +148,34 @@ void	Channel::setUserLimit(int limit) {
 
 // *************************************** MEMBER FUNCTIONS **************************************************************//
 
+bool	Channel::isMember(Client *user) {
+	std::list<Client *>::iterator it;
+	std::string	usrNick = user->getNick();
+	for (it = this->members_.begin(); it != this->members_.end(); it++) {
+		if ((*it)->getNick() == usrNick) {
+			return (true);
+		}
+	}
+	return (false);
+}
+
+/*
+bool	Channel::isMember(std::string nickname) {
+	std::list<Client *>::iterator it;
+	for (it = this->members_.begin(); it != this->members_.end(); it++) {
+		if ((*it)->getNick() == nickname) {
+			return (true);
+		}
+	}
+	return (false);
+}
+*/
+
 bool	Channel::isOperator(Client *user) {
 	std::vector<Client *>::iterator it;
+	std::string	usrNick = user->getNick();
 	for (it = this->operators_.begin(); it != this->operators_.end(); it++) {
-		if ((*it)->getNick() == user->getNick()) {
+		if ((*it)->getNick() == usrNick) {
 			return (true);
 		}
 	}
@@ -160,8 +184,9 @@ bool	Channel::isOperator(Client *user) {
 
 bool	Channel::isInvited(Client *user) {
 	std::vector<Client *>::iterator it;
+	std::string	usrNick = user->getNick();
 	for (it = this->invited_.begin(); it != this->invited_.end(); it++) {
-		if ((*it)->getNick() == user->getNick()) {
+		if ((*it)->getNick() == usrNick) {
 			return (true);
 		}
 	}

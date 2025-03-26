@@ -23,7 +23,11 @@ SRCS =	./src/argparsing.cpp \
 		./src/commands/ping.cpp \
 		./src/commands/privMsg.cpp \
 		./src/commands/topic.cpp \
-		./src/commands/user.cpp
+		./src/commands/user.cpp \
+		./src/commands/invite.cpp \
+		./src/commands/kick.cpp
+		
+		
 
 OBJS_DIR = .objs/
 
