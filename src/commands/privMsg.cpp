@@ -55,7 +55,7 @@ int	getTargetFd(const std::map<std::string, int> &nickFd, const std::string &tar
 int	isValidTarget(std::string target, Client *client, Server *server) {
 	DEBUG_LOG("Inside isValidTarget()");
 	if (!server->getNicknames().count(target))
-		return (client->sendMessage(ERR_NOSUCHNICK(client->getNick())), -1);
+		return (client->sendMessage(ERR_NOSUCHNICK(client->getNick(), target)), -1);
 	if (target == client->getNick())
 		return (client->sendMessage(ERR_CANNOTSENDTOSELF(client->getNick())), -1);
 

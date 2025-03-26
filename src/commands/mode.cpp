@@ -41,7 +41,7 @@ static bool checkAddOperator(Channel *channel, Client *client, bool modeType, co
 
 	if (!to_promote)
 	{
-		client->sendMessage(ERR_NOSUCHNICK(target_client));
+		client->sendMessage(ERR_NOSUCHNICK(client->getNick(), target_client));
 		return false;
 	}
 	if (modeType == true)
@@ -113,11 +113,10 @@ static bool handleChannelMode(Client* client, Channel* channel, const std::strin
 	
 	if (!mode.length())
 		return false;		// ignoring irssi freaking random empty "mode"
+    else if (mode.length() != 2)
+		return (client->sendMessage(ERR_UNKNOWNMODE(client->getNick(), mode)));
 	if (!channel->isOperator(client))
-	{
-		client->sendMessage(ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName()));
-		return false;
-	}
+		return (client->sendMessage(ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName())));
 	switch (modeFlag) {
 		case 'i': 
 			channel->setInviteOnly(modeType == '+');

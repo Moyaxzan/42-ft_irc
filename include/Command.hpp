@@ -61,7 +61,6 @@ bool isValidChannelName(const std::string &name);
 #define ERR_NICKNAMEINUSE(nick) (SERV_NAME " 433 " + (nick) + " :Nickname is already in use")
 #define ERR_ERRONEUSNICKNAME(nick) (SERV_NAME " 432 " + (nick) + " :Erroneous nickname")
 #define NICKSET(nick) (SERV_NAME " NOTICE AUTH :Nickname set to " + (nick))
-// ERR_NOSUCHNICK (401) <nickname> :No such nick/channel
 
 //****************************	USERNAME MACROS	***********************************//
 #define ERR_ERRONEUSUSERNAME(nick) (SERV_NAME " 461 " + (nick) + " USER :Invalid username")
@@ -78,7 +77,7 @@ bool isValidChannelName(const std::string &name);
 //****************************	PRIVMSG MACRO	***********************************//
 #define ERR_NOTEXTTOSEND(nick) (SERV_NAME " 412 " + (nick) + " :No text to send")
 #define ERR_INPUTTOOLONG(nick) (SERV_NAME " 417 " + (nick) + " :Input line is too long") // no an official code of the IRC protocol
-#define ERR_NOSUCHNICK(nick) (SERV_NAME " 401 " + (nick) + " :No such nick")
+#define ERR_NOSUCHNICK(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :")
 #define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 403 " + (nick) + " " + (channel) + " :No such channel")
 #define ERR_CANNOTSENDTOSELF(nick) (SERV_NAME " 431 " + (nick) + " :Cannot send a message to yourself")
 #define ERR_TARGETNOTAUTH(nick, target) (SERV_NAME " 484 " + (nick) + " " + (target) + " :Cannot send message to user (not fully registered)")
@@ -98,19 +97,17 @@ bool isValidChannelName(const std::string &name);
 //**************************** CHANNEL MACRO ***********************************//
 #define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
 #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel))
-#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
+#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel))
 #define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel))
 #define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
 #define ERR_BADCHANLIMIT(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Bad channel limit")
-#define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're no one to try to dictate your own law, feller! You aint operator 'round here")
-#define ERR_CHANOPNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're the last operator, can't remove your rights")
+#define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're no one to try to dictate your own law, feller! You aint operator 'round here")
+#define ERR_CHANOPNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're the last operator in town buddy, we can't let you abandon your duties just like that!")
 #define RPL_YOUREOPER(nick) (SERV_NAME " " + (nick) + " :You are now an IRC operator")
 #define NOTICE_OPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, <" + GREEN + nick + RESET + ">. You’ve been deputized. Keep the outlaws in check, and don’t go startin’ no trouble yourself. 🤠")
-#define NOTICE_UNOPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :The sun sets on <" + GREEN + nick + RESET + ">’s time as Sheriff. The badge is off, the dust settles… and the law moves on. Hope they don’t turn outlaw. 🤠🌵")
+#define NOTICE_UNOPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :The sun sets on <" + GREEN + nick + RESET + ">’s time as Sheriff. The badge is off, the dust settles… and the law moves on. Hope they don’t turn outlaw. 🌵")
 #define NOTICE_ALREADYOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Son, you tryna promote <" + GREEN + nick + RESET + ">? They’re already the Sheriff ‘round here! Might wanna check your whiskey before makin’ decisions. 🥃")
 #define NOTICE_NOTOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, partner... you tryin’ to strip <" + GREEN + nick + RESET + "> of a badge they never had? That’s like takin’ boots off a barefoot man. Ain’t much to remove. 👢")
-
-
 
 #define CACTUS "\
 " RESET "     .   " GREEN "  _ " RESET "   +    .  " BROWN " ______" RESET "   .          .\n\
