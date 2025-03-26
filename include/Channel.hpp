@@ -48,6 +48,8 @@ class Channel {
 
 
 		//MEMBER FUNCTIONS
+		bool					isMember(Client *user);
+		//bool					isMember(std::string nickname);
 		bool					isOperator(Client *user);
 		bool					isInvited(Client *user);
 		bool					broadcast(Client *sender, std::string message);

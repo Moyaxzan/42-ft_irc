@@ -53,6 +53,7 @@ class Server {
 		const std::map<int, Client *>&		getClients(void) const;
 		const std::vector<Channel *>		getChannels(void) const;
 		Channel*							getChannelByName(const std::string &name);
+		Client*								getClientByNick(const std::string &name);
 		//setters
 		void							addNickname(std::string nickname, int fd);
 		bool							addChannel(std::string channelName, Client *creator, std::string passwd);

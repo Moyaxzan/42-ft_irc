@@ -63,6 +63,7 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 	} else if (chan->getPassword() != password) {
 		client->sendMessage(ERR_BADCHANNELKEY(client->getNick(), channelName));
 	} else {
+		// if is invited, remove from invited list ?
 		chan->addMember(client);
 		client->sendMessage(JOINCONFIRMED(nick, user, channelName));
 		chan->broadcast(client, JOINCONFIRMED(nick, user, channelName));
@@ -79,7 +80,7 @@ bool Command::join(Client *client, Server *server, std::string &line) {
 
 bool isValidChannelName(const std::string &name) {
 	if (name.empty()) // Test with only spaces
-		return false;
+		return (false);
 
 	// Check if it starts with '#'
 	if (name[0] != '#')
