@@ -78,7 +78,7 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 	for (unsigned int i = 0; i < targetsNick.size(); i++) {
 		Client *target = server->getClientByNick(targetsNick[i]);
 		if (!target)
-			client->sendMessage(ERR_NOSUCHNICK(client->getNick()));
+			client->sendMessage(ERR_NOSUCHNICK(client->getNick(), targetsNick[0]));
 		else if (!chan->isMember(target)) // is kicked client on channel ?
 			client->sendMessage(ERR_USERNOTINCHANNEL(kickerNick, targetsNick[i], channel));
 		else if (!target->isWelcomeSent())// check if targeted client is fully authenticated

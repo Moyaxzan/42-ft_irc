@@ -89,7 +89,7 @@ bool isValidChannelName(const std::string &name);
 #define ENDOFNAMES(nick, channel) (SERV_NAME " 366 " + (nick) + " " + (channel) + " :End of /NAMES list.")
 // #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel) + ":Cannot join channel (+l)")
 #define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
-#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
+// #define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
 #define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel) + ":Cannot join channel (+k)")
 
 //****************************		PRIVMSG MACROS	***********************************//
@@ -104,7 +104,7 @@ bool isValidChannelName(const std::string &name);
 #define ERR_CANNOTSENDMSG(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (unknown send() funct error)")
 
 //****************************		INVITE MACROS	***********************************//
-#define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 401 " + (nick) + " " + (channel) + " :No such channel")
+// #define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 401 " + (nick) + " " + (channel) + " :No such channel")
 #define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
 #define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're not a channel operator")
 #define ERR_USERONCHANNEL(nick, target, channel) (SERV_NAME " 443 " + (nick) + " " + (target) + " " + (channel) + " :Is already on channel")
@@ -129,10 +129,10 @@ bool isValidChannelName(const std::string &name);
 #define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
 #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel))
 #define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel))
-#define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel))
+// #define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel))
 #define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
 #define ERR_BADCHANLIMIT(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Bad channel limit")
-#define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're no one to try to dictate your own law, feller! You aint operator 'round here")
+// #define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're no one to try to dictate your own law, feller! You aint operator 'round here")
 #define ERR_CHANOPNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're the last operator in town buddy, we can't let you abandon your duties just like that!")
 #define RPL_YOUREOPER(nick) (SERV_NAME " " + (nick) + " :You are now an IRC operator")
 #define NOTICE_OPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, <" + GREEN + nick + RESET + ">. You’ve been deputized. Keep the outlaws in check, and don’t go startin’ no trouble yourself. 🤠")

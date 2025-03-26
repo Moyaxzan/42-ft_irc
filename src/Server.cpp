@@ -327,7 +327,8 @@ void Server::readClient(int fd) {
 		return ;
 	}
 	//std::vector<std::string> lines = splitLines(msg);
-	std::vector<std::string> lines = split(msg, '\n');
+	// std::vector<std::string> lines = split(msg, '\n');
+	std::vector<std::string> lines = split(std::string(buffer), '\n');
 	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
 		if (!handleCommand(fd, *line))
 			break ;
