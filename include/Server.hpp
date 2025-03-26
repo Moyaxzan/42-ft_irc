@@ -15,7 +15,8 @@
 
 #define SERV_IP "127.0.0.1"
 
-extern volatile __sig_atomic_t g_stopSig;
+// extern volatile __sig_atomic_t g_stopSig;
+extern volatile sig_atomic_t g_stopSig;
 
 class Server {
 	private:
