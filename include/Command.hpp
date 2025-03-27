@@ -88,9 +88,9 @@ bool isValidChannelName(const std::string &name);
 #define JOINTOPIC(nick, channel, topic) (SERV_NAME " 332 " + (nick) + " " + (channel) + " :" + topic)
 #define LISTNAMES(nick, channel, names) (SERV_NAME " 353 " + (nick) + " = " + (channel) + " :" + (names))
 #define ENDOFNAMES(nick, channel) (SERV_NAME " 366 " + (nick) + " " + (channel) + " :End of /NAMES list.")
-// #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel) + ":Cannot join channel (+l)")
+#define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel) + ":Cannot join channel (+l)")
 #define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
-// #define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
+#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
 #define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel) + ":Cannot join channel (+k)")
 
 //****************************		PRIVMSG MACROS	***********************************//
@@ -103,33 +103,20 @@ bool isValidChannelName(const std::string &name);
 #define ERR_TARGETDISCONNECTED(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (target disconnected unexpectedly)")
 #define ERR_BUFFERFULL(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (buffer full)")
 #define ERR_CANNOTSENDMSG(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (unknown send() funct error)")
-
-//****************************		INVITE MACROS	***********************************//
-// #define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 401 " + (nick) + " " + (channel) + " :No such channel")
-#define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
-#define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're not a channel operator")
-#define ERR_USERONCHANNEL(nick, target, channel) (SERV_NAME " 443 " + (nick) + " " + (target) + " " + (channel) + " :Is already on channel")
-#define RPL_INVITING(invitorNick, invitorUser, channel, nick) (":" + (invitorNick) + "!" + (invitorUser) + "@127.0.0.1 INVITE " + (nick) + " " + (channel))
-#define INVITECONFIRMED(nick, channel, target) (SERV_NAME " 341 " + (nick) + " " + (target) + " " + (channel))
-
-//****************************		KICK MACROS	***********************************//
-#define ERR_USERNOTINCHANNEL(nick, target, channel) (SERV_NAME " 441 " + (nick) + " " + (target) + " " + (channel) + " :Target is not in channel")
-#define BROADKICK(nick, user, channel, target, reason) (":" + (nick) + "!" + (user) +  "@127.0.0.1 KICK " + (channel) + " " + (target) + " :" + (reason))
-#define NOTIFYKICK(nick, channel, kicker, reason)  (SERV_NAME " 403 " + (nick) + " " + (channel) + " :You have been kicked by " + (kicker) + " (" + (reason) + ")")
 #define PRIVMSG(nick, user, channel, message) (":" + (nick) + "!" + (user) + "@127.0.0.1 PRIVMSG " + (channel) + " :" + (message))
+
+//**************************** MODE MACRO ***********************************//
+#define ERR_UNKNOWNMODE(nick, mode) (SERV_NAME " 472 " + (nick) + " " + (mode) + " :is unknown mode")
 
 //**************************** TOPIC MACRO ***********************************//
 #define UNSET_TOPIC(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 TOPIC " + channel + " :")
 #define RPL_NOTOPIC(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :No topic is set")
 #define RPL_TOPIC(nick, channel, topic) (SERV_NAME " 332 " + (nick) + " " + (channel) + " :" + topic)
 
-//**************************** MODE MACRO ***********************************//
-#define ERR_UNKNOWNMODE(nick, mode) (SERV_NAME " 472 " + (nick) + " " + (mode) + " :is unknown mode")
-
-//**************************** CHANNEL MACRO ***********************************//
+//****************************		CHANNEL MACROS	***********************************//
 #define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
-#define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel))
-#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel))
+// #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel))
+// #define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel))
 // #define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel))
 #define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
 #define ERR_BADCHANLIMIT(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Bad channel limit")
@@ -141,7 +128,20 @@ bool isValidChannelName(const std::string &name);
 #define NOTICE_ALREADYOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Son, you tryna promote <" + GREEN + nick + RESET + ">? They’re already the Sheriff ‘round here! Might wanna check your whiskey before makin’ decisions. 🥃")
 #define NOTICE_NOTOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, partner... you tryin’ to strip <" + GREEN + nick + RESET + "> of a badge they never had? That’s like takin’ boots off a barefoot man. Ain’t much to remove. 👢")
 
-#define CACTUS "\
+//****************************		INVITE MACROS	***********************************//
+#define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 403 " + (nick) + " " + (channel) + " :No such channel")
+#define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
+#define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're not a channel operator")
+#define ERR_USERONCHANNEL(nick, target, channel) (SERV_NAME " 443 " + (nick) + " " + (target) + " " + (channel) + " :Is already on channel")
+#define RPL_INVITING(invitorNick, invitorUser, channel, nick) (":" + (invitorNick) + "!" + (invitorUser) + "@127.0.0.1 INVITE " + (nick) + " " + (channel))
+#define INVITECONFIRMED(nick, channel, target) (SERV_NAME " 341 " + (nick) + " " + (target) + " " + (channel))
+
+//****************************		KICK MACROS	***********************************//
+#define ERR_USERNOTINCHANNEL(nick, target, channel) (SERV_NAME " 441 " + (nick) + " " + (target) + " " + (channel) + " :Target is not in channel")
+#define BROADKICK(nick, user, channel, target, reason) (":" + (nick) + "!" + (user) +  "@127.0.0.1 KICK " + (channel) + " " + (target) + (reason))
+#define NOTIFYKICK(nick, channel, kicker, reason)  (SERV_NAME " NOTICE " + (nick) + " " + (channel) + " :You have been kicked by " + (kicker) + (reason))
+
+# define CACTUS "\
 " RESET "     .   " GREEN "  _ " RESET "   +    .  " BROWN " ______" RESET "   .          .\n\
 " RESET "  (      " GREEN "/|\\" RESET "      .    " BROWN "|      \\" RESET "      .   +\n\
 " RESET "      . " GREEN "|||||     " BROWN "_    | |   | | ||" RESET "         .\n\
