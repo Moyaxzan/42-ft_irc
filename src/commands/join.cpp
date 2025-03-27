@@ -31,7 +31,6 @@ bool isValidChannelName(const std::string &name);
 **
 */
 
-//
 bool Command::join(Client *client, Server *server, std::string &line)
 {
     std::istringstream iss(line);
