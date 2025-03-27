@@ -36,6 +36,7 @@ private:
 		static bool topic(Client *client, Server *server, const std::string& line);
         static void	removeClientFromChannel(Channel *channel, Client *client);
 		//static bool mode(Client *client, Server *server, const std::string& line);
+		static bool names(Client *client, Server *server, const std::string &line);
 };
 
 bool isValidChannelName(const std::string &name);

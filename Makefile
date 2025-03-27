@@ -18,6 +18,7 @@ SRCS =	./src/argparsing.cpp \
 		./src/commands/cap.cpp \
 		./src/commands/join.cpp \
 		./src/commands/mode.cpp \
+		./src/commands/names.cpp \
 		./src/commands/nick.cpp \
 		./src/commands/pass.cpp \
 		./src/commands/ping.cpp \
