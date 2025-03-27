@@ -27,7 +27,7 @@ typedef struct s_msg
     std::vector<std::string> content;
 } t_msg;
 
-class Bot /* : public Client */
+class Bot
 {
     private:
         int socket_;
@@ -40,9 +40,12 @@ class Bot /* : public Client */
         void printBear(void);
         void fileError(void);
         bool checkBadContent(std::vector<std::string> & content, std::string const & bad_word);
+        bool checkIfOper(void);
         
+        std::vector<std::string> getPlayersVec(void);
         void launchRoulette(t_msg const & msg);
         void sendIntroRoulette(std::string username);
+        void rouletteLoop(std::vector<std::string> & players, Gun & gun);
 
     public:
         Bot(char *port, char *pwd);
@@ -61,7 +64,6 @@ class Bot /* : public Client */
         void checkRoulette(t_msg & msg);
 };
 
-std::string encapsulate(int i);
 std::vector<std::string> split(std::string str, std::string delim);
 
 class ConnectionError : public std::exception

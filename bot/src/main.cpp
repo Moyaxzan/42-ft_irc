@@ -30,7 +30,7 @@ int main(int argc, char **argv)
         }
 
         bot.sendMsg("It looks like this city needed a sheriff.. and here I am.\n", 0, false);
-        
+        bot.sendMsg("Just a quick reminder, fellers : I need operator rights if you want me to do the cleaning 'round here\n", 1, false);
         while (!(recv_msg = bot.recvMsg()).empty())
         {
             std::cout << recv_msg;

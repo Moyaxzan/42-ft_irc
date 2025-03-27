@@ -29,8 +29,6 @@ void Gun::shuffleBullets(void)
 {
     std::srand(std::time(0));
     std::random_shuffle(this->bullets_.begin(), this->bullets_.end());
-    for (int i = 0; i < 6; i++)
-        this->bullets_[i] ? std::cout << "true\n" : std::cout << "false\n";
 }
 
 bool Gun::checkBullet(void)

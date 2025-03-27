@@ -53,12 +53,12 @@ void Bot::initServerConnection_(char *port, char *pwd)
 
     this->sendMsg("CAP LS 302", 0, true);
     std::string res = this->recvMsg();
-    this->sendMsg("PASS " + std::string(pwd), 1, true);
+    this->sendMsg("PASS " + std::string(pwd), 0, true);
     res = this->recvMsg();
     if (res.find("Invalid password") != res.npos)
         throw WrongPassword();
-    this->sendMsg("NICK " + std::string("sheriff"), 1, true);
-    this->sendMsg("USER sheriff localhost localhost: le_sheriff", 1, true);
+    this->sendMsg("NICK " + std::string("sheriff"), 0, true);
+    this->sendMsg("USER sheriff localhost localhost: le_sheriff", 0, true);
 }
 
 std::vector<std::vector<std::string> > &Bot::getDicts(void)
@@ -69,7 +69,7 @@ std::vector<std::vector<std::string> > &Bot::getDicts(void)
 void Bot::sendMsg(std::string const &to_send, int time, bool server)
 {
     std::string final_str;
-    if (!server)  // wont be necessary after invite
+    if (!server)    // server == true -> send server msg
         final_str = "PRIVMSG " + channel + " :" + to_send;
     else
         final_str = to_send;
@@ -144,7 +144,7 @@ void Bot::checkAddBadPerson(std::string username)
             if ((*it).getStrike() == 1)
             {
                 (*it).incStrike();
-                this->sendMsg("Last damn chance, " RED + username + RESET + ". " + UNDERLINE + "Step wrong again, you’re gone.\n", 0, false);
+                this->sendMsg("Last damn chance, " RED + username + RESET + ". " + "Step wrong again, you’re gone.\n", 0, false);
                 return ;
             }
             else if ((*it).getStrike() == 2)
@@ -210,7 +210,7 @@ void Bot::checkRoulette(t_msg & msg)
     std::vector<std::string>::iterator it = msg.content.begin();
     while (it != msg.content.end())
     {
-        if (*it == "START" && it + 1 != msg.content.end() && *(it + 1) == "RCR")
+        if (*it == "START" && it + 1 != msg.content.end() && *(it + 1) == "ROULETTE")
             launchRoulette(msg);
         it++;
     }
@@ -242,81 +242,136 @@ int Bot::getClientSocket(void)
 
 void Bot::sendIntroRoulette(std::string username)
 {
-    printBear();
-    sendMsg(username + " just threw down the gauntlet for a game of Russian Roulette! Saddle up, folks!\n", 0, false);
+    sendMsg(GREEN + username + RESET + " just threw down the gauntlet for a game of Russian Roulette! Saddle up, folks!\n", 0, false);
     sendMsg("The rules are simple, partner. We got ourselves a six-shooter, but only one chamber's got lead in it.\n", 2, false);
     sendMsg("Each turn, someone’s gotta cock the hammer and PULL the trigger, pointin’ it right at their own head.\n", 2, false);
     sendMsg("Feelin’ lucky? You can ROLL and give the cylinder a spin to shuffle things up—if you got the nerve.\n", 2, false);
     sendMsg("But one way or another, you’ll have to pull that trigger!\n", 2, false);
-    sendMsg("Ain’t nothin’ to it... just a bit of good ol’ fashioned frontier luck.\n", 2, false);
     sendMsg("What could go wrong ? Good luck fellers!\n", 2, false);
+}
+
+static bool msg_cmp(std::vector<std::string> msg, std::string to_cmp)
+{
+    return (msg.size() == 1 && msg[0] == to_cmp);
+}
+
+void Bot::rouletteLoop(std::vector<std::string> & players, Gun & gun)
+{
+    std::string msg;
+    t_msg parsed_msg;
+    
+    while (1)
+    {
+        this->sendMsg("It's " GREEN + players[0] + RESET + "'s turn! Would you rather ROLL the barrel or PULL the trigger?\n", 2, false);
+        while (!(msg = this->recvMsg()).empty())
+        {
+            parsed_msg = parseMsg(msg);
+            this->monitor(parsed_msg);
+            if (parsed_msg.username == players[0] && msg_cmp(parsed_msg.content, "ROLL"))
+            {
+                this->sendMsg("Rolling barrel...\n", 0, false);
+                gun.shuffleBullets();
+                this->sendMsg("Done !\n", 2, false);
+                break ;
+            }
+            else if (parsed_msg.username == players[0] && msg_cmp(parsed_msg.content, "PULL"))
+            {
+                this->sendMsg("Cocking the hammer.. Ready ?\n", 0, false);
+                for (int i = 2; i > 0; i--)
+                    this->sendMsg("..\n", 2, false);
+                if (gun.checkBullet())
+                {
+                    this->sendMsg(RED BLINK "BANG! " RESET GREEN + parsed_msg.username + RESET + " died!\n", 3, false);
+                    this->sendMsg("See you in another life, loser.\n", 2, false);
+                    parsed_msg.username = parsed_msg.username.erase(0, 1);
+                    parsed_msg.username = parsed_msg.username.erase(parsed_msg.username.length() - 1, 1);
+                    this->sendMsg("KICK " + channel + " " + parsed_msg.username, 0, true);
+                    return ;
+                }
+                this->sendMsg(GREEN + parsed_msg.username + RESET + " survived !\n", 3, false);
+                std::rotate(players.begin(), players.begin() + 1, players.end());
+                break ;
+            }
+        }
+    }
+}
+
+bool Bot::checkIfOper(void)
+{
+    std::vector<std::string>::iterator it;
+    t_msg req;
+
+    sendMsg("NAMES " + channel, 0, true);
+    req = parseMsg(recvMsg());
+    for (it = req.content.begin(); it != req.content.end(); it++)
+    {
+        if ((*it).find("@sheriff") != std::string::npos)
+            return true;
+    }
+    return false;
+}
+
+std::vector<std::string> Bot::getPlayersVec(void)
+{
+    std::vector<std::string> players;
+    std::vector<std::string>::iterator it;
+    t_msg msg;
+
+    sendMsg("NAMES " + channel, 0, true);
+    msg = parseMsg(recvMsg());
+    for (it = msg.content.begin(); it != msg.content.end(); it++)
+    {
+        if ((*it)[0] == '#' || (*it).find("sheriff") != std::string::npos)
+            continue;
+        if ((*it)[0] == ':')
+            (*it).erase(0, 1);
+        if ((*it)[0] == '@')
+            (*it).erase(0, 1);
+        (*it).insert(0, "<");
+        (*it).insert((*it).length(), ">");
+        players.push_back(*it);
+    }
+    std::srand(std::time(0));
+    std::random_shuffle(players.begin(), players.end());
+    while (players.size() > 6)
+        players.pop_back();
+    for (it = players.begin(); it != players.end(); it++)
+        std::cout << *it << "\n";
+    return players;
 }
 
 void Bot::launchRoulette(t_msg const & msg)
 {
     Gun gun;
-    std::vector<int> players;
-    std::vector<int>::iterator it;
+    std::vector<std::string> players;
+    std::vector<std::string>::iterator it;
     std::string new_msg;
-    // std::string req;
 
-    (void) msg;
-
-    // requete au serveur pour pick 6 joueurs random (max) dans le channel
-    //  req = "1 3";
-    players.push_back(1);
-    players.push_back(2);
-    players.push_back(3);
-    players.push_back(4);
-    std::string intro = "Players ";
+    if (!checkIfOper())
+    {
+        this->sendMsg("I'm afraid I don't have operator rights fellers.. and therefore we can't play.\n", 0, false);
+        return ;
+    }
+    players = this->getPlayersVec(); // requete au serveur pour pick 6 joueurs random (max) dans le channel
+    sendIntroRoulette(msg.username);
+    std::string intro = "Players " GREEN;
     for (it = players.begin(); it != players.end(); it++)
     {
-        std::string player_nb = encapsulate(*it);
-        if (it == players.end())
-            intro += "and " + player_nb + " ";
+        if (it == players.end() - 1)
+            intro += RESET "and " GREEN + (*it) + RESET + " ";
         else
-            intro += player_nb + ", ";
+            intro += (*it) + RESET ", " + GREEN;
     }
     intro += "have been selected !\n";
     this->sendMsg(intro, 2, false);
-    std::srand(std::time(0));
-    std::random_shuffle(players.begin(), players.end());
-    intro.clear();
-    intro = encapsulate(players[0]) + " will begin ! Would you rather PULL the trigger or ROLL the bullets ?\n";
+    intro = GREEN + players[0] + RESET + " will begin !\n";
     this->sendMsg(intro, 2, false);
-    while (!(new_msg = this->recvMsg()).empty())
-    {
-        
-        if (new_msg.find("PULL") != new_msg.npos)
-        {
-            if (!gun.checkBullet())
-                this->sendMsg("Survived\n", 0, false);
-            else
-            {
-                this->sendMsg("Dead!\n", 0, false);
-                break;
-            }
-        }
-        else if (new_msg.find("ROLL") != new_msg.npos)
-        {
-            gun.shuffleBullets();
-            this->sendMsg("Bullets have been rolled !\n", 0, false);
-        }
-    }
-    std::cout << "Looks like someone died !\n";
+    rouletteLoop(players, gun);
 }
 
 void Bot::fileError(void)
 {
     std::cerr << "There was a problem opening a profanities file : " << std::strerror(errno) << "\n";
-}
-
-std::string encapsulate(int i)
-{
-    std::stringstream nb;
-
-    nb << "[" << i << "]";
-    return nb.str();
 }
 
 std::vector<std::string> split(std::string str, std::string delim)
