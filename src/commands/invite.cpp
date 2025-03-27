@@ -13,7 +13,7 @@
 ** Users cannot INVITE in invite-only channels unless they are operators.
 ** 
 ** Example:
-** In irssi: /invite Bob #saloon
+** In irssi: /invite Bob #saloon OR /invite Bob
 ** Command received by server : INVITE Bob #saloon
 **
 ** Expected Server Response:

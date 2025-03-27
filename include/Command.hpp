@@ -57,7 +57,6 @@ class Command {
 #define ERR_NICKNAMEINUSE(nick) (SERV_NAME " 433 " + (nick) + " :Nickname is already in use")
 #define ERR_ERRONEUSNICKNAME(nick) (SERV_NAME " 432 " + (nick) + " :Erroneous nickname")
 #define NICKSET(nick) (SERV_NAME " NOTICE AUTH :Nickname set to " + (nick))
-// ERR_NOSUCHNICK (401) <nickname> :No such nick/channel
 
 //****************************	USERNAME MACROS	***********************************//
 #define ERR_ERRONEUSUSERNAME(nick) (SERV_NAME " 461 " + (nick) + " USER :Invalid username")
@@ -89,7 +88,7 @@ class Command {
 #define ERR_CANNOTSENDMSG(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (unknown send() funct error)")
 
 //****************************		INVITE MACROS	***********************************//
-#define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 401 " + (nick) + " " + (channel) + " :No such channel")
+#define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 403 " + (nick) + " " + (channel) + " :No such channel")
 #define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
 #define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :You're not a channel operator")
 #define ERR_USERONCHANNEL(nick, target, channel) (SERV_NAME " 443 " + (nick) + " " + (target) + " " + (channel) + " :Is already on channel")
@@ -98,8 +97,8 @@ class Command {
 
 //****************************		KICK MACROS	***********************************//
 #define ERR_USERNOTINCHANNEL(nick, target, channel) (SERV_NAME " 441 " + (nick) + " " + (target) + " " + (channel) + " :Target is not in channel")
-#define BROADKICK(nick, user, channel, target, reason) (":" + (nick) + "!" + (user) +  "@127.0.0.1 KICK " + (channel) + " " + (target) + " " + (reason))
-#define NOTIFYKICK(nick, channel, kicker, reason)  (SERV_NAME " 403 " + (nick) + " " + (channel) + " :You have been kicked by " + (kicker) + " (" + (reason) + ")")
+#define BROADKICK(nick, user, channel, target, reason) (":" + (nick) + "!" + (user) +  "@127.0.0.1 KICK " + (channel) + " " + (target) + (reason))
+#define NOTIFYKICK(nick, channel, kicker, reason)  (SERV_NAME " NOTICE " + (nick) + " " + (channel) + " :You have been kicked by " + (kicker) + (reason))
 
 # define CACTUS "\
 " RESET "     .   " GREEN "  _ " RESET "   +    .  " BROWN " ______" RESET "   .          .\n\
