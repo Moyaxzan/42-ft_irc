@@ -9,10 +9,10 @@ Bot::Bot(char *port, char *pwd)
     dirent *curr;
     
     profanities_dir = opendir("./bot/profanities");
-    if (profanities_dir)
-    {
-        while ((curr = readdir(profanities_dir)))
-        addProfanityDict(std::string(curr->d_name));
+    if (profanities_dir) {
+        while ((curr = readdir(profanities_dir))) {
+			addProfanityDict(std::string(curr->d_name));
+		}
         closedir(profanities_dir);
     }
     else

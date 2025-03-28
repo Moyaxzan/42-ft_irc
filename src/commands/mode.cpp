@@ -137,6 +137,7 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 			client->sendMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode));
 			return (false);
 	}
+	server->log("INFO", "MODE", client->getNick() + " sets " + mode + " on " + arg);
 	channel->broadcast(server, client, std::string(":") + client->getNick() + " MODE " + channel->getName() + " " + mode);
 	return (true);
 }
@@ -150,6 +151,7 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
 		return (false);
 	}
+	iss >> arg;
 	if (target[0] == '#') {
 		Channel* channel = server->getChannelByName(target);
 		if (!channel) {
