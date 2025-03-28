@@ -146,7 +146,10 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 
 	std::string command, target, mode, arg;
 	std::istringstream	iss(line);
-	iss >> command >> target >> mode >> arg;
+	if (!(iss >> command >> target >> mode)) {
+		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
+		return (false);
+	}
 	if (target[0] == '#') {
 		Channel* channel = server->getChannelByName(target);
 		if (!channel) {
@@ -161,7 +164,8 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 			return (false);
 		}
 		client->setInvisible(true);
-		client->sendMessage(std::string(":") + target + " MODE " + target + " " + mode);
+		client->sendMessage(server, std::string(":") + target + " MODE " + target + " " + mode);
 	}
+	server->log("INFO", "MODE", client->getNick() + " sets " + mode + " on " + target);
 	return (true);
 }

@@ -9,22 +9,19 @@
 
 std::vector<std::string>	split(std::string line, char delimiter);
 
-std::vector<std::string>	split(std::string line, char delimiter);
-
-class Command
-{
-private:
-    Command();
-    Command(const Command &other);
-    Command &operator=(const Command &other);
-    ~Command();
+class Command {
+	private:
+		Command();
+		Command(const Command &other);
+		Command &operator=(const Command &other);
+		~Command();
 
 	public:
 		static bool pass(Client *client, Server *server, std::string &line);
 		static bool nick(Client *client, Server *server, std::string &line);
-		static bool user(Client *client, std::string &line);
-		static void cap(Client *client, const std::string& line);
-		static bool ping(Client *client, const std::string& line);
+		static bool user(Server *server, Client *client, std::string &line);
+		static void cap(Server *server, Client *client, const std::string& line);
+		static bool ping(Server *server, Client *client, const std::string& line);
 		static bool mode(Server *server, Client *client, const std::string& line);
 		static bool join(Client *client, Server *server, std::string &line);
 		static int	isValidTarget(std::string target, Client *client, Server *server);

@@ -15,7 +15,8 @@
 
 #define SERV_IP "127.0.0.1"
 
-extern volatile __sig_atomic_t g_stopSig;
+// extern volatile __sig_atomic_t g_stopSig;
+extern volatile sig_atomic_t g_stopSig;
 
 class Server {
 	private:
@@ -64,7 +65,7 @@ class Server {
 		void							runServer(void);
 		void							checkChannelsPromoteOP(Client *client);
 		void							disconnectClient(int fd);
-
+		void							log(const std::string& level, const std::string& category, const std::string message);
 };
 
 class SocketError : public std::exception {

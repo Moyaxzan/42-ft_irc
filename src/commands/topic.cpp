@@ -3,8 +3,8 @@
 
 std::vector<std::string> split(std::string str, std::string delim);
 std::string str_join(std::vector<std::string> strs);
-void static broadcast_RPLTOPIC(Channel *chan);
-void static broadcast_UNSET_TOPIC(Channel *chan);
+void static broadcast_RPLTOPIC(Server *server, Channel *chan);
+void static broadcast_UNSET_TOPIC(Server *server, Channel *chan);
 
 /**
  * TOPIC Command Handler
@@ -34,7 +34,7 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
     cmd_vec.erase(cmd_vec.begin() + 0);
     if (!isValidChannelName(cmd_vec[0]) || !(chan = server->getChannelByName(cmd_vec[0])))
     {
-        client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
+        client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
         return false;
     }
     if (!client->joined(chan->getId()))
@@ -89,23 +89,23 @@ std::string str_join(std::vector<std::string> strs)
     return final_str;
 }
 
-void static broadcast_RPLTOPIC(Channel *chan)
+void static broadcast_RPLTOPIC(Server *server, Channel *chan)
 {
     std::list<Client *> chan_members = chan->getMembers();
     std::list<Client *>::iterator it;
 
     for (it = chan_members.begin(); it != chan_members.end(); it++)
-        (*it)->sendMessage(RPL_TOPIC((*it)->getNick(), chan->getName(), chan->getTopic()));
+        (*it)->sendMessage(server, RPL_TOPIC((*it)->getNick(), chan->getName(), chan->getTopic()));
 }
 
-void static broadcast_UNSET_TOPIC(Channel *chan)
+void static broadcast_UNSET_TOPIC(Server *server, Channel *chan)
 {
     std::list<Client *> chan_members = chan->getMembers();
     std::list<Client *>::iterator it;
 
     for (it = chan_members.begin(); it != chan_members.end(); it++)
     {
-        (*it)->sendMessage(UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()));
+        (*it)->sendMessage(server, UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()));
         std::cout << UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()) << "\n";
     }
 }

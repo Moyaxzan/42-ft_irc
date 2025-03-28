@@ -34,13 +34,13 @@ void	cleanMsg(std::string &message) {
 		message.erase(message.size() - 1);
 }
 
-bool	correctMsg(std::string line, std::string &message, Client *client) {
+bool	correctMsg(std::string line, std::string &message, Client *client, Server *server) {
 	DEBUG_LOG("Into correctMsg()");
 	if (line.size() > 512) // good IRC clients should already prevent this error by cutting the message before sending it
-		return (client->sendMessage(ERR_INPUTTOOLONG(client->getNick())), false);
+		return (client->sendMessage(server, ERR_INPUTTOOLONG(client->getNick())), false);
 	cleanMsg(message);
 	if (message.empty()) // inutile, vérifier plutot que le message ne comporte pas que des espaces
-		return (client->sendMessage(ERR_NOTEXTTOSEND(client->getNick())), false);
+		return (client->sendMessage(server, ERR_NOTEXTTOSEND(client->getNick())), false);
 	// Ajouter vérification par le bot
 	return (true);
 }
@@ -55,28 +55,28 @@ int	getTargetFd(const std::map<std::string, int> &nickFd, const std::string &tar
 int	Command::isValidTarget(std::string target, Client *client, Server *server) {
 	DEBUG_LOG("Inside isValidTarget()");
 	if (!server->getNicknames().count(target))
-		return (client->sendMessage(ERR_NOSUCHNICK(client->getNick(), target)), -1);
+		return (client->sendMessage(server, ERR_NOSUCHNICK(client->getNick(), target)), -1);
 	if (target == client->getNick())
-		return (client->sendMessage(ERR_CANNOTSENDTOSELF(client->getNick())), -1);
+		return (client->sendMessage(server, ERR_CANNOTSENDTOSELF(client->getNick())), -1);
 
 	int	targetFd = getTargetFd(server->getNickFd(), target);
 	if (targetFd == -1)
 		return (-1); // useful ? 
 	std::map<int, Client*> clients_ = server->getClients();
 	if (!clients_[targetFd]->isWelcomeSent())// check if targeted client is fully authenticated
-		return (client->sendMessage(ERR_TARGETNOTAUTH(client->getNick(), target)) , -1);
+		return (client->sendMessage(server, ERR_TARGETNOTAUTH(client->getNick(), target)) , -1);
 	return (targetFd);
 }
 
 void	handleSendError(int targetFd, std::string target, Client *client, Server *server) {
 	std::cout << "Error: send() function failed" << std::endl;
 	if (errno == EPIPE || errno == ECONNRESET) {
-		client->sendMessage(ERR_TARGETDISCONNECTED(client->getNick(), target));
+		client->sendMessage(server, ERR_TARGETDISCONNECTED(client->getNick(), target));
 		server->disconnectClient(targetFd);
 	} else if (errno == EAGAIN || errno == EWOULDBLOCK) {
-		client->sendMessage(ERR_BUFFERFULL(client->getNick(), target));
+		client->sendMessage(server, ERR_BUFFERFULL(client->getNick(), target));
 	} else {
-		client->sendMessage(ERR_CANNOTSENDMSG(client->getNick(), target));
+		client->sendMessage(server, ERR_CANNOTSENDMSG(client->getNick(), target));
 	}
 	return ;
 }
@@ -103,23 +103,23 @@ bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 	DEBUG_LOG("Inside privMsg handler");
 
 	if (!client->isWelcomeSent()) // irssi seems to already be handling this case
-		return (client->sendMessage(ERR_NOTREGISTERED()), false);
+		return (client->sendMessage(server, ERR_NOTREGISTERED()), false);
 	std::istringstream	iss(line);
 	std::string			cmd, target, message;
 
 	iss >> cmd >> target;
 	std::getline(iss, message);
-	if (!correctMsg(line, message, client))
+	if (!correctMsg(line, message, client, server))
 		return (false);
 	if (target[0] != '#') {
 		sendPrivMsg(target, message, client, server);
 	} else {
 		Channel* chan = server->getChannelByName(&target[0]);
 		if (!chan) {
-			client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), chan->getName()));
+			client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), chan->getName()));
 			return (false);
 		}
-		chan->broadcast(client, PRIVMSG(
+		chan->broadcast(server, client, PRIVMSG(
 			client->getNick(),
 			client->getUsername(),
 			chan->getName(),
