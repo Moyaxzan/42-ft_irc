@@ -8,7 +8,7 @@ Bot::Bot(char *port, char *pwd)
     DIR *profanities_dir;
     dirent *curr;
     
-    profanities_dir = opendir("./profanities");
+    profanities_dir = opendir("./bot/profanities");
     if (profanities_dir)
     {
         while ((curr = readdir(profanities_dir)))
@@ -102,12 +102,12 @@ std::string Bot::recvMsg(void)
     memset(buffer, '\0', 512);
     while (full_msg.find("\r\n") == full_msg.npos)
     {
-        err = recv(this->getClientSocket(), buffer, 512, 0);
-        full_msg += std::string(buffer);
+        err = recv(this->getClientSocket(), buffer, 511, 0);
         if (err == 0 && full_msg.find("Invalid password"))
             throw WrongPassword();
         if (err == 0)
             throw ConnectionError();
+        full_msg += std::string(buffer);
         memset(buffer, '\0', 512);
     }
     return (full_msg);
@@ -122,7 +122,7 @@ void Bot::addProfanityDict(std::string filename)
     std::string line;
     std::vector<std::string> dict;
 
-    infile.open(("./profanities/" + filename).c_str(), std::ios::in);
+    infile.open(("./bot/profanities/" + filename).c_str(), std::ios::in);
     if (!infile.is_open())
     {
         this->fileError();
