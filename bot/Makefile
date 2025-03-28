@@ -1,13 +1,14 @@
 ####
 
-NAME = ircserv
+NAME = Bot
 
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -fsanitize=address
 
-DEBUG_FLAGS = -g -DDEBUG=1
+DEBUG_FLAGS = -g3 -DDEBUG=1
 
 CXX = c++
 
+<<<<<<< HEAD:Makefile
 SRCS =	./src/argparsing.cpp \
 		./src/Channel.cpp \
 		./src/Client.cpp \
@@ -30,6 +31,14 @@ SRCS =	./src/argparsing.cpp \
 		./src/commands/kick.cpp
 		
 		
+=======
+SRCS =	./src/Bot.cpp \
+		./src/Gun.cpp \
+		./src/BadPerson.cpp \
+		./src/BotExceptions.cpp \
+		./src/main.cpp \
+		./src/global.cpp
+>>>>>>> bot:bot/Makefile
 
 OBJS_DIR = .objs/
 
