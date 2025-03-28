@@ -39,25 +39,25 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
     }
     if (!client->joined(chan->getId()))
     {
-        client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
+        client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         return false;
     }
     if (chan->isTopicRestricted() && !chan->isOperator(client))
     {
-        client->sendMessage(ERR_CHANOPRIVSNEEDED(client->getNick(), chan->getName()));
+        client->sendMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), chan->getName()));
         return false;
     }
     cmd_vec.erase(cmd_vec.begin() + 0);
     if (cmd_vec[0] == ":")
     {
         chan->setTopic("");
-        broadcast_UNSET_TOPIC(chan);
+        broadcast_UNSET_TOPIC(server, chan);
         return true ;
     }
     if (cmd_vec[0][0] == ':')
         cmd_vec[0].erase(cmd_vec[0].begin() + 0);
     chan->setTopic(str_join(cmd_vec));
-    broadcast_RPLTOPIC(chan);
+    broadcast_RPLTOPIC(server, chan);
     return true;
 }
 

@@ -30,7 +30,7 @@ bool Command::invite(Client *client, Server *server, const std::string& line) {
 	DEBUG_LOG("Inside invite handler");
 
 	if (!client->isWelcomeSent()) // irssi seems to already be handling this case
-		return (client->sendMessage(ERR_NOTREGISTERED()), false);
+		return (client->sendMessage(server, ERR_NOTREGISTERED()), false);
 	std::istringstream iss(line);
 	std::string command, targetNick, channel;
 
@@ -43,11 +43,11 @@ bool Command::invite(Client *client, Server *server, const std::string& line) {
 		return (false);
 	Channel	*chan = server->getChannelByName(channel);
 	if (!chan) // Does channel exist ?
-		return (client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), channel)), false);
+		return (client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), channel)), false);
 	if (!chan->isMember(client)) // is client member of channel ?
-		return (client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), channel)), false);
+		return (client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), channel)), false);
 	if (chan->isInviteOnly() && !chan->isOperator(client)) // if channel is invite only is client an operator ?
-		return (client->sendMessage(ERR_CHANOPRIVSNEEDED(client->getNick(), channel)), false);
+		return (client->sendMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), channel)), false);
 	if (Command::isValidTarget(targetNick, client, server) == -1)
 		return (false);
 	Client *target = server->getClientByNick(targetNick);
@@ -56,9 +56,9 @@ bool Command::invite(Client *client, Server *server, const std::string& line) {
 	std::string	invitorNick = client->getNick();
 	std::string	invitorUsername = client->getUsername();
 	if (chan->isMember(target)) // is invited client already on channel ?
-		return (client->sendMessage(ERR_USERONCHANNEL(invitorNick, targetNick, channel)), false);
+		return (client->sendMessage(server, ERR_USERONCHANNEL(invitorNick, targetNick, channel)), false);
 	chan->addInvited(target);
-	target->sendMessage(RPL_INVITING(invitorNick, invitorUsername, channel, targetNick));
-	client->sendMessage(INVITECONFIRMED(invitorNick, channel, targetNick));
+	target->sendMessage(server, RPL_INVITING(invitorNick, invitorUsername, channel, targetNick));
+	client->sendMessage(server, INVITECONFIRMED(invitorNick, channel, targetNick));
 	return (true);
 }

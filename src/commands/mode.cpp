@@ -35,48 +35,48 @@
  * - MODE #channel +t  // Only operators can change the topic for #channel
  */
 
-static bool checkAddOperator(Channel *channel, Client *client, bool modeType, const std::string &target_client)
+static bool checkAddOperator(Server *server, Channel *channel, Client *client, bool modeType, const std::string &target_client)
 {
 	Client *to_promote = channel->findMember(target_client);
 
 	if (!to_promote)
 	{
-		client->sendMessage(ERR_NOSUCHNICK(client->getNick(), target_client));
+		client->sendMessage(server, ERR_NOSUCHNICK(client->getNick(), target_client));
 		return false;
 	}
 	if (modeType == true)
 	{
 		if (channel->isOperator(to_promote) == true)
 		{
-			client->sendMessage(NOTICE_ALREADYOP(to_promote->getNick(), channel->getName()));
+			client->sendMessage(server, NOTICE_ALREADYOP(to_promote->getNick(), channel->getName()));
 			return false;
 		}
 		channel->addOperator(to_promote);
-		channel->broadcast(NULL, NOTICE_OPER(to_promote->getNick(), channel->getName()));
+		channel->broadcast(server, NULL, NOTICE_OPER(to_promote->getNick(), channel->getName()));
 	}
 	else if (modeType == false)
 	{
 		if (to_promote->getNick() == client->getNick() && channel->getOperators().size() == 1)
 		{
-			client->sendMessage(ERR_CHANOPNEEDED(client->getNick(), channel->getName()));
+			client->sendMessage(server, ERR_CHANOPNEEDED(client->getNick(), channel->getName()));
 			return false;
 		}
 		if (channel->isOperator(to_promote) == false)
 		{
-			client->sendMessage(NOTICE_NOTOP(to_promote->getNick(), channel->getName()));
+			client->sendMessage(server, NOTICE_NOTOP(to_promote->getNick(), channel->getName()));
 			return false;
 		}
 		channel->removeOperator(to_promote);
-		channel->broadcast(NULL, NOTICE_UNOPER(to_promote->getNick(), channel->getName()));
+		channel->broadcast(server, NULL, NOTICE_UNOPER(to_promote->getNick(), channel->getName()));
 	}
 	return true;
 }
 
-static bool setChannelUserLimit(Channel *channel, Client *client, bool modeType, std::string arg)
+static bool setChannelUserLimit(Server *server, Channel *channel, Client *client, bool modeType, std::string arg)
 {
 	if (modeType == true && arg.length() == 0)
 	{
-		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick(), channel->getName() + " mode +l:"));
+		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), channel->getName() + " mode +l:"));
 		return false;
 	}
 	if (modeType == false)
@@ -88,7 +88,7 @@ static bool setChannelUserLimit(Channel *channel, Client *client, bool modeType,
 			limit = -1;
 		else if (limit > 1024)
 		{
-			client->sendMessage(ERR_BADCHANLIMIT(client->getNick(), channel->getName()));
+			client->sendMessage(server, ERR_BADCHANLIMIT(client->getNick(), channel->getName()));
 			return false;
 		}
 		channel->setUserLimit(limit);
@@ -107,25 +107,25 @@ static bool setChannelPwd(Channel *channel, bool modeType, const std::string &pw
 	return true;
 }
 
-static bool handleChannelMode(Client* client, Channel* channel, const std::string& mode, const std::string &arg) {
+static bool handleChannelMode(Server *server, Client* client, Channel* channel, const std::string& mode, const std::string &arg) {
 	char modeType = mode[0];  // '+' or '-'
 	char modeFlag = mode[1];
 	
 	if (!mode.length())
 		return false;		// ignoring irssi freaking random empty "mode"
-    else if (mode.length() != 2)
-		return (client->sendMessage(ERR_UNKNOWNMODE(client->getNick(), mode)));
+	else if (mode.length() != 2)
+		return (client->sendMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode)));
 	if (!channel->isOperator(client))
-		return (client->sendMessage(ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName())));
+		return (client->sendMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName())));
 	switch (modeFlag) {
 		case 'i': 
 			channel->setInviteOnly(modeType == '+');
 			break;
 		case 'o':
-			checkAddOperator(channel, client, modeType == '+', arg);
+			checkAddOperator(server, channel, client, modeType == '+', arg);
 			break;
 		case 'l':
-			setChannelUserLimit(channel, client, modeType == '+', arg);
+			setChannelUserLimit(server, channel, client, modeType == '+', arg);
 			break;
 		case 'k':
 			setChannelPwd(channel, modeType == '+', arg);
@@ -134,10 +134,10 @@ static bool handleChannelMode(Client* client, Channel* channel, const std::strin
 			channel->setRestrictedTopic(modeType == '+');
 			break;
 		default:
-			client->sendMessage(ERR_UNKNOWNMODE(client->getNick(), mode));
+			client->sendMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode));
 			return (false);
 	}
-	channel->broadcast(client, std::string(":") + client->getNick() + " MODE " + channel->getName() + " " + mode);
+	channel->broadcast(server, client, std::string(":") + client->getNick() + " MODE " + channel->getName() + " " + mode);
 	return (true);
 }
 
@@ -153,11 +153,11 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 	if (target[0] == '#') {
 		Channel* channel = server->getChannelByName(target);
 		if (!channel) {
-			client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), target));
+			client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), target));
 		} else if (client->joined(channel->getId()) == false) {
-			client->sendMessage(ERR_NOTONCHANNEL(client->getNick(), target));
+			client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), target));
 		}
-		return handleChannelMode(client, channel, mode, arg);
+		return handleChannelMode(server, client, channel, mode, arg);
 	} else {
 		if (target != client->getNick()) {
 			// send error message ?

@@ -39,15 +39,15 @@ bool Command::names(Client *client, Server *server, const std::string &line)
 
     if (!channel_name.length())
     {
-        client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick(), "NAMES"));
+        client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "NAMES"));
         return false;
     }
     channel = server->getChannelByName(channel_name);
     if (!channel)
     {
-        client->sendMessage(ERR_NOSUCHCHANNEL(client->getNick(), channel_name));
+        client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), channel_name));
         return false;
     }
-    client->sendMessage(LISTNAMES(client->getNick(), channel_name, channel->getNames()));
+    client->sendMessage(server, LISTNAMES(client->getNick(), channel_name, channel->getNames()));
     return true;
 }

@@ -251,7 +251,7 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 // Promeut un nouvel operateur en cas de deconnexion client si celui-ci etait dernier operateur client
 // == check tous les channels dont fait partie le client et check s'il etait dernier op sur le channel
 
-void static promoteNewOperator(Channel *channel, Client *lastOP)
+void static promoteNewOperator(Server *server, Channel *channel, Client *lastOP)
 {
 	std::list<Client *> members = channel->getMembers();
 	std::list<Client *>::iterator it;
@@ -261,7 +261,7 @@ void static promoteNewOperator(Channel *channel, Client *lastOP)
 		if ((*it)->getId() != lastOP->getId())
 		{
 			channel->addOperator(*it);
-			channel->broadcast(NULL, NOTICE_OPER((*it)->getNick(), channel->getName()));
+			channel->broadcast(server, NULL, NOTICE_OPER((*it)->getNick(), channel->getName()));
 			return ;
 		}
 	}
@@ -280,7 +280,7 @@ void Server::checkChannelsPromoteOP(Client *client)
 	{
 		if ((*it2)->isOperator(client) && (*it2)->getOperators().size() == 1 && (*it2)->getMembers().size() > 1)
 		{
-			promoteNewOperator(*it2, client);
+			promoteNewOperator(this, *it2, client);
 			return ;
 		}
 	}
