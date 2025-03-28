@@ -8,37 +8,12 @@ DEBUG_FLAGS = -g3 -DDEBUG=1
 
 CXX = c++
 
-<<<<<<< HEAD:Makefile
-SRCS =	./src/argparsing.cpp \
-		./src/Channel.cpp \
-		./src/Client.cpp \
-		./src/Command.cpp \
-		./src/exceptions.cpp \
-		./src/main.cpp \
-		./src/Server.cpp \
-		./src/commands/cap.cpp \
-		./src/commands/join.cpp \
-		./src/commands/mode.cpp \
-		./src/commands/names.cpp \
-		./src/commands/nick.cpp \
-		./src/commands/pass.cpp \
-		./src/commands/part.cpp \
-		./src/commands/ping.cpp \
-		./src/commands/privMsg.cpp \
-		./src/commands/topic.cpp \
-		./src/commands/user.cpp \
-		./src/commands/invite.cpp \
-		./src/commands/kick.cpp
-		
-		
-=======
 SRCS =	./src/Bot.cpp \
 		./src/Gun.cpp \
 		./src/BadPerson.cpp \
 		./src/BotExceptions.cpp \
 		./src/main.cpp \
 		./src/global.cpp
->>>>>>> bot:bot/Makefile
 
 OBJS_DIR = .objs/
 

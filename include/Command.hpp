@@ -27,7 +27,6 @@ private:
 		static bool ping(Client *client, const std::string& line);
 		static bool mode(Server *server, Client *client, const std::string& line);
 		static bool join(Client *client, Server *server, std::string &line);
-		// static void part(Client &client, Server &server, const std::vector<std::string> &args);
 		static int	isValidTarget(std::string target, Client *client, Server *server);
 		static bool privMsg(Client *client, Server *server, const std::string& line);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
@@ -36,7 +35,6 @@ private:
 		static bool topic(Client *client, Server *server, const std::string& line);
         static void	removeClientFromChannel(Channel *channel, Client *client);
 		static bool part(Client *client, Server *server, const std::string & line);
-		//static bool mode(Client *client, Server *server, const std::string& line);
 		static bool names(Client *client, Server *server, const std::string &line);
 };
 
@@ -116,12 +114,8 @@ bool isValidChannelName(const std::string &name);
 
 //****************************		CHANNEL MACROS	***********************************//
 #define ERR_NOTONCHANNEL(nick, channel) (SERV_NAME " 442 " + (nick) + " " + (channel) + " :You're not on that channel")
-// #define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel))
-// #define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel))
-// #define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel))
 #define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
 #define ERR_BADCHANLIMIT(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Bad channel limit")
-// #define ERR_CHANOPRIVSNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're no one to try to dictate your own law, feller! You aint operator 'round here")
 #define ERR_CHANOPNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're the last operator in town buddy, we can't let you abandon your duties just like that!")
 #define RPL_YOUREOPER(nick) (SERV_NAME " " + (nick) + " :You are now an IRC operator")
 #define NOTICE_OPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, <" + GREEN + nick + RESET + ">. You’ve been deputized. Keep the outlaws in check, and don’t go startin’ no trouble yourself. 🤠")
