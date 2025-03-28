@@ -239,8 +239,10 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 		return (Command::invite(this->clients_[fd], this, cmd));
 	} else if (cmd.find("KICK ") == 0) {
 		return (Command::kick(this->clients_[fd], this, cmd));
-	}else if (cmd.find("MODE ") == 0) {
+	} else if (cmd.find("MODE ") == 0) {
 		return (Command::mode(this, this->clients_[fd], cmd));
+	} else if (cmd.find("PART ") == 0) {
+		return (Command::part(this->clients_[fd], this, cmd));
 	}
 	return (true);
 }

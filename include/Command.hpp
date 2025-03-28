@@ -35,6 +35,7 @@ private:
 		static bool kick(Client *client, Server *server, const std::string& line);
 		static bool topic(Client *client, Server *server, const std::string& line);
         static void	removeClientFromChannel(Channel *channel, Client *client);
+		static bool part(Client *client, Server *server, const std::string & line);
 		//static bool mode(Client *client, Server *server, const std::string& line);
 		static bool names(Client *client, Server *server, const std::string &line);
 };

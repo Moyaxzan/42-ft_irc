@@ -21,6 +21,7 @@ SRCS =	./src/argparsing.cpp \
 		./src/commands/names.cpp \
 		./src/commands/nick.cpp \
 		./src/commands/pass.cpp \
+		./src/commands/part.cpp \
 		./src/commands/ping.cpp \
 		./src/commands/privMsg.cpp \
 		./src/commands/topic.cpp \

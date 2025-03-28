@@ -28,7 +28,7 @@ void	cleanMsg(std::string &message) {
 	DEBUG_LOG("Into cleanMsg()");
 	if (!message.empty() && message[0] == ' ')
 		message.erase(0, 1);
-	if (!message.empty() && message[0] == ':')x
+	if (!message.empty() && message[0] == ':')
 		message.erase(0, 1);
 	if (!message.empty() && message[message.size() - 1] == '\r')
 		message.erase(message.size() - 1);
