@@ -4,8 +4,8 @@
 #include <sstream>
 
 bool	validUserChars(std::string nickname);
-bool	allUserElements(Client *client, std::string line, std::string &username);
-bool	isValidUsername(Client *client, std::string line, std::string &username);
+bool	allUserElements(Server *server, Client *client, std::string line, std::string &username);
+bool	isValidUsername(Server *server, Client *client, std::string line, std::string &username);
 
 /**
  * USER Command Handler
@@ -24,21 +24,21 @@ bool	isValidUsername(Client *client, std::string line, std::string &username);
  */
 
 // Add the server's instance in arguments if this : std::set<std::string>	usernames_; is needed for privmsg
-bool Command::user(Client *client, std::string &line) {
+bool Command::user(Server *server, Client *client, std::string &line) {
 	DEBUG_LOG("Into handleUser function");
 	if (!client->isNickSet()) {
-		client->sendMessage(ERR_NOTREGISTEREDNICK());
+		client->sendMessage(server, ERR_NOTREGISTEREDNICK());
 		return (false);
 	}
 	if (client->isUsernameSet()) {
-		client->sendMessage(ERR_ALREADYREGISTRED(client->getNick()));
+		client->sendMessage(server, ERR_ALREADYREGISTRED(client->getNick()));
 		return (true);
 	} 
 	std::string	username; 
-	if (!isValidUsername(client, line, username))
+	if (!isValidUsername(server, client, line, username))
 		return (false);
 	client->setUser(username); // set the client's username in its instance
-	client->sendMessage(USERSET(username));
+	client->sendMessage(server, USERSET(username));
 	return (true);
 }
 
@@ -57,14 +57,14 @@ bool	validUserChars(std::string username) {
 	return (true);
 }
 
-bool	allUserElements(Client *client, std::string line, std::string &username) {
+bool	allUserElements(Server *server, Client *client, std::string line, std::string &username) {
 	std::istringstream	iss(line);
 	std::string			cmd, hostname, servername, realname;
 
 	iss >> cmd >> username >> hostname >> servername; // extraction of words one by one
 	std::getline(iss, realname);
 	if (username.empty() || hostname.empty() || servername.empty() || realname.empty()) {
-		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick(), "USER"));
+		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "USER"));
 		return (false);
 	}
 	//if (realname[0] == ':') if parsing of realname
@@ -72,12 +72,12 @@ bool	allUserElements(Client *client, std::string line, std::string &username) {
 	return (true);
 }
 
-bool	isValidUsername(Client *client, std::string line, std::string &username) {
-	if (!allUserElements(client, line, username)) // check if 4 params or if empty (=needmore params)
+bool	isValidUsername(Server *server, Client *client, std::string line, std::string &username) {
+	if (!allUserElements(server, client, line, username)) // check if 4 params or if empty (=needmore params)
 		return (false);
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (username.size() > 9 || !validUserChars(username) || username == SERV_NAME) {
-		client->sendMessage(ERR_ERRONEUSUSERNAME(client->getNick()));
+		client->sendMessage(server, ERR_ERRONEUSUSERNAME(client->getNick()));
 		return (false);
 	}
 	//parse hostname, servername and realname ?

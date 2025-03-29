@@ -1,5 +1,8 @@
 #include "../include/Client.hpp"
+#include "../include/debug.hpp"
+#include "../include/Server.hpp"
 #include <iostream>
+#include <sstream>
 #include <sys/socket.h>
 #include <algorithm>
 
@@ -15,7 +18,6 @@ Client::Client(void) {
 }
 
 Client::Client(int id) {
-	std::cout << "id = " << id << std::endl;
 	this->id_ = id;
 	this->passwdSet_ = false;
 	this->nickSet_ = false;
@@ -163,27 +165,20 @@ void	Client::rmJoinedChann(unsigned int channel) {
 	this->joinedChannels_.remove(channel);
 }
 
-bool	Client::sendMessage(std::string message) const {
+bool	Client::sendMessage(Server* server, std::string message) const {
 	message += "\r\n";
 	if (send(this->id_, message.c_str(), message.size(), 0) == -1) {
-		std::cout << "Couln't send message: \"" << message << "\" to " << this->id_ << std::endl;
+		if (this->nickSet_) {
+			server->log("ERROR", "SEND", "could not send message to " + this->nickname_);
+		} else {
+			std::ostringstream oss;
+			oss << this->id_;
+			server->log("ERROR", "SEND", "could not send message to " + oss.str());
+		}
 		return (false);
 	}
-	if (this->nickSet_)
-		std::cout << "Message sent to client [" << this->nickname_ << "]: " << message << std::endl;
-	else
-		std::cout << "Message sent to client [" << this->id_ << "]: " << message << std::endl;
-	return (true);
-}
-
-bool	Client::sendMessageTest(std::string message) const {
-	if (send(this->id_, message.c_str(), message.size(), 0) == -1) {
-		std::cout << "Couln't send message: \"" << message << "\" to " << this->id_ << std::endl;
-		return (false);
+	if (this->nickSet_) {
+		DEBUG_LOG("message send to client: " + message);
 	}
-	if (this->nickSet_)
-		std::cout << "Message sent to client [" << this->nickname_ << "]: " << message << std::endl;
-	else
-		std::cout << "Message sent to client [" << this->id_ << "]: " << message << std::endl;
 	return (true);
 }

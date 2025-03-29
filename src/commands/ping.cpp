@@ -16,11 +16,11 @@
  * If the PING command is not received or responded to correctly, the connection may be terminated.
  */
 
-bool Command::ping(Client *client, const std::string& line) {
+bool Command::ping(Server *server, Client *client, const std::string& line) {
 	DEBUG_LOG("Into ping command");
 	std::istringstream iss(line);
 	std::string ping, target;
 
 	iss >> ping >> target;
-	return (client->sendMessage(PONG(target)));
+	return (client->sendMessage(server, PONG(target)));
 }

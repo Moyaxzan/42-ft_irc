@@ -9,6 +9,7 @@
 # define BLUE	"\e[34m"
 # define BROWN	"\e[38;5;130m"
 # define CYAN    "\e[36m"
+# define MAGENTA "\033[35m"
 
 # ifndef DEBUG
 #  define DEBUG 0
