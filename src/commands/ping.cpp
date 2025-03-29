@@ -17,7 +17,7 @@
  */
 
 bool Command::ping(Client *client, const std::string& line) {
-	DEBUG_LOG("into ping command");
+	DEBUG_LOG("Into ping command");
 	std::istringstream iss(line);
 	std::string ping, target;
 

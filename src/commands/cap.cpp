@@ -5,18 +5,20 @@
 
 /**
  * CAP Command Handler
+ * 
+ * CAP = CAPability negociation
  *
  * Usage: CAP <subcommand> [:<capabilities>]
  * Example: CAP LS 302
  * 
  * Handles capability negotiation between client and server.
- * - LS: Lists available capabilities.
+ * - LS: Lists Server available capabilities.
  * - REQ: Requests specific capabilities.
  * - ACK: Acknowledges capabilities.
  * - NAK: Rejects requested capabilities.
  * - END: Ends capability negotiation.
  *
- * Typically, the server responds with CAP * LS :<capabilities>,
+ * Typically, the server responds with ":<server> CAP * LS :<capabilities>",
  * but if capabilities aren't supported, it can be ignored.
  */
 

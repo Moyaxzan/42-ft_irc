@@ -9,7 +9,7 @@
  * Example: PASS secret123
  * 
  * Provides a password for authentication before registration.
- * - <password>: The server password (if required).
+ * - <password>: The server password (if required). Only accepted once.
  *
  * This command must be sent before NICK and USER to complete registration.
  * If the password is incorrect or missing, the server responds with 
@@ -25,7 +25,7 @@ bool Command::pass(Client *client, Server *server, std::string &line) {
 		return (true); // return true or false ? check with irssi
 	}
 	if (clientPass.empty()) {
-		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick()));
+		client->sendMessage(ERR_NEEDMOREPARAMS(client->getNick(), "PASS"));
 		return (false); // to check with irssi
 	}
 	if (clientPass == server->getPassword()) {

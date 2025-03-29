@@ -175,3 +175,15 @@ bool	Client::sendMessage(std::string message) const {
 		std::cout << "Message sent to client [" << this->id_ << "]: " << message << std::endl;
 	return (true);
 }
+
+bool	Client::sendMessageTest(std::string message) const {
+	if (send(this->id_, message.c_str(), message.size(), 0) == -1) {
+		std::cout << "Couln't send message: \"" << message << "\" to " << this->id_ << std::endl;
+		return (false);
+	}
+	if (this->nickSet_)
+		std::cout << "Message sent to client [" << this->nickname_ << "]: " << message << std::endl;
+	else
+		std::cout << "Message sent to client [" << this->id_ << "]: " << message << std::endl;
+	return (true);
+}

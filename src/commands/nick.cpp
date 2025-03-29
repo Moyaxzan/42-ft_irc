@@ -19,9 +19,9 @@ bool	validNickChars(std::string nickname);
  */
 
 bool Command::nick(Client *client, Server *server, std::string &line) {
+	DEBUG_LOG("Into handleNick function");
 	std::string	nickname = line.substr(5);
 
-	DEBUG_LOG("Into handleNick function");
 	if (!client->isPasswdSet()) {
 		client->sendMessage(ERR_NOTREGISTEREDPASS());
 		return (false);
@@ -29,8 +29,8 @@ bool Command::nick(Client *client, Server *server, std::string &line) {
 	if (!isValidNickname(client, server, nickname)) {
 		return (false);
 	}
-	server->addNickname(nickname);
-	client->setNick(nickname); // set the client nickname in its instance
+	server->addNickname(nickname, client->getId());
+	client->setNick(nickname); // set the client's nickname in its instance
 	client->sendMessage(NICKSET(nickname));
 	return (true);
 }
@@ -46,9 +46,6 @@ bool	validNickChars(std::string nickname) {
 			return (false);
 		if (!(isalnum(c) || c == '-' || c == '_' || c == '\\' || c == '|' || c == '[' || c == ']'))
 			return (false); // check if it is an allowed char
-		else
-			if (!(isalnum(c) || c == '-' || c == '_' || c == '\\' || c == '|' || c == '[' || c == ']' || c == '{'  || c == '}'))
-				return (false); // check if it is an allowed char
 	}
 	return (true);
 }
@@ -64,8 +61,7 @@ bool	isValidNickname(Client *client, Server *server, std::string nickname) {
 		client->sendMessage(ERR_ERRONEUSNICKNAME(nickname));
 		return (false);
 	}
-	// check if nickname is available
-	if (server->getNicknames().count(nickname)) {
+	if (server->getNicknames().count(nickname)) { // check if nickname is available
 		client->sendMessage(ERR_NICKNAMEINUSE(nickname));
 		return (false);
 	}

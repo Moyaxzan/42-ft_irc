@@ -9,6 +9,8 @@
 class Channel {
 	private:
 		bool					inviteOnly_;
+		bool					restrictedTopic_; // new
+		unsigned int			userLimit_; // new
 		int						id_;
 		std::string				topic_;
 		std::string				name_;
@@ -26,7 +28,9 @@ class Channel {
 
 		//GETTERS
 		bool					isInviteOnly(void) const;
+		bool					isTopicRestricted(void) const;
 		unsigned int			getId(void) const ;
+		int						getUserLimit(void) const ;
 		std::vector<Client *>	getOperators(void) const ;
 		std::list<Client *>		getMembers(void) const ;
 		std::string				getTopic(void) const ;
@@ -35,6 +39,7 @@ class Channel {
 
 		// SETTERS
 		void					setInviteOnly(bool inviteOnly);
+		void					setRestrictedTopic(bool restrictedTopic);
 		void					setId(int id);
 		void					setTopic(std::string topic);
 		void					setName(std::string name);
@@ -45,13 +50,18 @@ class Channel {
 		void					removeMember(Client *user);
 		void					addInvited(Client *user);
 		void					removeInvited(Client *user);
+		void					setUserLimit(int limit);
 
 
 		//MEMBER FUNCTIONS
+		bool					isMember(Client *user);
+		//bool					isMember(std::string nickname);
 		bool					isOperator(Client *user);
 		bool					isInvited(Client *user);
 		bool					broadcast(Client *sender, std::string message);
+		bool					disconnectClient(Client *client, std::string reason);
 		std::string				getNames(void);
+		Client					*findMember(std::string client_nick);
 };
 
 

@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: tsaint-p <tsaint-p@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/05 17:21:43 by tsaint-p          #+#    #+#             */
-/*   Updated: 2025/03/17 15:28:05 by tsaint-p         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
@@ -17,6 +5,8 @@
 #include <exception>
 #include <sys/types.h>
 #include <sys/select.h>
+#include <signal.h>
+#include <cerrno>
 #include <map>
 #include <set>
 #include "Client.hpp"
@@ -25,20 +15,21 @@
 
 #define SERV_IP "127.0.0.1"
 
-extern volatile sig_atomic_t g_stopSig;
+extern volatile __sig_atomic_t g_stopSig;
 
 class Server {
 	private:
-		fd_set					all_sockets_;
-		int						serv_socket_;
-		int						fd_max_;
-		sockaddr_in				socket_infos_;
-		std::string				password_;
-		std::string				creatTime_;
-		std::set<std::string>	nicknames_;
-		//std::set<std::string>	usernames_;
-		std::map<int, Client *>	clients_;
-		std::vector<Channel *>	channels_;
+		fd_set						all_sockets_;
+		int							serv_socket_;
+		int							fd_max_;
+		sockaddr_in					socket_infos_;
+		std::string					password_;
+		std::string					creatTime_;
+		std::set<std::string>		nicknames_;
+		//std::set<std::string>		usernames_;
+		std::map<std::string, int>	nickFd_;
+		std::map<int, Client *>		clients_;
+		std::vector<Channel *>		channels_;
 
 		//client management
 		void	newClient_(void);
@@ -58,15 +49,20 @@ class Server {
 		~Server(void);
 
 		//getters
-		const std::string&				getPassword(void) const;
-		const std::set<std::string>&	getNicknames(void) const;
-		const std::vector<Channel *>	getChannels(void) const;
-		Channel*						getChannelByName(const std::string &name);
+		const std::string&					getPassword(void) const;
+		const std::set<std::string>&		getNicknames(void) const;
+		const std::map<std::string, int>&	getNickFd(void) const;
+		const std::map<int, Client *>&		getClients(void) const;
+		const std::vector<Channel *>		getChannels(void) const;
+		Channel*							getChannelByName(const std::string &name);
+		Client*								getClientByNick(const std::string &name);
+		Channel*							getChannelById(unsigned int id);
 		//setters
-		void							addNickname(std::string nickname);
+		void							addNickname(std::string nickname, int fd);
 		bool							addChannel(std::string channelName, Client *creator, std::string passwd);
 		//member functions
 		void							runServer(void);
+		void							checkChannelsPromoteOP(Client *client);
 		void							disconnectClient(int fd);
 
 };

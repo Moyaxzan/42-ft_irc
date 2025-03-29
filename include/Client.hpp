@@ -55,6 +55,8 @@ class Client {
 		void									addJoinedChann(unsigned int channel);	// add channel to the joined channel list
 		void									rmJoinedChann(unsigned int channel);	// removes channel from the joined channel list
 		bool									sendMessage(std::string message) const;
+        bool	                                sendMessageTest(std::string message) const;
+
 };
 
 #endif

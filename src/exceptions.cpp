@@ -6,7 +6,7 @@ const char * InvalidNumberOfArguments::what() const throw() {
 }
 
 const char * InvalidPortNumber::what() const throw() {
-	return ("Invalid port number\nport must be an int between 0 and 65535");
+	return ("Invalid port number\nport must be an int between 1024 and 65535");
 }
 
 /*
