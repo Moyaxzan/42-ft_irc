@@ -192,21 +192,6 @@ void Server::newClient_(void) {
 	this->log("INFO", "AUTH", "new connection on " SERV_IP);
 }
 
-/*
-std::vector<std::string>	splitLines(std::string msg) {
-	std::vector<std::string>	lines;
-	std::stringstream			ss(msg);
-	std::string					line;
-
-	while (std::getline(ss, line, '\n')) {
-		if (!line.empty() && line[line.size() - 1] == '\r') // To erase '\r' if it is present
-			line.erase(line.size() - 1);
-		lines.push_back(line);
-	}
-	return (lines);
-}
-*/
-
 bool	Server::handleCommand(int fd, std::string cmd) {
 	DEBUG_LOG("Handling command: " + cmd);
 	if (cmd.find("CAP LS") == 0) {
@@ -323,28 +308,33 @@ void	Server::disconnectClient(int fd) {
 // Gérer autres commandes
 void Server::readClient(int fd) {
 	char		buffer[1024] = {'\0'};
-	int			recv_res = recv(fd, buffer, 1023, 0);
- 
- 	// cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
-	if (recv_res <= 0) {
-		disconnectClient(fd);
+    int         err = 0;
+    std::string full_msg;
+
+    while (full_msg.find("\r\n") == full_msg.npos)
+    {
+        err = recv(fd, buffer, 1023, 0);
+        if (err <= 0)
+            break ;
+        full_msg += std::string(buffer);
+        memset(buffer, '\0', 1024);
+    }
+    // cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
+	if (err <= 0) {
+        disconnectClient(fd);
 		return ;
 	}
-	std::string	msg(buffer);
-	if (msg.length() == 0)
-		return ;
-	std::vector<std::string> lines = split(std::string(buffer), '\n');
+    std::vector<std::string> lines = split(full_msg, '\n');
 	if (this->clients_[fd]->isAuth()) {
-		DEBUG_LOG(this->clients_[fd]->getNick() + ": " + msg);
+		DEBUG_LOG(this->clients_[fd]->getNick() + ": " + full_msg);
 	} else {
 		std::ostringstream	oss;
 		oss << fd;
-		DEBUG_LOG("[" + oss.str() + "]: " + msg);
+		DEBUG_LOG("[" + oss.str() + "]: " + full_msg);
 	}
-	// std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
-	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
-		if (!handleCommand(fd, *line))
-			break ;
+    for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
+        if (!handleCommand(fd, *line))
+            break ;
 	}
 }
 
