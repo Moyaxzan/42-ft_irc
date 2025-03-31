@@ -33,22 +33,18 @@ static void disconnectClientFromChannels(Client *client, Server *server, std::st
     for (it = channels_names.begin(); it != channels_names.end(); it++)
     {
         chan = server->getChannelByName(*it);
-        if (!chan)
-        {
+        if (!chan) {
             client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), *it));
-            continue ;
-        }
-        if (!chan->isMember(client))
-        {
+        } else if (!chan->isMember(client)) {
             client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
-            continue ;
-        }
-        chan->disconnectClient(server, client, reason);
-        client->sendMessage(server, PART(client->getNick(), client->getUsername(), chan->getName(), reason));
+        } else {
+			chan->disconnectClient(server, client, reason);
+			client->sendMessage(server, PART(client->getNick(), client->getUsername(), chan->getName(), reason));
+		}
     }
 }
 
-bool Command::part(Client *client, Server *server, const std::string & line)
+std::string	Command::part(Client *client, Server *server, const std::string & line)
 {
     DEBUG_LOG("Into part cmd handler\n");
     std::istringstream iss(line);
@@ -60,8 +56,8 @@ bool Command::part(Client *client, Server *server, const std::string & line)
     if (!channelName.length())
     {
         client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "PART"));
-        return false;
+        return ("");
     }
     disconnectClientFromChannels(client, server, channelName, reason);
-    return true;
+    return channelName;
 }
