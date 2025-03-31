@@ -111,7 +111,7 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 	char modeType = mode[0];  // '+' or '-'
 	char modeFlag = mode[1];
 	
-	if (!mode.length())
+	if (!mode.length() || mode == "MODE b")
 		return false;		// ignoring irssi freaking random empty "mode"
 	else if (mode.length() != 2)
 		return (client->sendMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode)));

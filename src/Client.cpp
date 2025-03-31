@@ -165,9 +165,9 @@ void	Client::rmJoinedChann(unsigned int channel) {
 	this->joinedChannels_.remove(channel);
 }
 
-bool	Client::sendMessage(Server* server, std::string message) const {
-	message += "\r\n";
-	if (send(this->id_, message.c_str(), message.size(), 0) == -1) {
+bool    Client::sendAllMsgs(Server *server)
+{
+    if (send(this->id_, this->to_send_.c_str(), this->to_send_.size(), 0) == -1) {
 		if (this->nickSet_) {
 			server->log("ERROR", "SEND", "could not send message to " + this->nickname_);
 		} else {
@@ -178,7 +178,16 @@ bool	Client::sendMessage(Server* server, std::string message) const {
 		return (false);
 	}
 	if (this->nickSet_) {
-		DEBUG_LOG("message send to client: " + message);
+		DEBUG_LOG("message send to client: " + this->to_send_);
 	}
+    this->to_send_ = "";
+    FD_CLR(this->getId(), server->getWriteFds());
+    return true;
+}
+
+bool	Client::sendMessage(Server *server, std::string message) {
+    message += "\r\n";
+    this->to_send_ += message;
+    FD_SET(this->getId(), server->getWriteFds());
 	return (true);
 }

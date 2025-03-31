@@ -54,6 +54,7 @@ Server::Server(t_args& args) {
 		throw(ListenError());
 
 	FD_SET(this->serv_socket_, &this->all_sockets_);
+    FD_ZERO(&this->write_fds);
 	this->fd_max_ = this->serv_socket_;
 	this->password_=args.password;
 }
@@ -122,6 +123,17 @@ Client	*Server::getClientByNick(const std::string &name) {
 	return (NULL);
 }
 
+Client  *Server::getClientById(int client_id)
+{
+    std::map<int, Client *> clients = this->getClients();
+    std::map<int, Client *>::iterator it;
+
+    it = clients.find(client_id);
+    if (it == clients.end())
+        return NULL;
+    return it->second;
+}
+
 Channel *Server::getChannelById(unsigned int channel_id)
 {
 	std::vector<Channel *>::iterator it;
@@ -137,8 +149,12 @@ const std::map<std::string, int>&	Server::getNickFd(void) const {
 	return (this->nickFd_);
 }
 
-const std::map<int, Client *>&		Server::getClients(void) const {
+std::map<int, Client *> Server::getClients(void) {
 	return (this->clients_);
+}
+
+fd_set *Server::getWriteFds(void) {
+    return &this->write_fds;
 }
 
 void	Server::addNickname(std::string nickname, int fd) {
@@ -346,7 +362,7 @@ void Server::runServer(void)
 	fd_set readfds;
 	while (!g_stopSig) {
 		readfds = this->all_sockets_;
-		if (select(this->fd_max_ + 1, &readfds, NULL, NULL, NULL) == -1 && !g_stopSig) {
+		if (select(this->fd_max_ + 1, &readfds, &this->write_fds, NULL, NULL) == -1 && !g_stopSig) {
 			throw(SelectError());
 		}
 		for (int i = 0; !g_stopSig && i <= this->fd_max_; i++) {
@@ -357,6 +373,8 @@ void Server::runServer(void)
 					this->readClient(i);
 				}
 			}
+            if (FD_ISSET(i, &this->write_fds) && i != this->serv_socket_)
+                this->getClientById(i)->sendAllMsgs(this);
 		}
 	}
 	std::cout << std::endl;

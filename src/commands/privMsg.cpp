@@ -90,6 +90,7 @@ void	sendPrivMsg(std::string target, std::string message, Client *client, Server
 		return ;	
 	std::string sender = client->getNick() + "!" + client->getUsername() + "@127.0.0.1";
 	std::string	privMsg = ":" + sender + " PRIVMSG " + target + " :" + message + "\r\n";
+    
 	if (send(targetFd, privMsg.c_str(), privMsg.size(), 0) == -1) {
 		handleSendError(targetFd, target, client, server);
 		return ;

@@ -21,6 +21,7 @@ extern volatile sig_atomic_t g_stopSig;
 class Server {
 	private:
 		fd_set						all_sockets_;
+        fd_set                      write_fds;
 		int							serv_socket_;
 		int							fd_max_;
 		sockaddr_in					socket_infos_;
@@ -53,19 +54,21 @@ class Server {
 		const std::string&					getPassword(void) const;
 		const std::set<std::string>&		getNicknames(void) const;
 		const std::map<std::string, int>&	getNickFd(void) const;
-		const std::map<int, Client *>&		getClients(void) const;
+		std::map<int, Client *>		        getClients(void);
 		const std::vector<Channel *>		getChannels(void) const;
 		Channel*							getChannelByName(const std::string &name);
 		Client*								getClientByNick(const std::string &name);
+        Client*                             getClientById(int client_id);
 		Channel*							getChannelById(unsigned int id);
+        fd_set                              *getWriteFds(void);
 		//setters
-		void							addNickname(std::string nickname, int fd);
-		bool							addChannel(std::string channelName, Client *creator, std::string passwd);
+		void							    addNickname(std::string nickname, int fd);
+		bool							    addChannel(std::string channelName, Client *creator, std::string passwd);
 		//member functions
-		void							runServer(void);
-		void							checkChannelsPromoteOP(Client *client);
-		void							disconnectClient(int fd);
-		void							log(const std::string& level, const std::string& category, const std::string message);
+		void							    runServer(void);
+		void							    checkChannelsPromoteOP(Client *client);
+		void							    disconnectClient(int fd);
+		void							    log(const std::string& level, const std::string& category, const std::string message);
 };
 
 class SocketError : public std::exception {
