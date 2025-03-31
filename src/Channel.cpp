@@ -215,7 +215,6 @@ bool	Channel::disconnectClient(Server *server, Client *client, std::string reaso
 	if (this->getMembers().empty() && this->getOperators().empty()) {
 		return (false);
 	}
-	//TODO broadcast message of deconnexion
 	if (reason.length() == 0) {
 		this->broadcast(server, NULL, PARTNOREASON(client->getNick(), client->getUsername(), this->name_));
 	} else {
