@@ -8,10 +8,10 @@ int main(int argc, char **argv)
         std::cerr << "Usage is : ./Bot <port> <password>. Aborting..\n";
         return -1;
     }
-	Bot bot(argv[1], argv[2]);
-	std::string recv_msg;    
+	std::string recv_msg;
 	std::vector<std::string>::iterator it;
     try {
+    	Bot bot(argv[1], argv[2]);
 		std::cout << "Connection accepted. Now monitoring\n";
 		while (true) {
 			while (!(recv_msg = bot.recvMsg()).empty()) {

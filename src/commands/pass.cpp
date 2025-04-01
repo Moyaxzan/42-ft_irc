@@ -34,7 +34,7 @@ bool Command::pass(Client *client, Server *server, std::string &line) {
 		return (true);
 	} else {
 		client->sendMessage(server, ERR_WRONGPASS());
-		server->disconnectClient(client->getId());
+		// server->disconnectClient(client->getId());
 		return (false);
 	}
 }

@@ -14,6 +14,7 @@ Client::Client(void) {
 	this->usernameSet_ = false;
 	this->welcomeSent_ = false;
 	this->invisible_ = false;
+    this->to_send_ = "";
 	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
@@ -24,6 +25,7 @@ Client::Client(int id) {
 	this->usernameSet_ = false;
 	this->welcomeSent_ = false;
 	this->invisible_ = false;
+    this->to_send_ = "";
 	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
@@ -35,6 +37,7 @@ Client::Client(std::string nickname, unsigned int id, std::string username) {
 	this->nickname_ = nickname;
 	this->username_ = username;
 	this->id_ = id;
+    this->to_send_ = "";
 }
 
 Client::Client(const Client& other) {

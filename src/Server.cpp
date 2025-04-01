@@ -3,6 +3,7 @@
 #include "../include/Command.hpp"
 
 #include <arpa/inet.h>
+#include <algorithm>
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -336,7 +337,6 @@ void Server::readClient(int fd) {
 
     while (full_msg.find("\r\n") == full_msg.npos)
     {
-        std::cout << "la aussi\n";
         err = recv(fd, buffer, 1023, 0);
         if (err <= 0)
             break ;
@@ -383,7 +383,6 @@ void Server::runServer(void)
 			}
             if (FD_ISSET(i, &this->write_fds) && i != this->serv_socket_)
                 this->getClientById(i)->sendAllMsgs(this);
-            std::cout << "yo\n";
 		}
 	}
 	std::cout << std::endl;
