@@ -17,6 +17,7 @@
 #include <vector>
 #include <list>
 #include <stdlib.h>
+#include <algorithm>
 
 // *************************************** CONSTRUCTORS/DESTRUCTORS **************************************************************//
 
