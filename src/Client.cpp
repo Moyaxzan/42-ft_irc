@@ -167,6 +167,8 @@ void	Client::rmJoinedChann(unsigned int channel) {
 
 bool    Client::sendAllMsgs(Server *server)
 {
+    if (this->to_send_.length() == 0)
+        return false;
     if (send(this->id_, this->to_send_.c_str(), this->to_send_.size(), 0) == -1) {
 		if (this->nickSet_) {
 			server->log("ERROR", "SEND", "could not send message to " + this->nickname_);

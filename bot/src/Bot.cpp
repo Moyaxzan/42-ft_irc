@@ -50,8 +50,8 @@ void Bot::initServerConnection_(char *port, char *pwd)
 
     if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
         throw ConnectionError();
-
-    this->sendMsg("CAP LS 302", 0, true);
+        
+    this->sendMsg("CAP LS 302", 1, true);
     std::string res = this->recvMsg();
     this->sendMsg("PASS " + std::string(pwd), 0, true);
     res = this->recvMsg();
@@ -73,6 +73,7 @@ void Bot::sendMsg(std::string const &to_send, int time, bool server)
         final_str = "PRIVMSG " + channel + " :" + to_send;
     else
         final_str = to_send;
+    final_str += "\r\n";
     int str_len = final_str.length();
     const char *str = final_str.c_str();
     int bytes_sent = 0;

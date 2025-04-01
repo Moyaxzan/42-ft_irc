@@ -201,9 +201,9 @@ void Server::newClient_(void) {
 	int	accept_fd = accept(this->serv_socket_, NULL, NULL);
 	if (accept_fd == -1)
 		throw(AcceptError());
-	FD_SET(accept_fd, &this->all_sockets_);
-	if (accept_fd > this->fd_max_)
-		this->fd_max_ = accept_fd;
+    if (accept_fd > this->fd_max_)
+        this->fd_max_ = accept_fd;
+    FD_SET(accept_fd, &this->all_sockets_);
 	this->clients_.insert(std::make_pair(accept_fd, new Client(accept_fd)));
 	this->log("INFO", "AUTH", "new connection on " SERV_IP);
 }
@@ -299,7 +299,7 @@ void	Server::disconnectClient(int fd) {
 	checkChannelsPromoteOP(client);
 	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end(); it++) {
 		Channel* channel = this->channels_[*it];
-		if (!channel->disconnectClient(this, client, "")) {
+		if (channel->isMember(client) && !channel->disconnectClient(this, client, "")) {
 			this->log("INFO", "CHANNEL", "channel " BLUE + channel->getName() + RESET " destroyed");
 			delete channel;
 			this->channels_.erase(this->channels_.begin() + *it);
@@ -329,6 +329,7 @@ void Server::readClient(int fd) {
 
     while (full_msg.find("\r\n") == full_msg.npos)
     {
+        std::cout << "la aussi\n";
         err = recv(fd, buffer, 1023, 0);
         if (err <= 0)
             break ;
@@ -375,6 +376,7 @@ void Server::runServer(void)
 			}
             if (FD_ISSET(i, &this->write_fds) && i != this->serv_socket_)
                 this->getClientById(i)->sendAllMsgs(this);
+            std::cout << "yo\n";
 		}
 	}
 	std::cout << std::endl;
