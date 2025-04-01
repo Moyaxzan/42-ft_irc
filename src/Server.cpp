@@ -244,7 +244,14 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	} else if (cmd.find("MODE ") == 0) {
 		return (Command::mode(this, this->clients_[fd], cmd));
 	} else if (cmd.find("PART ") == 0) {
-		return (Command::part(this->clients_[fd], this, cmd));
+		Channel *chan = getChannelByName(Command::part(this->clients_[fd], this, cmd));
+		if (chan && chan->getMembers().size() == 0 && chan->getOperators().size() == 0) {
+			std::vector<Channel *>::iterator it = std::find(channels_.begin(), channels_.end(), chan);
+			if (it != channels_.end()) {
+				delete *it;
+				channels_.erase(it);
+			}
+		}
 	}
 	return (true);
 }
@@ -297,7 +304,7 @@ void	Server::disconnectClient(int fd) {
 	std::list<unsigned int>	chans = client->getJoinedChannels();
 
 	checkChannelsPromoteOP(client);
-	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end(); it++) {
+	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end() && *it < chans.size(); it++) {
 		Channel* channel = this->channels_[*it];
 		if (channel->isMember(client) && !channel->disconnectClient(this, client, "")) {
 			this->log("INFO", "CHANNEL", "channel " BLUE + channel->getName() + RESET " destroyed");

@@ -17,22 +17,22 @@ class Command {
 		~Command();
 
 	public:
-		static bool pass(Client *client, Server *server, std::string &line);
-		static bool nick(Client *client, Server *server, std::string &line);
-		static bool user(Server *server, Client *client, std::string &line);
-		static void cap(Server *server, Client *client, const std::string& line);
-		static bool ping(Server *server, Client *client, const std::string& line);
-		static bool mode(Server *server, Client *client, const std::string& line);
-		static bool join(Client *client, Server *server, std::string &line);
-		static int	isValidTarget(std::string target, Client *client, Server *server);
-		static bool privMsg(Client *client, Server *server, const std::string& line);
+		static bool			pass(Client *client, Server *server, std::string &line);
+		static bool			nick(Client *client, Server *server, std::string &line);
+		static bool			user(Server *server, Client *client, std::string &line);
+		static void			cap(Server *server, Client *client, const std::string& line);
+		static bool			ping(Server *server, Client *client, const std::string& line);
+		static bool			mode(Server *server, Client *client, const std::string& line);
+		static bool			join(Client *client, Server *server, std::string &line);
+		static int			isValidTarget(std::string target, Client *client, Server *server);
+		static bool			privMsg(Client *client, Server *server, const std::string& line);
 		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
-		static bool invite(Client *client, Server *server, const std::string& line);
-		static bool kick(Client *client, Server *server, const std::string& line);
-		static bool topic(Client *client, Server *server, const std::string& line);
-        static void	removeClientFromChannel(Channel *channel, Client *client);
-		static bool part(Client *client, Server *server, const std::string & line);
-		static bool names(Client *client, Server *server, const std::string &line);
+		static bool			invite(Client *client, Server *server, const std::string& line);
+		static bool			kick(Client *client, Server *server, const std::string& line);
+		static bool			topic(Client *client, Server *server, const std::string& line);
+        static void			removeClientFromChannel(Channel *channel, Client *client);
+		static std::string	part(Client *client, Server *server, const std::string & line);
+		static bool			names(Client *client, Server *server, const std::string &line);
 };
 
 bool isValidChannelName(const std::string &name);

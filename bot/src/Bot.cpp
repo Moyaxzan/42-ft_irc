@@ -1,44 +1,41 @@
 #include "../include/Bot.hpp"
 #include "../include/global.hpp"
+#include <sstream>
 
-Bot::Bot(char *port, char *pwd)
-{
+Bot::Bot(char *port, char *pwd) {
     std::ifstream infile;
     std::string line;
     DIR *profanities_dir;
     dirent *curr;
     
+	this->deputized_ = false;
     profanities_dir = opendir("./bot/profanities");
     if (profanities_dir) {
         while ((curr = readdir(profanities_dir))) {
 			addProfanityDict(std::string(curr->d_name));
 		}
         closedir(profanities_dir);
-    }
-    else
+    } else {
         std::cout << "No profanities file found!\n";
+	}
     this->initServerConnection_(port, pwd);
 }
 
-Bot::Bot(Bot const &other)
-{
+Bot::Bot(Bot const &other) {
     *this = other;
 }
 
-Bot::~Bot(void)
-{
+Bot::~Bot(void) {
     close(this->socket_);
 }
 
-Bot &Bot::operator=(Bot const &other)
-{
+Bot &Bot::operator=(Bot const &other) {
     this->socket_ = other.socket_;
     this->profanities_ = other.profanities_;
     return *this;
 }
 
-void Bot::initServerConnection_(char *port, char *pwd)
-{
+void Bot::initServerConnection_(char *port, char *pwd) {
     sockaddr_in server_infos;
     server_infos.sin_family = AF_INET;
     server_infos.sin_port = htons(atoi(port));
@@ -61,38 +58,44 @@ void Bot::initServerConnection_(char *port, char *pwd)
     this->sendMsg("USER sheriff localhost localhost: le_sheriff", 0, true);
 }
 
-std::vector<std::vector<std::string> > &Bot::getDicts(void)
-{
+std::vector<std::vector<std::string> > &Bot::getDicts(void) {
     return this->profanities_;
 }
 
-void Bot::sendMsg(std::string const &to_send, int time, bool server)
-{
-    std::string final_str;
-    if (!server)    // server == true -> send server msg
-        final_str = "PRIVMSG " + channel + " :" + to_send;
-    else
-        final_str = to_send;
-    final_str += "\r\n";
-    int str_len = final_str.length();
-    const char *str = final_str.c_str();
-    int bytes_sent = 0;
-    int send_res;
 
-    while (bytes_sent < str_len)
-    {
-        sleep(time);
-        send_res = send(this->socket_, str + bytes_sent, str_len - bytes_sent, 0);
-        if (send_res == -1)
-        {
-            if (errno == EINTR)
-                continue;
-            else
-                throw SendError();
-        }
-        bytes_sent += send_res;
-    }
+void Bot::sendMsg(std::string const &to_send, int time, bool server) {
+	std::string final_str;
+	if (!server) { // server == true -> send server msg
+		final_str = "PRIVMSG " + channel + " :" + to_send;
+	} else {
+		final_str = to_send;
+	}
+	final_str += "\r\n";
+
+	int str_len = final_str.length();
+	const char *str = final_str.c_str();
+	int bytes_sent = 0;
+	int send_res;
+	int retry_count = 0;
+	const int MAX_RETRIES = 5;
+
+	sleep(time);
+	while (bytes_sent < str_len) {
+		send_res = send(this->socket_, str + bytes_sent, str_len - bytes_sent, 0);
+		if (send_res < 0) {
+			retry_count++;
+			if (retry_count >= MAX_RETRIES) {
+				throw SendError();
+			}
+			continue;
+		} else if (send_res == 0) {
+			throw SendError();
+		}
+		bytes_sent += send_res;
+		retry_count = 0;
+	} 
 }
+
 
 std::string Bot::recvMsg(void)
 {
@@ -138,7 +141,7 @@ void Bot::checkAddBadPerson(std::string username)
 {
     std::vector<BadPerson>::iterator it;
 
-    for (it = bad_people.begin(); it != bad_people.end(); it++)
+    for (it = badPeople_.begin(); it != badPeople_.end(); it++)
     {
         if ((*it).getName() == username)
         {
@@ -155,14 +158,42 @@ void Bot::checkAddBadPerson(std::string username)
                 username.erase(username.size() - 1);
                 std::cout << "KICK " + channel + " " + username << "\n";
                 this->sendMsg("KICK " + channel + " " + username + " :so rude", 0, true);
-                this->bad_people.erase(it);
+                this->badPeople_.erase(it);
                 return ;
             }
         }
     }
     BadPerson first_warning(username);
-    this->bad_people.push_back(username);
+    this->badPeople_.push_back(username);
     this->sendMsg("Watch your mouth, cowboy. One more word outta line, and you’re dust. Understood, " ORANGE + username + RESET +"?\n", 0, false);
+}
+
+int	Bot::handlePart(void) {
+	this->sendMsg(std::string("NAMES ") + channel, 0, true);
+	usleep(100000);
+	std::string namesList = this->recvMsg();
+	std::vector<std::string> usernames;
+    
+    size_t pos = namesList.find_last_of(':');
+    if (pos == std::string::npos) {
+		this->sendMsg(PART_MSG(channel), 0, true);
+		return (-1);
+	}
+
+    std::string users_part = namesList.substr(pos + 1); // Extract usernames part
+    std::istringstream iss(users_part);
+    std::string user;
+
+    while (iss >> user) {
+        if (user[0] == '@' || user[0] == '+')
+            user = user.substr(1);
+        usernames.push_back(user);
+    }
+	if (usernames.size() < 2) {
+		this->sendMsg(PART_MSG(channel), 0, true);
+		return (-1);
+	}
+	return (0);
 }
 
 t_msg Bot::parseMsg(std::string recv_msg)
@@ -211,8 +242,12 @@ void Bot::checkRoulette(t_msg & msg)
     std::vector<std::string>::iterator it = msg.content.begin();
     while (it != msg.content.end())
     {
-        if (*it == "START" && it + 1 != msg.content.end() && *(it + 1) == "ROULETTE")
-            launchRoulette(msg);
+        if (*it == "START" && it + 1 != msg.content.end() && *(it + 1) == "ROULETTE") {
+			if (this->deputized_)
+				launchRoulette(msg);
+			else
+				sendMsg("I need to be deputized to be able to do this kind of stuff...", 0, false);
+		}
         it++;
     }
 }
@@ -229,7 +264,12 @@ void Bot::monitor(t_msg & msg)
         {
             if (msg.original.find(*it) != std::string::npos && checkBadContent(msg.content, *it))
             {
-                this->checkAddBadPerson(msg.username);
+				if (this->deputized_) {
+					this->checkAddBadPerson(msg.username);
+				} else {
+					this->sendMsg("You are lucky I'm not deputy right now !\n", 1, false);
+					this->sendMsg("Next time, I will get you !!\n", 2, false);
+				}
                 return ;
             }
         }
@@ -401,4 +441,7 @@ void Bot::printBear(void)
     while (std::getline(bear, line, '\0'))
         this->sendMsg(line, 1, false);
     bear.close();
+}
+void	Bot::setDeputized(bool deputized) {
+	this->deputized_ = deputized;
 }
