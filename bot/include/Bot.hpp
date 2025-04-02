@@ -35,18 +35,17 @@ class Bot
 		std::vector<BadPerson>					badPeople_;
 		std::vector<std::vector<std::string> >	profanities_; 
 		
-		void addProfanityDict(std::string filename);
-		void initServerConnection_(char *port, char *pwd);
-		void checkAddBadPerson(std::string username);
-		void printBear(void);
-		void fileError(void);
-		bool checkBadContent(std::vector<std::string> & content, std::string const & bad_word);
-		bool checkIfOper(void);
+		void                                    addProfanityDict(std::string filename);
+		void                                    fileError(void);
+		void                                    initServerConnection_(char *port, char *pwd);
+		void                                    checkAddBadPerson(std::string username);
+		bool                                    checkBadContent(std::vector<std::string> & content, std::string const & bad_word);
+		bool                                    checkIfOper(void);
 		
-		std::vector<std::string> getPlayersVec(void);
-		void launchRoulette(t_msg const & msg);
-		void sendIntroRoulette(std::string username);
-		void rouletteLoop(std::vector<std::string> & players, Gun & gun);
+		std::vector<std::string>                getPlayersVec(void);
+		void                                    launchRoulette(t_msg const & msg);
+		void                                    sendIntroRoulette(std::string username);
+		void                                    rouletteLoop(std::vector<std::string> & players, Gun & gun);
 
 	public:
 		Bot(char *port, char *pwd);
@@ -58,13 +57,13 @@ class Bot
 		void									setDeputized(bool deputized);
 		std::vector<std::vector<std::string> >	&getDicts(void);
 		
-		int			handlePart(void);
-		t_msg 		parseMsg(std::string msg);
-		void		sendMsg(std::string const & to_send, int time, bool server);
-		std::string	recvMsg(void);
+		int			                            handlePart(void);
+		t_msg 		                            parseMsg(std::string msg);
+		void		                            sendMsg(std::string const & to_send, int time, bool server);
+		std::string	                            recvMsg(void);
 		
-		void	monitor(t_msg & msg);
-		void	checkRoulette(t_msg & msg);
+		void	                                monitor(t_msg & msg);
+		void	                                checkRoulette(t_msg & msg);
 };
 
 std::vector<std::string> split(std::string str, std::string delim);

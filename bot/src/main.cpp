@@ -36,7 +36,6 @@ int main(int argc, char **argv)
 						break;
 					}
 				}
-				std::cout << recv_msg;
 				t_msg msg = bot.parseMsg(recv_msg);
 				bot.monitor(msg);
 				bot.checkRoulette(msg);
