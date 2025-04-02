@@ -103,6 +103,7 @@ bool isValidChannelName(const std::string &name);
 
 //**************************** MODE MACRO ***********************************//
 #define ERR_UNKNOWNMODE(nick, mode) (SERV_NAME " 472 " + (nick) + " " + (mode) + " :is unknown mode")
+#define ENDOFBANLIST(nick, channel) (SERV_NAME " 368 " + (nick) + " " + (channel) + " :End of Channel Ban List")
 
 //**************************** TOPIC MACRO ***********************************//
 #define UNSET_TOPIC(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 TOPIC " + channel + " :")
@@ -115,10 +116,10 @@ bool isValidChannelName(const std::string &name);
 #define ERR_BADCHANLIMIT(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Bad channel limit")
 #define ERR_CHANOPNEEDED(nick, channel) (SERV_NAME " 482 " + (nick) + " " + (channel) + " :: You're the last operator in town buddy, we can't let you abandon your duties just like that!")
 #define RPL_YOUREOPER(nick) (SERV_NAME " " + (nick) + " :You are now an IRC operator")
-#define NOTICE_OPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, <" + GREEN + nick + RESET + ">. You’ve been deputized. Keep the outlaws in check, and don’t go startin’ no trouble yourself. 🤠")
-#define NOTICE_UNOPER(nick, channel) (SERV_NAME " NOTICE " + channel + " :The sun sets on <" + GREEN + nick + RESET + ">’s time as Sheriff. The badge is off, the dust settles… and the law moves on. Hope they don’t turn outlaw. 🌵")
-#define NOTICE_ALREADYOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Son, you tryna promote <" + GREEN + nick + RESET + ">? They’re already the Sheriff ‘round here! Might wanna check your whiskey before makin’ decisions. 🥃")
-#define NOTICE_NOTOP(nick, channel) (SERV_NAME " NOTICE " + channel + " :Well now, partner... you tryin’ to strip <" + GREEN + nick + RESET + "> of a badge they never had? That’s like takin’ boots off a barefoot man. Ain’t much to remove. 👢")
+#define NOTICE_OPER(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :Well now, <" + GREEN + nick + RESET + ">. You’ve been deputized. Keep the outlaws in check, and don’t go startin’ no trouble yourself. 🤠")
+#define NOTICE_UNOPER(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :The sun sets on <" + GREEN + nick + RESET + ">’s time as Sheriff. The badge is off, the dust settles… and the law moves on. Hope they don’t turn outlaw. 🌵")
+#define NOTICE_ALREADYOP(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :Son, you tryna promote <" + GREEN + nick + RESET + ">? They’re already the Sheriff ‘round here! Might wanna check your whiskey before makin’ decisions. 🥃")
+#define NOTICE_NOTOP(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :Well now, partner... you tryin’ to strip <" + GREEN + nick + RESET + "> of a badge they never had? That’s like takin’ boots off a barefoot man. Ain’t much to remove. 👢")
 
 //****************************		INVITE MACROS	***********************************//
 #define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 403 " + (nick) + " " + (channel) + " :No such channel")
