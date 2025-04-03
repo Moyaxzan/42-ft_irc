@@ -54,7 +54,7 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 	std::string command, channel, nick, reason;
 
 	if (!(iss >> command >> channel >> nick)) {
-		client->sendMessage(server, ERR_NEEDMOREPARAMSCHAN(channel, command));
+		client->bufferMessage(server, ERR_NEEDMOREPARAMSCHAN(channel, command));
 		return (false);
 	}
 	std::getline(iss, reason);

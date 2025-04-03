@@ -121,7 +121,7 @@ bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 			return (false);
 		}
 		if (!chan->isMember(client) && !chan->isOperator(client)) {
-			client->sendMessage(server, ERR_CANNOTSENDTOCHAN(client->getNick(), chan->getName()));
+			client->bufferMessage(server, ERR_CANNOTSENDTOCHAN(client->getNick(), chan->getName()));
 			return (false);
 		}
 		chan->broadcast(server, client, PRIVMSG(

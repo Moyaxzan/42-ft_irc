@@ -193,6 +193,6 @@ bool    Client::sendMessages(Server *server)
 bool	Client::bufferMessage(Server *server, std::string message) {
 	this->to_send_ += message;
     FD_SET(this->getId(), server->getWriteFds());
-    message += "\r\n";
+    this->to_send_ += "\r\n";
 	return (true);
 }

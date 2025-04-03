@@ -140,7 +140,7 @@ static bool handleChannelEmptyMode(Server* server, Client* client, Channel* chan
 		strs << channel->getUserLimit();
 		finalMsg += strs.str();
 	}
-	client->sendMessage(server, finalMsg);
+	client->bufferMessage(server, finalMsg);
 	return (true);
 }
 
