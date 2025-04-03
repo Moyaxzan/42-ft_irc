@@ -236,6 +236,7 @@ bool	Channel::disconnectClient(Server *server, Client *client, std::string reaso
 	}
 	this->removeMember(client);
 	this->removeOperator(client);
+	client->rmJoinedChann(this->id_);
 	if (this->members_.empty() && this->operators_.empty()) {
 		return (false);
 	}

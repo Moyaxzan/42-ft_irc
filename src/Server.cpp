@@ -270,17 +270,18 @@ void Server::checkChannelsPromoteOP(Client *client)
 		joined_chans.push_back(this->getChannelById(*it));
 	for (it2 = joined_chans.begin(); it2 != joined_chans.end(); it2++)
 	{
-		if ((*it2)->isOperator(client) && (*it2)->getOperators().size() == 1 && (*it2)->getMembers().size() > 1)
-		{
-			(*it2)->promoteNewOperator(this, client);
+		if ((*it2)->isOperator(client) && (*it2)->getOperators().size() == 1 && (*it2)->getMembers().size() > 1) {
 			return ;
 		}
 	}
 }
 
 void	Server::deleteChan(Channel* channel) {
-	this->channels_.erase(std::find(this->channels_.begin(), this->channels_.end(), channel));
-	delete channel;
+	std::vector<Channel *>::iterator it = std::find(this->channels_.begin(), this->channels_.end(), channel);
+	if (it != this->channels_.end()) {
+		this->channels_.erase(it);
+		delete channel;
+	}
 }
 // Verifier avec structure sever qu'on supprime bien tout
 // Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel
@@ -292,7 +293,7 @@ void	Server::disconnectClient(int fd) {
 	std::list<unsigned int>	chans = client->getJoinedChannels();
 
 	checkChannelsPromoteOP(client);
-	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end() && *it < chans.size(); it++) {
+	for (std::list<unsigned int>::reverse_iterator it = chans.rbegin(); it != chans.rend(); ++it) {
 		Channel* channel = this->channels_[*it];
 		if (channel->isMember(client) && !channel->disconnectClient(this, client, "")) {
 			this->log("INFO", "CHANNEL", "channel " BLUE + channel->getName() + RESET " destroyed");

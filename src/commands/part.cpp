@@ -38,11 +38,10 @@ static void disconnectClientFromChannels(Client *client, Server *server, std::st
         } else if (!chan->isMember(client)) {
             client->bufferMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         } else {
+			client->bufferMessage(server, PART(client->getNick(), client->getUsername(), chan->getName(), reason));
 			if (!chan->disconnectClient(server, client, reason)) {
 				server->deleteChan(chan);
-				return;
 			}
-			client->bufferMessage(server, PART(client->getNick(), client->getUsername(), chan->getName(), reason));
 		}
     }
 }
