@@ -56,6 +56,7 @@ class Bot
 		std::vector<std::vector<std::string> >	&getDicts(void);
 		
 		int			                            handlePart(void);
+		bool									handleKick(std::string recv);
 		t_msg 		                            parseMsg(std::string msg);
 		void		                            sendMsg(std::string const & to_send, int time, bool server);
 		std::string	                            recvMsg(void);

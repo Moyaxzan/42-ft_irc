@@ -355,6 +355,10 @@ int	Bot::handlePart(void) {
 	return (0);
 }
 
+bool	Bot::handleKick(std::string recv) {
+	return (recv.find(" sheriff ") != recv.npos);
+}
+
 t_msg Bot::parseMsg(std::string recv_msg)
 {
     std::vector<std::string> split_msg;

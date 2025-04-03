@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 					if (channel_tmp.find("\r") != std::string::npos && channel_tmp.find("\n") != std::string::npos)
 						channel_tmp.resize(channel_tmp.length() - 2);
 					bot.sendMsg("JOIN " + channel_tmp, 0, true);
-					if (!(recv_msg = bot.recvMsg()).empty() && recv_msg.find(" JOIN ")) {
+					if (!(recv_msg = bot.recvMsg()).empty() && recv_msg.find(" JOIN ") != recv_msg.npos) {
 						channel = channel_tmp;
 						break ;
 					}
@@ -35,6 +35,9 @@ int main(int argc, char **argv)
 					if (bot.handlePart()) {
 						break;
 					}
+				}
+				if (recv_msg.find("KICK ") != recv_msg.npos && bot.handleKick(recv_msg)) {
+					break;
 				}
 				t_msg msg = bot.parseMsg(recv_msg);
 				bot.monitor(msg);
