@@ -3,6 +3,7 @@
 #include "../include/Command.hpp"
 
 #include <arpa/inet.h>
+#include <algorithm>
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -55,6 +56,7 @@ Server::Server(t_args& args) {
 		throw(ListenError());
 
 	FD_SET(this->serv_socket_, &this->all_sockets_);
+    FD_ZERO(&this->write_fds);
 	this->fd_max_ = this->serv_socket_;
 	this->password_=args.password;
 }
@@ -123,6 +125,17 @@ Client	*Server::getClientByNick(const std::string &name) {
 	return (NULL);
 }
 
+Client  *Server::getClientById(int client_id)
+{
+    std::map<int, Client *> clients = this->getClients();
+    std::map<int, Client *>::iterator it;
+
+    it = clients.find(client_id);
+    if (it == clients.end())
+        return NULL;
+    return it->second;
+}
+
 Channel *Server::getChannelById(unsigned int channel_id)
 {
 	std::vector<Channel *>::iterator it;
@@ -138,8 +151,12 @@ const std::map<std::string, int>&	Server::getNickFd(void) const {
 	return (this->nickFd_);
 }
 
-const std::map<int, Client *>&		Server::getClients(void) const {
+std::map<int, Client *> Server::getClients(void) {
 	return (this->clients_);
+}
+
+fd_set *Server::getWriteFds(void) {
+    return &this->write_fds;
 }
 
 void	Server::addNickname(std::string nickname, int fd) {
@@ -187,27 +204,12 @@ void Server::newClient_(void) {
 	int	accept_fd = accept(this->serv_socket_, NULL, NULL);
 	if (accept_fd == -1)
 		throw(AcceptError());
-	FD_SET(accept_fd, &this->all_sockets_);
-	if (accept_fd > this->fd_max_)
-		this->fd_max_ = accept_fd;
+    if (accept_fd > this->fd_max_)
+        this->fd_max_ = accept_fd;
+    FD_SET(accept_fd, &this->all_sockets_);
 	this->clients_.insert(std::make_pair(accept_fd, new Client(accept_fd)));
 	this->log("INFO", "AUTH", "new connection on " SERV_IP);
 }
-
-/*
-std::vector<std::string>	splitLines(std::string msg) {
-	std::vector<std::string>	lines;
-	std::stringstream			ss(msg);
-	std::string					line;
-
-	while (std::getline(ss, line, '\n')) {
-		if (!line.empty() && line[line.size() - 1] == '\r') // To erase '\r' if it is present
-			line.erase(line.size() - 1);
-		lines.push_back(line);
-	}
-	return (lines);
-}
-*/
 
 bool	Server::handleCommand(int fd, std::string cmd) {
 	DEBUG_LOG("Handling command: " + cmd);
@@ -292,7 +294,7 @@ void	Server::disconnectClient(int fd) {
 	checkChannelsPromoteOP(client);
 	for (std::list<unsigned int>::iterator it = chans.begin(); it != chans.end() && *it < chans.size(); it++) {
 		Channel* channel = this->channels_[*it];
-		if (!channel->disconnectClient(this, client, "")) {
+		if (channel->isMember(client) && !channel->disconnectClient(this, client, "")) {
 			this->log("INFO", "CHANNEL", "channel " BLUE + channel->getName() + RESET " destroyed");
 			delete channel;
 			this->channels_.erase(this->channels_.begin() + *it);
@@ -317,28 +319,33 @@ void	Server::disconnectClient(int fd) {
 // Gérer autres commandes
 void Server::readClient(int fd) {
 	char		buffer[1024] = {'\0'};
-	int			recv_res = recv(fd, buffer, 1023, 0);
- 
- 	// cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
-	if (recv_res <= 0) {
-		disconnectClient(fd);
+    int         err = 0;
+    std::string full_msg;
+
+    while (full_msg.find("\r\n") == full_msg.npos)
+    {
+        err = recv(fd, buffer, 1023, 0);
+        if (err <= 0)
+            break ;
+        full_msg += std::string(buffer);
+        memset(buffer, '\0', 1024);
+    }
+    // cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
+	if (err <= 0) {
+        disconnectClient(fd);
 		return ;
 	}
-	std::string	msg(buffer);
-	if (msg.length() == 0)
-		return ;
-	std::vector<std::string> lines = split(std::string(buffer), '\n');
+    std::vector<std::string> lines = split(full_msg, '\n');
 	if (this->clients_[fd]->isAuth()) {
-		DEBUG_LOG(this->clients_[fd]->getNick() + ": " + msg);
+		DEBUG_LOG(this->clients_[fd]->getNick() + ": " + full_msg);
 	} else {
 		std::ostringstream	oss;
 		oss << fd;
-		DEBUG_LOG("[" + oss.str() + "]: " + msg);
+		DEBUG_LOG("[" + oss.str() + "]: " + full_msg);
 	}
-	// std::cout << "[" << fd << "] : |"<< msg << "|" << std::endl;
-	for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
-		if (!handleCommand(fd, *line))
-			break ;
+    for (std::vector<std::string>::iterator line = lines.begin(); line != lines.end(); line++) {
+        if (!handleCommand(fd, *line))
+            break ;
 	}
 }
 
@@ -350,7 +357,7 @@ void Server::runServer(void)
 	fd_set readfds;
 	while (!g_stopSig) {
 		readfds = this->all_sockets_;
-		if (select(this->fd_max_ + 1, &readfds, NULL, NULL, NULL) == -1 && !g_stopSig) {
+		if (select(this->fd_max_ + 1, &readfds, &this->write_fds, NULL, NULL) == -1 && !g_stopSig) {
 			throw(SelectError());
 		}
 		for (int i = 0; !g_stopSig && i <= this->fd_max_; i++) {
@@ -361,6 +368,8 @@ void Server::runServer(void)
 					this->readClient(i);
 				}
 			}
+            if (FD_ISSET(i, &this->write_fds) && i != this->serv_socket_)
+                this->getClientById(i)->sendMessages(this);
 		}
 	}
 	std::cout << std::endl;
@@ -372,18 +381,18 @@ void	Server::sendWelcomeMessage_(int fd) {
 	Client*		client = this->clients_[fd];
     std::string	nick = client->getNick();
 
-    client->sendMessage(this, std::string(SERV_NAME) + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
-    client->sendMessage(this, std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
-    client->sendMessage(this, std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
-    client->sendMessage(this, std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
-	client->sendMessage(this, std::string(SERV_NAME) + " 005 " + nick + CACTUS);
+    client->bufferMessage(this, std::string(SERV_NAME) + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
+    client->bufferMessage(this, std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
+    client->bufferMessage(this, std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
+    client->bufferMessage(this, std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
+	client->bufferMessage(this, std::string(SERV_NAME) + " 005 " + nick + CACTUS);
      
 	client->setWelcomeSent(true);
     // Message of the Day (MOTD) ?
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
 }
 
 void	Server::log(const std::string& level, const std::string& category, const std::string message) {

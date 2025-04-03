@@ -202,7 +202,7 @@ bool	Channel::broadcast(Server* server, Client *sender, std::string message) {
 	std::list<Client *>::iterator membr;
 	for (membr = this->members_.begin(); membr != this->members_.end(); membr++) {
 		if (!sender || (*membr)->getNick() != sender->getNick()) {
-			(*membr)->sendMessage(server, message);
+			(*membr)->bufferMessage(server, message);
 		}
 	}
 	return (true);
