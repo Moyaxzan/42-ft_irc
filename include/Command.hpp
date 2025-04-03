@@ -121,6 +121,7 @@ bool isValidChannelName(const std::string &name);
 #define NOTICE_UNOPER(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :The sun sets on <" + GREEN + nick + RESET + ">’s time as Sheriff. The badge is off, the dust settles… and the law moves on. Hope they don’t turn outlaw. 🌵")
 #define NOTICE_ALREADYOP(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :Son, you tryna promote <" + GREEN + nick + RESET + ">? They’re already the Sheriff ‘round here! Might wanna check your whiskey before makin’ decisions. 🥃")
 #define NOTICE_NOTOP(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :Well now, partner... you tryin’ to strip <" + GREEN + nick + RESET + "> of a badge they never had? That’s like takin’ boots off a barefoot man. Ain’t much to remove. 👢")
+#define RPL_AUTOOP(channel, nick) (SERV_NAME " MODE " + (channel) + " +o " + (nick))
 
 //****************************		INVITE MACROS	***********************************//
 #define ERR_NOSUCHCHANNEL(nick, channel) (SERV_NAME " 403 " + (nick) + " " + (channel) + " :No such channel")

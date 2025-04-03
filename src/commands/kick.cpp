@@ -53,13 +53,10 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 	std::istringstream iss(line);
 	std::string command, channel, nick, reason;
 
-	// TEST NB ARG : voir si controlé par irssi, sinon, le faire + ERR_NEEDMOREPARAMS (461) : "Not enough parameters"
-	if (!(iss >> command))
+	if (!(iss >> command >> channel >> nick)) {
+		client->sendMessage(server, ERR_NEEDMOREPARAMSCHAN(channel, command));
 		return (false);
-	if (!(iss >> channel)) 
-		return (false);
-	if (!(iss >> nick)) 
-		return (false);
+	}
 	std::getline(iss, reason);
 	Channel	*chan = server->getChannelByName(channel);
 	if (!chan) // Does channel exist ?
@@ -75,7 +72,6 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 		reason = " :No reason given";
 	Client *target = server->getClientByNick(nick);
 	if (!target)
-		// client->sendMessage(server, ERR_NOSUCHNICK(client->getNick()));
 		client->sendMessage(server, ERR_NOSUCHNICK(client->getNick(), nick));
 	else if (!chan->isMember(target)) // is kicked client on channel ?
 		client->sendMessage(server, ERR_USERNOTINCHANNEL(kickerNick, nick, channel));
@@ -86,6 +82,7 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 		client->sendMessage(server, BROADKICK(kickerNick, kickerUsername, channel, nick, reason));
 		target->sendMessage(server, NOTIFYKICK(nick, channel, kickerNick, reason));
 		removeClientFromChannel(chan, target);
+		server->log("INFO", "KICK", kickerNick + " kicked " + nick + " out of " + BLUE + channel + RESET);
 	}
 	return (true);
 }

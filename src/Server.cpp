@@ -161,6 +161,7 @@ bool	Server::addChannel(std::string channelName, Client *creator, std::string pa
 	if (!newChan) {
 		return (false);
 	}
+	this->log("INFO", "CHANNEL", "new channel " BLUE + channelName + RESET " created");
 	//add creator to the members & operators
 	newChan->addOperator(creator);
 	newChan->addMember(creator);
@@ -269,7 +270,8 @@ void static promoteNewOperator(Server *server, Channel *channel, Client *lastOP)
 		if ((*it)->getId() != lastOP->getId())
 		{
 			channel->addOperator(*it);
-			channel->broadcast(server, NULL, NOTICE_OPER((*it)->getNick(), channel->getName()));
+			channel->broadcast(server, lastOP, RPL_AUTOOP(channel->getName(), (*it)->getNick()));
+			channel->broadcast(server, lastOP, NOTICE_OPER((*it)->getNick(), channel->getName()));
 			return ;
 		}
 	}
