@@ -31,7 +31,6 @@ class Bot
 {
 	private:
 		int 									socket_;
-		bool									deputized_;
 		std::vector<BadPerson>					badPeople_;
 		std::vector<std::vector<std::string> >	profanities_; 
 		
@@ -54,7 +53,6 @@ class Bot
 		Bot & operator=(Bot const & other);
 		
 		int										getClientSocket(void);
-		void									setDeputized(bool deputized);
 		std::vector<std::vector<std::string> >	&getDicts(void);
 		
 		int			                            handlePart(void);

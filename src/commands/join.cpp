@@ -50,13 +50,12 @@ bool Command::join(Client *client, Server *server, std::string &line)
         return (false);
     }
     Channel *chan;
-    if (server->addChannel(channelName, client, password)) {
-		server->log("INFO", "CHANNEL", "new channel " BLUE + channelName + RESET " created");
-	}
+    server->addChannel(channelName, client, password);
     chan = server->getChannelByName(channelName);
     if (!chan) {
         return (false);
     }
+	server->log("INFO", "CHANNEL", "new channel " BLUE + channelName + RESET " created");
     std::string nick = client->getNick();
     std::string user = client->getUsername();
     if (chan->isInviteOnly() && !chan->isInvited(client)) {

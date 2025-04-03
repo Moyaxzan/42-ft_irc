@@ -178,7 +178,12 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 			setChannelUserLimit(server, channel, client, modeType == '+', arg);
 			break;
 		case 'k':
-			setChannelPwd(channel, modeType == '+', arg);
+			if (!arg.empty())
+				setChannelPwd(channel, modeType == '+', arg);
+			else {
+				client->sendMessage(server, ERR_NEEDMOREPARAMSCHAN(channel->getName(), "MODE"));
+				return (false);
+			}
 			break;
 		case 't':
 			channel->setRestrictedTopic(modeType == '+');

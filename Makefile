@@ -2,7 +2,7 @@
 
 NAME = ircserv
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -fsanitize=address -g
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -g
 
 DEBUG_FLAGS = -DDEBUG=1
 

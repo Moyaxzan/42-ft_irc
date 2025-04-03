@@ -2,7 +2,7 @@
 
 NAME = Bot
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -fsanitize=address
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD
 
 DEBUG_FLAGS = -g3 -DDEBUG=1
 

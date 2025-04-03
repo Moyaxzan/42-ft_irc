@@ -21,17 +21,17 @@ int main(int argc, char **argv)
 					if (channel_tmp.find("\r") != std::string::npos && channel_tmp.find("\n") != std::string::npos)
 						channel_tmp.resize(channel_tmp.length() - 2);
 					bot.sendMsg("JOIN " + channel_tmp, 0, true);
-					channel = channel_tmp;
-					break ;
+					if (!(recv_msg = bot.recvMsg()).empty() && recv_msg.find(" JOIN ")) {
+						channel = channel_tmp;
+						break ;
+					}
 				}
 			}
 
 			bot.sendMsg("It looks like this city needed a sheriff.. and here I am.\n", 0, false);
 			bot.sendMsg("Just a quick reminder, fellers : I need operator rights if you want me to do the cleaning 'round here\n", 1, false);
 			while (!(recv_msg = bot.recvMsg()).empty()) {
-				if (recv_msg.find("MODE ") != recv_msg.npos && recv_msg.find(" +o") != recv_msg.npos) {
-					bot.setDeputized(true);
-				} else if (recv_msg.find("PART ") != recv_msg.npos) {
+				if (recv_msg.find("PART ") != recv_msg.npos) {
 					if (bot.handlePart()) {
 						break;
 					}

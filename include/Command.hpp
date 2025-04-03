@@ -84,10 +84,10 @@ bool isValidChannelName(const std::string &name);
 #define JOINTOPIC(nick, channel, topic) (SERV_NAME " 332 " + (nick) + " " + (channel) + " :" + topic)
 #define LISTNAMES(nick, channel, names) (SERV_NAME " 353 " + (nick) + " = " + (channel) + " :" + (names))
 #define ENDOFNAMES(nick, channel) (SERV_NAME " 366 " + (nick) + " " + (channel) + " :End of /NAMES list.")
-#define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel) + ":Cannot join channel (+l)")
+#define ERR_CHANNELFULL(nick, channel) (SERV_NAME " 471 " + (nick) + " " + (channel) + " :Cannot join channel (+l)")
 #define ERR_BADCHANNAME(nick, channel) (SERV_NAME " 479 " + (nick) + " " + (channel) + " :Invalid channel name")
-#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + ":Cannot join channel (+i)")
-#define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel) + ":Cannot join channel (+k)")
+#define ERR_INVITEONLYCHAN(nick, channel) (SERV_NAME " 473 " + (nick) + " " + (channel) + " :Cannot join channel (+i)")
+#define ERR_BADCHANNELKEY(nick, channel) (SERV_NAME " 475 " + (nick) + " " + (channel) + " :Cannot join channel (+k)")
 
 //****************************		PRIVMSG MACROS	***********************************//
 #define ERR_NOTEXTTOSEND(nick) (SERV_NAME " 412 " + (nick) + " :No text to send")
@@ -99,12 +99,13 @@ bool isValidChannelName(const std::string &name);
 #define ERR_TARGETDISCONNECTED(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (target disconnected unexpectedly)")
 #define ERR_BUFFERFULL(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (buffer full)")
 #define ERR_CANNOTSENDMSG(nick, target) (SERV_NAME " 401 " + (nick) + " " + (target) + " :Cannot send message to user (unknown send() funct error)")
+#define ERR_CANNOTSENDTOCHAN(nick, channel) (SERV_NAME " 404 " + (nick) + " " + (channel) + " :Cannot send to channel")
 #define PRIVMSG(nick, user, channel, message) (":" + (nick) + "!" + (user) + "@127.0.0.1 PRIVMSG " + (channel) + " :" + (message))
 
 //**************************** MODE MACRO ***********************************//
 #define ERR_UNKNOWNMODE(nick, mode) (SERV_NAME " 472 " + (nick) + " " + (mode) + " :is unknown mode")
 #define ENDOFBANLIST(nick, channel) (SERV_NAME " 368 " + (nick) + " " + (channel) + " :End of Channel Ban List")
-
+#define ERR_NEEDMOREPARAMSCHAN(channel, command) (SERV_NAME " 461 " + (channel) + " " + (command) + " :Not enough parameters")
 //**************************** TOPIC MACRO ***********************************//
 #define UNSET_TOPIC(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 TOPIC " + channel + " :")
 #define RPL_NOTOPIC(nick, channel) (SERV_NAME " NOTICE " + (channel) + " :No topic is set")

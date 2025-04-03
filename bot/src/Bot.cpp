@@ -10,7 +10,6 @@ Bot::Bot(char *port, char *pwd) {
     DIR *profanities_dir;
     dirent *curr;
     
-	this->deputized_ = false;
     profanities_dir = opendir("./bot/profanities");
     if (profanities_dir) {
         while ((curr = readdir(profanities_dir))) {
@@ -47,10 +46,6 @@ std::vector<std::vector<std::string> > &Bot::getDicts(void) {
 int Bot::getClientSocket(void)
 {
     return this->socket_;
-}
-
-void	Bot::setDeputized(bool deputized) {
-	this->deputized_ = deputized;
 }
 
 /******************** PRIVATE MEMBER FUNCTIONS ********************/
@@ -394,10 +389,7 @@ void Bot::checkRoulette(t_msg & msg)
     while (it != msg.content.end())
     {
         if (*it == "START" && it + 1 != msg.content.end() && *(it + 1) == "ROULETTE") {
-			if (this->deputized_)
 				launchRoulette(msg);
-			else
-				sendMsg("I need to be deputized to be able to do this kind of stuff...", 0, false);
 		}
         it++;
     }
@@ -415,7 +407,7 @@ void Bot::monitor(t_msg & msg)
         {
             if (msg.original.find(*it) != std::string::npos && checkBadContent(msg.content, *it))
             {
-				if (this->deputized_) {
+				if (this->checkIfOper()) {
 					this->checkAddBadPerson(msg.username);
 				} else {
 					this->sendMsg("You are lucky I'm not deputy right now !\n", 1, false);
