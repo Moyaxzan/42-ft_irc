@@ -218,6 +218,7 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 		Channel* channel = server->getChannelByName(target);
 		if (!channel) {
 			client->bufferMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), target));
+			return false ;
 		} else if (client->joined(channel->getId()) == false) {
 			client->bufferMessage(server, ERR_NOTONCHANNEL(client->getNick(), target));
 		}

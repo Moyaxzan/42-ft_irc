@@ -116,7 +116,7 @@ bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 	} else {
 		Channel* chan = server->getChannelByName(&target[0]);
 		if (!chan) {
-			client->bufferMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), chan->getName()));
+			client->bufferMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), &target[0]));
 			return (false);
 		}
 		if (!chan->isMember(client) && !chan->isOperator(client)) {
