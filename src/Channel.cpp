@@ -159,18 +159,6 @@ bool	Channel::isMember(Client *user) {
 	return (false);
 }
 
-/*
-bool	Channel::isMember(std::string nickname) {
-	std::list<Client *>::iterator it;
-	for (it = this->members_.begin(); it != this->members_.end(); it++) {
-		if ((*it)->getNick() == nickname) {
-			return (true);
-		}
-	}
-	return (false);
-}
-*/
-
 bool	Channel::isOperator(Client *user) {
 	std::vector<Client *>::iterator it;
 	std::string	usrNick = user->getNick();
@@ -207,6 +195,7 @@ bool	Channel::broadcast(Server* server, Client *sender, std::string message) {
 	}
 	return (true);
 }
+
 // Promeut un nouvel operateur en cas de deconnexion client si celui-ci etait dernier operateur client
 // == check tous les channels dont fait partie le client et check s'il etait dernier op sur le channel
 
@@ -229,6 +218,7 @@ void	Channel::promoteNewOperator(Server *server, Client *lastOP)
 
 //returns false if it was the last client
 //what happens when last operator leaves ? -> give operator rights to another member
+
 bool	Channel::disconnectClient(Server *server, Client *client, std::string reason) {
 	server->log("INFO", "PART", client->getNick() + " has left " BLUE + this->name_ + RESET);
 	if (this->isOperator(client)) {

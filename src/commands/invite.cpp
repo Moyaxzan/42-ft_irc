@@ -34,7 +34,6 @@ bool Command::invite(Client *client, Server *server, const std::string& line) {
 	std::istringstream iss(line);
 	std::string command, targetNick, channel;
 
-	// TEST NB ARG : voir si controlé par irssi, sinon, le faire + ERR_NEEDMOREPARAMS (461) : "Not enough parameters"
 	if (!(iss >> command))
 		return (false);
 	if (!(iss >> targetNick)) 

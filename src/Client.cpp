@@ -15,7 +15,6 @@ Client::Client(void) {
 	this->welcomeSent_ = false;
 	this->invisible_ = false;
     this->to_send_ = "";
-	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
 Client::Client(int id) {
@@ -26,7 +25,6 @@ Client::Client(int id) {
 	this->welcomeSent_ = false;
 	this->invisible_ = false;
     this->to_send_ = "";
-	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
 Client::Client(std::string nickname, unsigned int id, std::string username) {
@@ -48,7 +46,7 @@ Client::~Client(void) {
 }
 
 // *************************************** OVERLOAD OPERATORS **************************************************************//
-// should copy id ?
+
 Client& Client::operator=(const Client& other) {
 	this->passwdSet_ = other.passwdSet_;
 	this->nickSet_ = other.nickSet_;
@@ -117,7 +115,6 @@ void	Client::setPasswdSet(bool passwdSet) {
 	this->passwdSet_ = passwdSet;
 }
 
-// setNickSet and setUserSet useful ? it's done in setNick and setUser
 void	Client::setNickSet(bool nickSet) {
 	this->nickSet_ = nickSet;
 }
@@ -146,7 +143,6 @@ void	Client::setCurrChannel(unsigned int channel) {
 
 // *************************************** MEMBER FUNCTIONS **************************************************************//
 
-// add welcomeSent ?
 bool	Client::isAuth(void) const {
 	return (this->nickSet_ && this->usernameSet_ && this->passwdSet_);
 }

@@ -22,5 +22,3 @@ t_args	parsing(int argc, char *argv[]) {
 }
 
 // ports below 1024 are left for processes with root rights
-
-// check psswd : minimal length ?

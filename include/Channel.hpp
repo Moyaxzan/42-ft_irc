@@ -9,8 +9,8 @@
 class Channel {
 	private:
 		bool					inviteOnly_;
-		bool					restrictedTopic_; // new
-		unsigned int			userLimit_; // new
+		bool					restrictedTopic_;
+		unsigned int			userLimit_;
 		int						id_;
 		std::string				topic_;
 		std::string				name_;
@@ -55,7 +55,6 @@ class Channel {
 
 		//MEMBER FUNCTIONS
 		bool					isMember(Client *user);
-		//bool					isMember(std::string nickname);
 		bool					isOperator(Client *user);
 		bool					isInvited(Client *user);
 		bool					broadcast(Server* server, Client *sender, std::string message);

@@ -69,7 +69,6 @@ static bool checkAddOperator(Server *server, Channel *channel, Client *client, b
 		channel->removeOperator(to_promote);
 		channel->broadcast(server, NULL, NOTICE_UNOPER(to_promote->getNick(), channel->getName()));
 	}
-	// channel->broadcast(server, NULL, LISTNAMES(client->getNick(), channel->getName(), channel->getNames()));
 	return true;
 }
 
@@ -225,7 +224,6 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 		return handleChannelMode(server, client, channel, mode, arg);
 	} else {
 		if (target != client->getNick()) {
-			// send error message ?
 			return (false);
 		}
 		client->setInvisible(true);

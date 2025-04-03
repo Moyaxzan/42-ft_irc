@@ -31,7 +31,7 @@ void Command::cap(Server *server, Client *client, const std::string& line) {
 	iss >> command >> subcommand; // "CAP" -> command; "LS", "REQ", "END" -> subcommand
 
 	if (subcommand == "LS") {
-		// Announce supported capabilities : (empty for now ?)
+		// Announce supported capabilities
 		client->bufferMessage(server, CAPLS_RESP());
 	} else if (subcommand == "REQ") { // capability request
 		client->bufferMessage(server, CAPREQ_RESP(line.substr(8))); // Extracts requested capabilities

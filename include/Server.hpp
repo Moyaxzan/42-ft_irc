@@ -28,7 +28,6 @@ class Server {
 		std::string					password_;
 		std::string					creatTime_;
 		std::set<std::string>		nicknames_;
-		//std::set<std::string>		usernames_;
 		std::map<std::string, int>	nickFd_;
 		std::map<int, Client *>		clients_;
 		std::vector<Channel *>		channels_;
@@ -37,7 +36,6 @@ class Server {
 		void	newClient_(void);
 		void	readClient(int fd);
         //auth
-		void	ignoreCAP(int fd);
 		bool	handleCommand(int fd, std::string msg);
 		//welcome message
 		void	setCreatTime_(void);

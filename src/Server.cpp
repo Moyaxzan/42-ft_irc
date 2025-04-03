@@ -52,7 +52,7 @@ Server::Server(t_args& args) {
 		throw(BindError());
 
 	//sets socket as passive listener waiting for incoming connections 
-    if (listen(this->serv_socket_, 20) == -1) // pourquoi 20 ?
+    if (listen(this->serv_socket_, 20) == -1)
 		throw(ListenError());
 
 	FD_SET(this->serv_socket_, &this->all_sockets_);
@@ -66,8 +66,7 @@ Server::Server(const Server& other) {
 }
 
 Server::~Server(void) {
-// close stuff
-  for (int i = 0; i <= this->fd_max_; i++) {
+	for (int i = 0; i <= this->fd_max_; i++) {
 		if (FD_ISSET(i, &this->all_sockets_)) {
 			close(i);
 		}
@@ -283,10 +282,7 @@ void	Server::deleteChan(Channel* channel) {
 		delete channel;
 	}
 }
-// Verifier avec structure sever qu'on supprime bien tout
-// Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel
-// message aux autres clients en cas de déconnexion volontaire avec un int pr le type de déconnexion
-// et une string pr le message à transférer
+
 void	Server::disconnectClient(int fd) {
 	DEBUG_LOG("Into disconnectClient");
 	Client					*client = this->clients_[fd];
@@ -304,8 +300,8 @@ void	Server::disconnectClient(int fd) {
 	std::string	nickname = client->getNick();
 	FD_CLR(fd, &this->all_sockets_);
 	close (fd);
-	this->nicknames_.erase(nickname);	//useful ??
-	delete client;						//free client
+	this->nicknames_.erase(nickname);	
+	delete client;						
 	this->clients_.erase(fd);
 	//change fd_max_ if it is equal to fd and look for the new higher fd
 	if (nickname.empty()) {
@@ -317,7 +313,6 @@ void	Server::disconnectClient(int fd) {
 	}
 }
 
-// Gérer autres commandes
 void Server::readClient(int fd) {
 	char		buffer[1024] = {'\0'};
     int         err = 0;
@@ -331,7 +326,6 @@ void Server::readClient(int fd) {
         full_msg += std::string(buffer);
         memset(buffer, '\0', 1024);
     }
-    // cas d'une fermeture propre du client mais on doit aussi gérer QUIT ect (cf réponse chat gpt)
 	if (err <= 0) {
         disconnectClient(fd);
 		return ;
@@ -350,9 +344,6 @@ void Server::readClient(int fd) {
 	}
 }
 
-// Imposer des noms de channels commençant par "#"
-// see https://www.codequoi.com/programmation-reseau-via-socket-en-c/#c%C3%B4t%C3%A9-serveur--accepter-des-connexions-client-via-socket
-// for guideline
 void Server::runServer(void)
 {
 	fd_set readfds;
@@ -389,11 +380,6 @@ void	Server::sendWelcomeMessage_(int fd) {
 	client->bufferMessage(this, std::string(SERV_NAME) + " 005 " + nick + CACTUS);
      
 	client->setWelcomeSent(true);
-    // Message of the Day (MOTD) ?
-    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
-    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
-    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
-    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
 }
 
 void	Server::log(const std::string& level, const std::string& category, const std::string message) {
@@ -416,12 +402,3 @@ void	Server::log(const std::string& level, const std::string& category, const st
 
 	std::cout << "[" << timestamp << "]" << color << " [" << level << "] [" << category << "] " << RESET << message << std::endl;
 }
-/*
-✔ Si le client se déconnecte volontairement (QUIT), il n'est pas nécessaire de lui envoyer un message, mais il faut notifier les autres clients.
-dans disconnectClient : + relayer un message du client qui s'est déconnecté aux autres en meme tps que la notification de déconnexion ?
-std::string quitMsg = ":" + this->clients_[fd].getNick() + " QUIT :Client exited\r\n";
-broadcastMessage(quitMsg, fd); // Fonction qui envoie un message à tous les autres clients
-
-✔ Si la déconnexion est forcée par le serveur, il est préférable d’envoyer un message ERROR. (créer une fonction pour y faire appel)
-✔ Utilise broadcastMessage() pour prévenir les autres utilisateurs d’un départ.
-*/

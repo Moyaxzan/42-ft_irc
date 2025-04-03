@@ -4,8 +4,10 @@
 #include <iostream>
 
 //***************	CONSTRUCTORS / DESTRUCTORS	*********//
+
 Command::Command(void) {
 }
+
 Command::Command(const Command &other) {
 	(void) other;
 }

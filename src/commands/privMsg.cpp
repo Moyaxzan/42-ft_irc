@@ -39,9 +39,8 @@ bool	correctMsg(std::string line, std::string &message, Client *client, Server *
 	if (line.size() > 512) // good IRC clients should already prevent this error by cutting the message before sending it
 		return (client->bufferMessage(server, ERR_INPUTTOOLONG(client->getNick())), false);
 	cleanMsg(message);
-	if (message.empty()) // inutile, vérifier plutot que le message ne comporte pas que des espaces
+	if (message.empty())
 		return (client->bufferMessage(server, ERR_NOTEXTTOSEND(client->getNick())), false);
-	// Ajouter vérification par le bot
 	return (true);
 }
 
@@ -61,9 +60,9 @@ int	Command::isValidTarget(std::string target, Client *client, Server *server) {
 
 	int	targetFd = getTargetFd(server->getNickFd(), target);
 	if (targetFd == -1)
-		return (-1); // useful ? 
+		return (-1);
 	std::map<int, Client*> clients_ = server->getClients();
-	if (!clients_[targetFd]->isWelcomeSent())// check if targeted client is fully authenticated
+	if (!clients_[targetFd]->isWelcomeSent()) // check if targeted client is fully authenticated
 		return (client->bufferMessage(server, ERR_TARGETNOTAUTH(client->getNick(), target)) , -1);
 	return (targetFd);
 }
@@ -103,7 +102,7 @@ void	sendPrivMsg(std::string target, std::string message, Client *client, Server
 bool Command::privMsg(Client *client, Server *server, const std::string& line) {
 	DEBUG_LOG("Inside privMsg handler");
 
-	if (!client->isWelcomeSent()) // irssi seems to already be handling this case
+	if (!client->isWelcomeSent())
 		return (client->bufferMessage(server, ERR_NOTREGISTERED()), false);
 	std::istringstream	iss(line);
 	std::string			cmd, target, message;

@@ -67,19 +67,15 @@ bool	allUserElements(Server *server, Client *client, std::string line, std::stri
 		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "USER"));
 		return (false);
 	}
-	//if (realname[0] == ':') if parsing of realname
-			//realname = realname.substr(1);
 	return (true);
 }
 
 bool	isValidUsername(Server *server, Client *client, std::string line, std::string &username) {
 	if (!allUserElements(server, client, line, username)) // check if 4 params or if empty (=needmore params)
 		return (false);
-	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (username.size() > 9 || !validUserChars(username) || username == SERV_NAME) {
 		client->bufferMessage(server, ERR_ERRONEUSUSERNAME(client->getNick()));
 		return (false);
 	}
-	//parse hostname, servername and realname ?
 	return (true);
 }

@@ -26,7 +26,6 @@ class Command {
 		static bool			join(Client *client, Server *server, std::string &line);
 		static int			isValidTarget(std::string target, Client *client, Server *server);
 		static bool			privMsg(Client *client, Server *server, const std::string& line);
-		// static void quit(Client &client, Server &server, const std::vector<std::string> &args);
 		static bool			invite(Client *client, Server *server, const std::string& line);
 		static bool			kick(Client *client, Server *server, const std::string& line);
 		static bool			topic(Client *client, Server *server, const std::string& line);
@@ -40,6 +39,7 @@ bool isValidChannelName(const std::string &name);
 #define SERV_NAME ":localhost"
 
 // :serverName CODE <client> <argument> :message
+
 //****************************	 JOIN MACROS	***********************************//
 #define JOINCONFIRMED(nick, user, channel) (":" + (nick) + "!" + (user) + "@127.0.0.1 JOIN :" + channel)
 #define LISTNAMES(nick, channel, names) (SERV_NAME " 353 " + (nick) + " = " + (channel) + " :" + (names))
