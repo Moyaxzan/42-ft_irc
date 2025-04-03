@@ -14,6 +14,7 @@ Client::Client(void) {
 	this->usernameSet_ = false;
 	this->welcomeSent_ = false;
 	this->invisible_ = false;
+    this->to_send_ = "";
 	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
@@ -24,6 +25,7 @@ Client::Client(int id) {
 	this->usernameSet_ = false;
 	this->welcomeSent_ = false;
 	this->invisible_ = false;
+    this->to_send_ = "";
 	// this->currentChannel_ les clients sont mis sur un channel de base ou pas ?
 }
 
@@ -35,6 +37,7 @@ Client::Client(std::string nickname, unsigned int id, std::string username) {
 	this->nickname_ = nickname;
 	this->username_ = username;
 	this->id_ = id;
+    this->to_send_ = "";
 }
 
 Client::Client(const Client& other) {
@@ -165,9 +168,11 @@ void	Client::rmJoinedChann(unsigned int channel) {
 	this->joinedChannels_.remove(channel);
 }
 
-bool	Client::sendMessage(Server* server, std::string message) const {
-	message += "\r\n";
-	if (send(this->id_, message.c_str(), message.size(), 0) == -1) {
+bool    Client::sendMessages(Server *server)
+{
+    if (this->to_send_.length() == 0)
+        return false;
+    if (send(this->id_, this->to_send_.c_str(), this->to_send_.size(), 0) == -1) {
 		if (this->nickSet_) {
 			server->log("ERROR", "SEND", "could not send message to " + this->nickname_);
 		} else {
@@ -178,7 +183,16 @@ bool	Client::sendMessage(Server* server, std::string message) const {
 		return (false);
 	}
 	if (this->nickSet_) {
-		DEBUG_LOG("message send to client: " + message);
+		DEBUG_LOG("message send to client: " + this->to_send_);
 	}
+    this->to_send_ = "";
+    FD_CLR(this->getId(), server->getWriteFds());
+    return true;
+}
+
+bool	Client::bufferMessage(Server *server, std::string message) {
+	this->to_send_ += message;
+    FD_SET(this->getId(), server->getWriteFds());
+    this->to_send_ += "\r\n";
 	return (true);
 }

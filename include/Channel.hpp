@@ -62,6 +62,7 @@ class Channel {
 		bool					disconnectClient(Server *server, Client *client, std::string reason);
 		std::string				getNames(void);
 		Client					*findMember(std::string client_nick);
+		void					promoteNewOperator(Server* server, Client* lastOp);
 };
 
 

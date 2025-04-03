@@ -32,9 +32,9 @@ void Command::cap(Server *server, Client *client, const std::string& line) {
 
 	if (subcommand == "LS") {
 		// Announce supported capabilities : (empty for now ?)
-		client->sendMessage(server, CAPLS_RESP());
+		client->bufferMessage(server, CAPLS_RESP());
 	} else if (subcommand == "REQ") { // capability request
-		client->sendMessage(server, CAPREQ_RESP(line.substr(8))); // Extracts requested capabilities
+		client->bufferMessage(server, CAPREQ_RESP(line.substr(8))); // Extracts requested capabilities
 	} else if (subcommand == "END") {
 		DEBUG_LOG("CAP END received, proceeding with authentication.");
 	} else {

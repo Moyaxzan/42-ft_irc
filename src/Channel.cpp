@@ -174,6 +174,8 @@ bool	Channel::isMember(std::string nickname) {
 bool	Channel::isOperator(Client *user) {
 	std::vector<Client *>::iterator it;
 	std::string	usrNick = user->getNick();
+	if (this->operators_.empty())
+		return (false);
 	for (it = this->operators_.begin(); it != this->operators_.end(); it++) {
 		if ((*it)->getNick() == usrNick) {
 			return (true);
@@ -200,19 +202,44 @@ bool	Channel::broadcast(Server* server, Client *sender, std::string message) {
 	std::list<Client *>::iterator membr;
 	for (membr = this->members_.begin(); membr != this->members_.end(); membr++) {
 		if (!sender || (*membr)->getNick() != sender->getNick()) {
-			(*membr)->sendMessage(server, message);
+			(*membr)->bufferMessage(server, message);
 		}
 	}
 	return (true);
+}
+// Promeut un nouvel operateur en cas de deconnexion client si celui-ci etait dernier operateur client
+// == check tous les channels dont fait partie le client et check s'il etait dernier op sur le channel
+
+void	Channel::promoteNewOperator(Server *server, Client *lastOP)
+{
+	std::list<Client *> members = this->getMembers();
+	std::list<Client *>::iterator it;
+
+	for (it = members.begin(); it != members.end(); it++)
+	{
+		if ((*it)->getId() != lastOP->getId())
+		{
+			this->addOperator(*it);
+			this->broadcast(server, lastOP, RPL_AUTOOP(this->getName(), (*it)->getNick()));
+			this->broadcast(server, lastOP, NOTICE_OPER((*it)->getNick(), this->getName()));
+			return ;
+		}
+	}
 }
 
 //returns false if it was the last client
 //what happens when last operator leaves ? -> give operator rights to another member
 bool	Channel::disconnectClient(Server *server, Client *client, std::string reason) {
 	server->log("INFO", "PART", client->getNick() + " has left " BLUE + this->name_ + RESET);
-	server->checkChannelsPromoteOP(client);
+	if (this->isOperator(client)) {
+		promoteNewOperator(server, client);
+	}
 	this->removeMember(client);
 	this->removeOperator(client);
+	client->rmJoinedChann(this->id_);
+	if (this->members_.empty() && this->operators_.empty()) {
+		return (false);
+	}
 	if (reason.length() == 0) {
 		this->broadcast(server, NULL, PARTNOREASON(client->getNick(), client->getUsername(), this->name_));
 	} else {

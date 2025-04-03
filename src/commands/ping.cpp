@@ -22,5 +22,5 @@ bool Command::ping(Server *server, Client *client, const std::string& line) {
 	std::string ping, target;
 
 	iss >> ping >> target;
-	return (client->sendMessage(server, PONG(target)));
+	return (client->bufferMessage(server, PONG(target)));
 }

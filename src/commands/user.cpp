@@ -27,18 +27,18 @@ bool	isValidUsername(Server *server, Client *client, std::string line, std::stri
 bool Command::user(Server *server, Client *client, std::string &line) {
 	DEBUG_LOG("Into handleUser function");
 	if (!client->isNickSet()) {
-		client->sendMessage(server, ERR_NOTREGISTEREDNICK());
+		client->bufferMessage(server, ERR_NOTREGISTEREDNICK());
 		return (false);
 	}
 	if (client->isUsernameSet()) {
-		client->sendMessage(server, ERR_ALREADYREGISTRED(client->getNick()));
+		client->bufferMessage(server, ERR_ALREADYREGISTRED(client->getNick()));
 		return (true);
 	} 
 	std::string	username; 
 	if (!isValidUsername(server, client, line, username))
 		return (false);
 	client->setUser(username); // set the client's username in its instance
-	client->sendMessage(server, USERSET(username));
+	client->bufferMessage(server, USERSET(username));
 	return (true);
 }
 
@@ -64,7 +64,7 @@ bool	allUserElements(Server *server, Client *client, std::string line, std::stri
 	iss >> cmd >> username >> hostname >> servername; // extraction of words one by one
 	std::getline(iss, realname);
 	if (username.empty() || hostname.empty() || servername.empty() || realname.empty()) {
-		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "USER"));
+		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "USER"));
 		return (false);
 	}
 	//if (realname[0] == ':') if parsing of realname
@@ -77,7 +77,7 @@ bool	isValidUsername(Server *server, Client *client, std::string line, std::stri
 		return (false);
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (username.size() > 9 || !validUserChars(username) || username == SERV_NAME) {
-		client->sendMessage(server, ERR_ERRONEUSUSERNAME(client->getNick()));
+		client->bufferMessage(server, ERR_ERRONEUSUSERNAME(client->getNick()));
 		return (false);
 	}
 	//parse hostname, servername and realname ?

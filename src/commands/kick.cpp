@@ -49,22 +49,22 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 	DEBUG_LOG("Inside kick handler");
 
 	if (!client->isWelcomeSent()) // irssi seems to already be handling this case
-		return (client->sendMessage(server, ERR_NOTREGISTERED()), false);
+		return (client->bufferMessage(server, ERR_NOTREGISTERED()), false);
 	std::istringstream iss(line);
 	std::string command, channel, nick, reason;
 
 	if (!(iss >> command >> channel >> nick)) {
-		client->sendMessage(server, ERR_NEEDMOREPARAMSCHAN(channel, command));
+		client->bufferMessage(server, ERR_NEEDMOREPARAMSCHAN(channel, command));
 		return (false);
 	}
 	std::getline(iss, reason);
 	Channel	*chan = server->getChannelByName(channel);
 	if (!chan) // Does channel exist ?
-		return (client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), channel)), false);
+		return (client->bufferMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), channel)), false);
 	if (!chan->isMember(client)) // is client member of channel ?
-		return (client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), channel)), false);
+		return (client->bufferMessage(server, ERR_NOTONCHANNEL(client->getNick(), channel)), false);
 	if (!chan->isOperator(client)) // is client an operator ?
-		return (client->sendMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), channel)), false);
+		return (client->bufferMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), channel)), false);
 	std::string	kickerNick = client->getNick();
 	std::string	kickerUsername = client->getUsername();
 
@@ -72,15 +72,15 @@ bool Command::kick(Client *client, Server *server, const std::string& line) {
 		reason = " :No reason given";
 	Client *target = server->getClientByNick(nick);
 	if (!target)
-		client->sendMessage(server, ERR_NOSUCHNICK(client->getNick(), nick));
+		client->bufferMessage(server, ERR_NOSUCHNICK(client->getNick(), nick));
 	else if (!chan->isMember(target)) // is kicked client on channel ?
-		client->sendMessage(server, ERR_USERNOTINCHANNEL(kickerNick, nick, channel));
+		client->bufferMessage(server, ERR_USERNOTINCHANNEL(kickerNick, nick, channel));
 	else if (!target->isWelcomeSent())// check if targeted client is fully authenticated
-		client->sendMessage(server, ERR_TARGETNOTAUTH(client->getNick(), nick));
+		client->bufferMessage(server, ERR_TARGETNOTAUTH(client->getNick(), nick));
 	else {
 		chan->broadcast(server, client, BROADKICK(kickerNick, kickerUsername, channel, nick, reason));
-		client->sendMessage(server, BROADKICK(kickerNick, kickerUsername, channel, nick, reason));
-		target->sendMessage(server, NOTIFYKICK(nick, channel, kickerNick, reason));
+		client->bufferMessage(server, BROADKICK(kickerNick, kickerUsername, channel, nick, reason));
+		target->bufferMessage(server, NOTIFYKICK(nick, channel, kickerNick, reason));
 		removeClientFromChannel(chan, target);
 		server->log("INFO", "KICK", kickerNick + " kicked " + nick + " out of " + BLUE + channel + RESET);
 	}

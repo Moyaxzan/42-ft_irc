@@ -34,12 +34,14 @@ static void disconnectClientFromChannels(Client *client, Server *server, std::st
     {
         chan = server->getChannelByName(*it);
         if (!chan) {
-            client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), *it));
+            client->bufferMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), *it));
         } else if (!chan->isMember(client)) {
-            client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
+            client->bufferMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         } else {
-			chan->disconnectClient(server, client, reason);
-			client->sendMessage(server, PART(client->getNick(), client->getUsername(), chan->getName(), reason));
+			client->bufferMessage(server, PART(client->getNick(), client->getUsername(), chan->getName(), reason));
+			if (!chan->disconnectClient(server, client, reason)) {
+				server->deleteChan(chan);
+			}
 		}
     }
 }
@@ -55,7 +57,7 @@ std::string	Command::part(Client *client, Server *server, const std::string & li
         reason = line.substr(line.find(':')).erase(0, 1);
     if (!channelName.length())
     {
-        client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "PART"));
+        client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "PART"));
         return ("");
     }
     disconnectClientFromChannels(client, server, channelName, reason);

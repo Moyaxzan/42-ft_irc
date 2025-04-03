@@ -23,7 +23,7 @@ bool Command::nick(Client *client, Server *server, std::string &line) {
 	std::string	nickname = line.substr(5);
 
 	if (!client->isPasswdSet()) {
-		client->sendMessage(server, ERR_NOTREGISTEREDPASS());
+		client->bufferMessage(server, ERR_NOTREGISTEREDPASS());
 		return (false);
 	}
 	if (!isValidNickname(client, server, nickname)) {
@@ -31,7 +31,7 @@ bool Command::nick(Client *client, Server *server, std::string &line) {
 	}
 	server->addNickname(nickname, client->getId());
 	client->setNick(nickname); // set the client's nickname in its instance
-	client->sendMessage(server, NICKSET(nickname));
+	client->bufferMessage(server, NICKSET(nickname));
 	return (true);
 }
 
@@ -53,16 +53,16 @@ bool	validNickChars(std::string nickname) {
 bool	isValidNickname(Client *client, Server *server, std::string nickname) {
 	DEBUG_LOG("Into isValidNickname function");
 	if (nickname.empty()) {
-		client->sendMessage(server, ERR_NONICKNAMEGIVEN());
+		client->bufferMessage(server, ERR_NONICKNAMEGIVEN());
 		return (false);
 	}
 	// Ajouter vérification par le bot pour respecter la politique du serveur ?
 	if (nickname.size() > 9 || !validNickChars(nickname) || nickname == SERV_NAME) {
-		client->sendMessage(server, ERR_ERRONEUSNICKNAME(nickname));
+		client->bufferMessage(server, ERR_ERRONEUSNICKNAME(nickname));
 		return (false);
 	}
 	if (server->getNicknames().count(nickname)) { // check if nickname is available
-		client->sendMessage(server, ERR_NICKNAMEINUSE(nickname));
+		client->bufferMessage(server, ERR_NICKNAMEINUSE(nickname));
 		return (false);
 	}
 	return (true);

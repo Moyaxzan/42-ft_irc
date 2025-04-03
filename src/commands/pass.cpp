@@ -21,20 +21,20 @@ bool Command::pass(Client *client, Server *server, std::string &line) {
 	std::string	clientPass = line.substr(5);
 
 	if (client->isPasswdSet()) {
-		client->sendMessage(server, ERR_ALREADYREGISTREDPASS());
+		client->bufferMessage(server, ERR_ALREADYREGISTREDPASS());
 		return (true); // return true or false ? check with irssi
 	}
 	if (clientPass.empty()) {
-		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "PASS"));
+		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "PASS"));
 		return (false); // to check with irssi
 	}
 	if (clientPass == server->getPassword()) {
 		client->setPasswdSet(true);
-		client->sendMessage(server, CORRECTPASS());
+		client->bufferMessage(server, CORRECTPASS());
 		return (true);
 	} else {
-		client->sendMessage(server, ERR_WRONGPASS());
-		server->disconnectClient(client->getId());
+		client->bufferMessage(server, ERR_WRONGPASS());
+		// server->disconnectClient(client->getId());
 		return (false);
 	}
 }
