@@ -41,14 +41,14 @@ static bool checkAddOperator(Server *server, Channel *channel, Client *client, b
 
 	if (!to_promote)
 	{
-		client->sendMessage(server, ERR_NOSUCHNICK(client->getNick(), target_client));
+		client->bufferMessage(server, ERR_NOSUCHNICK(client->getNick(), target_client));
 		return false;
 	}
 	if (modeType == true)
 	{
 		if (channel->isOperator(to_promote) == true)
 		{
-			client->sendMessage(server, NOTICE_ALREADYOP(to_promote->getNick(), channel->getName()));
+			client->bufferMessage(server, NOTICE_ALREADYOP(to_promote->getNick(), channel->getName()));
 			return false;
 		}
 		channel->addOperator(to_promote);
@@ -58,12 +58,12 @@ static bool checkAddOperator(Server *server, Channel *channel, Client *client, b
 	{
 		if (to_promote->getNick() == client->getNick() && channel->getOperators().size() == 1)
 		{
-			client->sendMessage(server, ERR_CHANOPNEEDED(client->getNick(), channel->getName()));
+			client->bufferMessage(server, ERR_CHANOPNEEDED(client->getNick(), channel->getName()));
 			return false;
 		}
 		if (channel->isOperator(to_promote) == false)
 		{
-			client->sendMessage(server, NOTICE_NOTOP(to_promote->getNick(), channel->getName()));
+			client->bufferMessage(server, NOTICE_NOTOP(to_promote->getNick(), channel->getName()));
 			return false;
 		}
 		channel->removeOperator(to_promote);
@@ -76,7 +76,7 @@ static bool setChannelUserLimit(Server *server, Channel *channel, Client *client
 {
 	if (modeType == true && arg.length() == 0)
 	{
-		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), channel->getName() + " mode +l:"));
+		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), channel->getName() + " mode +l:"));
 		return false;
 	}
 	if (modeType == false)
@@ -88,7 +88,7 @@ static bool setChannelUserLimit(Server *server, Channel *channel, Client *client
 			limit = -1;
 		else if (limit > 1024)
 		{
-			client->sendMessage(server, ERR_BADCHANLIMIT(client->getNick(), channel->getName()));
+			client->bufferMessage(server, ERR_BADCHANLIMIT(client->getNick(), channel->getName()));
 			return false;
 		}
 		channel->setUserLimit(limit);
@@ -114,9 +114,9 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 	if (!mode.length() || mode == "MODE b")
 		return false;		// ignoring irssi freaking random empty "mode"
 	else if (mode.length() != 2)
-		return (client->sendMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode)));
+		return (client->bufferMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode)));
 	if (!channel->isOperator(client))
-		return (client->sendMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName())));
+		return (client->bufferMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName())));
 	switch (modeFlag) {
 		case 'i': 
 			channel->setInviteOnly(modeType == '+');
@@ -134,7 +134,7 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 			channel->setRestrictedTopic(modeType == '+');
 			break;
 		default:
-			client->sendMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode));
+			client->bufferMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode));
 			return (false);
 	}
 	server->log("INFO", "MODE", client->getNick() + " sets " + mode + " on " + arg);
@@ -148,16 +148,16 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 	std::string command, target, mode, arg;
 	std::istringstream	iss(line);
 	if (!(iss >> command >> target >> mode)) {
-		client->sendMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
+		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
 		return (false);
 	}
 	iss >> arg;
 	if (target[0] == '#') {
 		Channel* channel = server->getChannelByName(target);
 		if (!channel) {
-			client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), target));
+			client->bufferMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), target));
 		} else if (client->joined(channel->getId()) == false) {
-			client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), target));
+			client->bufferMessage(server, ERR_NOTONCHANNEL(client->getNick(), target));
 		}
 		return handleChannelMode(server, client, channel, mode, arg);
 	} else {
@@ -166,7 +166,7 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 			return (false);
 		}
 		client->setInvisible(true);
-		client->sendMessage(server, std::string(":") + target + " MODE " + target + " " + mode);
+		client->bufferMessage(server, std::string(":") + target + " MODE " + target + " " + mode);
 	}
 	server->log("INFO", "MODE", client->getNick() + " sets " + mode + " on " + target);
 	return (true);

@@ -168,7 +168,7 @@ void	Client::rmJoinedChann(unsigned int channel) {
 	this->joinedChannels_.remove(channel);
 }
 
-bool    Client::sendAllMsgs(Server *server)
+bool    Client::sendMessages(Server *server)
 {
     if (this->to_send_.length() == 0)
         return false;
@@ -190,9 +190,9 @@ bool    Client::sendAllMsgs(Server *server)
     return true;
 }
 
-bool	Client::sendMessage(Server *server, std::string message) {
-    message += "\r\n";
-    this->to_send_ += message;
+bool	Client::bufferMessage(Server *server, std::string message) {
+	this->to_send_ += message;
     FD_SET(this->getId(), server->getWriteFds());
+    message += "\r\n";
 	return (true);
 }

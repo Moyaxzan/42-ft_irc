@@ -382,7 +382,7 @@ void Server::runServer(void)
 				}
 			}
             if (FD_ISSET(i, &this->write_fds) && i != this->serv_socket_)
-                this->getClientById(i)->sendAllMsgs(this);
+                this->getClientById(i)->sendMessages(this);
 		}
 	}
 	std::cout << std::endl;
@@ -394,18 +394,18 @@ void	Server::sendWelcomeMessage_(int fd) {
 	Client*		client = this->clients_[fd];
     std::string	nick = client->getNick();
 
-    client->sendMessage(this, std::string(SERV_NAME) + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
-    client->sendMessage(this, std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
-    client->sendMessage(this, std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
-    client->sendMessage(this, std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
-	client->sendMessage(this, std::string(SERV_NAME) + " 005 " + nick + CACTUS);
+    client->bufferMessage(this, std::string(SERV_NAME) + " 001 " + nick + " :🤠 Howdy, partner! Welcome to the Wild West of IRC, where only the fastest typers survive!");
+    client->bufferMessage(this, std::string(SERV_NAME) + " 002 " + nick + " :Your host is " + SERV_NAME + ", runnin’ on version 1.0, straight outta the frontier.");
+    client->bufferMessage(this, std::string(SERV_NAME) + " 003 " + nick + " :This here server was founded on a bright morning in the Wild West, back in " + this->creatTime_ + ".");
+    client->bufferMessage(this, std::string(SERV_NAME) + " 004 " + nick + " " + SERV_NAME + " 1.0 Sheriff Deputy");
+	client->bufferMessage(this, std::string(SERV_NAME) + " 005 " + nick + CACTUS);
      
 	client->setWelcomeSent(true);
     // Message of the Day (MOTD) ?
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
-    // client->sendMessage(this, std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 375 " + nick + " :- Welcome to DustySaloon, the roughest and toughest IRC town in the West!");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Grab your hat, watch out for bandits, and don’t go startin’ duels unless you’re quick on the draw!");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 372 " + nick + " :- Type /help if you need guidance from the Sheriff.");
+    // client->bufferMessage(this, std::string(":") + SERV_NAME + " 376 " + nick + " :- Saddle up and enjoy yer stay, partner! 🤠🌵🔥");
 }
 
 void	Server::log(const std::string& level, const std::string& category, const std::string message) {

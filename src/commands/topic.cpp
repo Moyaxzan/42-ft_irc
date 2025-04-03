@@ -34,17 +34,17 @@ bool Command::topic(Client *client, Server *server, const std::string& line)
     cmd_vec.erase(cmd_vec.begin() + 0);
     if (!isValidChannelName(cmd_vec[0]) || !(chan = server->getChannelByName(cmd_vec[0])))
     {
-        client->sendMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
+        client->bufferMessage(server, ERR_NOSUCHCHANNEL(client->getNick(), cmd_vec[0]));
         return false;
     }
     if (!client->joined(chan->getId()))
     {
-        client->sendMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
+        client->bufferMessage(server, ERR_NOTONCHANNEL(client->getNick(), chan->getName()));
         return false;
     }
     if (chan->isTopicRestricted() && !chan->isOperator(client))
     {
-        client->sendMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), chan->getName()));
+        client->bufferMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), chan->getName()));
         return false;
     }
     cmd_vec.erase(cmd_vec.begin() + 0);
@@ -95,7 +95,7 @@ void static broadcast_RPLTOPIC(Server *server, Channel *chan)
     std::list<Client *>::iterator it;
 
     for (it = chan_members.begin(); it != chan_members.end(); it++)
-        (*it)->sendMessage(server, RPL_TOPIC((*it)->getNick(), chan->getName(), chan->getTopic()));
+        (*it)->bufferMessage(server, RPL_TOPIC((*it)->getNick(), chan->getName(), chan->getTopic()));
 }
 
 void static broadcast_UNSET_TOPIC(Server *server, Channel *chan)
@@ -105,7 +105,7 @@ void static broadcast_UNSET_TOPIC(Server *server, Channel *chan)
 
     for (it = chan_members.begin(); it != chan_members.end(); it++)
     {
-        (*it)->sendMessage(server, UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()));
+        (*it)->bufferMessage(server, UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()));
         std::cout << UNSET_TOPIC((*it)->getNick(), (*it)->getUsername(), chan->getName()) << "\n";
     }
 }
