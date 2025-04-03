@@ -194,7 +194,7 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 	if (!arg.empty()) {
 		modeMessage += " " + arg;
 	}
-	channel->broadcast(server, client, modeMessage);
+	channel->broadcast(server, NULL, modeMessage);
 
 	return true;
 }

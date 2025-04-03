@@ -230,6 +230,11 @@ void Bot::sendIntroRoulette(std::string username)
     sendMsg("What could go wrong ? Good luck fellers!\n", 2, false);
 }
 
+static bool msg_cmp(std::vector<std::string> msg, std::string to_cmp)
+{
+    return (msg.size() == 1 && msg[0] == to_cmp);
+}
+
 void Bot::rouletteLoop(std::vector<std::string> & players, Gun & gun)
 {
     std::string msg;
@@ -420,11 +425,6 @@ void Bot::monitor(t_msg & msg)
             }
         }
     }
-}
-
-static bool msg_cmp(std::vector<std::string> msg, std::string to_cmp)
-{
-    return (msg.size() == 1 && msg[0] == to_cmp);
 }
 
 std::vector<std::string> split(std::string str, std::string delim)
