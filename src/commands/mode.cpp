@@ -201,7 +201,6 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 
 bool Command::mode(Server* server, Client *client, const std::string& line) {
 	DEBUG_LOG("in mode handler");
-	server->log("ERROR", "MODE", "inside mode :'" + line + "'");
 
 	std::string command, target, mode, arg;
 	std::istringstream	iss(line);
