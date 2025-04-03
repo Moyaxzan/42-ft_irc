@@ -3,13 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   global.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lekix <lekix@student.42.fr>                +#+  +:+       +#+        */
+/*   By: kipouliq <kipouliq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 15:42:47 by lekix             #+#    #+#             */
-/*   Updated: 2025/03/26 19:27:12 by lekix            ###   ########.fr       */
+/*   Updated: 2025/04/03 16:51:11 by kipouliq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/global.hpp"
 
 std::string channel = "";
+bool        quit = false;

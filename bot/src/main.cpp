@@ -8,14 +8,12 @@ int main(int argc, char **argv)
         std::cerr << "Usage is : ./Bot <port> <password>. Aborting..\n";
         return -1;
     }
-	Bot bot(argv[1], argv[2]);
 	std::string recv_msg;    
 	std::vector<std::string>::iterator it;
     try {
+		Bot bot(argv[1], argv[2]);
 		std::cout << "Connection accepted. Now monitoring\n";
-		while (true) {
-			while (!(recv_msg = bot.recvMsg()).empty()) {
-				std::cout << "recieved : " << recv_msg;
+			while (!quit && !(recv_msg = bot.recvMsg()).empty()) {
 				if (recv_msg.find("INVITE ") != std::string::npos) {  // detect invite and join appropriate chan
 					std::string channel_tmp = recv_msg.substr(recv_msg.find("#"));
 					if (channel_tmp.find("\r") != std::string::npos && channel_tmp.find("\n") != std::string::npos)
@@ -30,7 +28,7 @@ int main(int argc, char **argv)
 
 			bot.sendMsg("It looks like this city needed a sheriff.. and here I am.\n", 0, false);
 			bot.sendMsg("Just a quick reminder, fellers : I need operator rights if you want me to do the cleaning 'round here\n", 1, false);
-			while (!(recv_msg = bot.recvMsg()).empty()) {
+			while (!quit && !(recv_msg = bot.recvMsg()).empty()) {
 				if (recv_msg.find("PART ") != recv_msg.npos) {
 					if (bot.handlePart()) {
 						break;
@@ -39,11 +37,12 @@ int main(int argc, char **argv)
 				if (recv_msg.find("KICK ") != recv_msg.npos && bot.handleKick(recv_msg)) {
 					break;
 				}
+				if (recv_msg.find("SHUTDOWN BOT PLEASE") != recv_msg.npos)
+					quit = true;
 				t_msg msg = bot.parseMsg(recv_msg);
 				bot.monitor(msg);
 				bot.checkRoulette(msg);
 			}
-		}
     } catch (std::exception &e) {
         std::cerr << e.what();
         return -1;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   global.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lekix <lekix@student.42.fr>                +#+  +:+       +#+        */
+/*   By: kipouliq <kipouliq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 15:40:51 by lekix             #+#    #+#             */
-/*   Updated: 2025/03/26 16:20:56 by lekix            ###   ########.fr       */
+/*   Updated: 2025/04/03 17:01:33 by kipouliq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,12 @@
 #define CYAN    "\033[36m"
 #define RESET   "\033[0m"   // Réinitialiser la couleur
 
-// Effets sympas
-#define BOLD    "\033[1m"   // Gras
-#define UNDERLINE "\033[4m" // Souligné
-#define BLINK   "\033[5m"   // Clignotant
-#define REVERSE "\033[7m"   // Inversion des couleurs
+#define BOLD    "\033[1m"   
+#define UNDERLINE "\033[4m" 
+#define BLINK   "\033[5m"   
+#define REVERSE "\033[7m"   
 
 extern std::string channel;
+extern bool        quit;
 
 #endif

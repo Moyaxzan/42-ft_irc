@@ -61,14 +61,20 @@ void Bot::initServerConnection_(char *port, char *pwd) {
         throw SocketBotError();
 
     if (connect(this->socket_, (sockaddr *)&server_infos, sizeof(server_infos)) == -1)
+    {
+        close(this->socket_);
         throw ConnectionError();
+    }
 
     this->sendMsg("CAP LS 302", 0, true);
     std::string res = this->recvMsg();
     this->sendMsg("PASS " + std::string(pwd), 0, true);
     res = this->recvMsg();
     if (res.find("Invalid password") != res.npos)
+    {
+        close (this->socket_);
         throw WrongPassword();
+    }
     this->sendMsg("NICK " + std::string("sheriff"), 0, true);
     this->sendMsg("USER sheriff localhost localhost: le_sheriff", 0, true);
 }
@@ -242,6 +248,11 @@ void Bot::rouletteLoop(std::vector<std::string> & players, Gun & gun)
         {
             parsed_msg = parseMsg(msg);
             this->monitor(parsed_msg);
+            if (msg.find("SHUTDOWN BOT PLEASE") != msg.npos)
+            {
+                quit = true;
+                return ;
+            }
             if (parsed_msg.username == players[0] && msg_cmp(parsed_msg.content, "ROLL"))
             {
                 this->sendMsg("Rolling barrel...\n", 0, false);
