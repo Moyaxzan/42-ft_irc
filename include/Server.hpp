@@ -66,6 +66,7 @@ class Server {
 		void							checkChannelsPromoteOP(Client *client);
 		void							disconnectClient(int fd);
 		void							log(const std::string& level, const std::string& category, const std::string message);
+		void							deleteChan(Channel* channel);
 };
 
 class SocketError : public std::exception {

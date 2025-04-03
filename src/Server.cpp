@@ -257,26 +257,6 @@ bool	Server::handleCommand(int fd, std::string cmd) {
 	return (true);
 }
 
-// Promeut un nouvel operateur en cas de deconnexion client si celui-ci etait dernier operateur client
-// == check tous les channels dont fait partie le client et check s'il etait dernier op sur le channel
-
-void static promoteNewOperator(Server *server, Channel *channel, Client *lastOP)
-{
-	std::list<Client *> members = channel->getMembers();
-	std::list<Client *>::iterator it;
-
-	for (it = members.begin(); it != members.end(); it++)
-	{
-		if ((*it)->getId() != lastOP->getId())
-		{
-			channel->addOperator(*it);
-			channel->broadcast(server, lastOP, RPL_AUTOOP(channel->getName(), (*it)->getNick()));
-			channel->broadcast(server, lastOP, NOTICE_OPER((*it)->getNick(), channel->getName()));
-			return ;
-		}
-	}
-}
-
 void Server::checkChannelsPromoteOP(Client *client)
 {
 	std::list<unsigned int> chans_id = client->getJoinedChannels();
@@ -290,12 +270,16 @@ void Server::checkChannelsPromoteOP(Client *client)
 	{
 		if ((*it2)->isOperator(client) && (*it2)->getOperators().size() == 1 && (*it2)->getMembers().size() > 1)
 		{
-			promoteNewOperator(this, *it2, client);
+			(*it2)->promoteNewOperator(this, client);
 			return ;
 		}
 	}
 }
 
+void	Server::deleteChan(Channel* channel) {
+	this->channels_.erase(std::find(this->channels_.begin(), this->channels_.end(), channel));
+	delete channel;
+}
 // Verifier avec structure sever qu'on supprime bien tout
 // Distinguer dans cette fonction une déconnexion voulue d'une erreur pour transférer un éventuel
 // message aux autres clients en cas de déconnexion volontaire avec un int pr le type de déconnexion
