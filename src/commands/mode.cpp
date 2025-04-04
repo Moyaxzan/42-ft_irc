@@ -2,6 +2,7 @@
 #include "../../include/debug.hpp"
 #include "../../include/Server.hpp"
 #include "../../include/Client.hpp"
+#include <cstddef>
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
@@ -147,7 +148,10 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 	if (mode.empty()) {
 		return handleChannelEmptyMode(server, client, channel);
 	}
-
+	if (mode[1] == 'b') {
+		client->bufferMessage(server, ENDOFBANLIST(client->getNick(), channel->getName()));
+		return true;
+	}
 	if (!channel->isOperator(client)) {
 		client->bufferMessage(server, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName()));
 		return false;
@@ -157,9 +161,16 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 	std::string appliedModes;
 	std::vector<std::string> appliedArgs;
 	size_t argIndex = 0;
+	size_t cptArgs = 0;
 
 	for (size_t i = 1; i < mode.length(); i++) {
 		char modeFlag = mode[i];
+		if ((modeFlag == 'o' || modeFlag == 'i' || modeFlag == 'l') && (cptArgs >= args.size() - 1)) {
+			client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
+			cptArgs++;
+			break;
+		}
+			
 		switch (modeFlag) {
 			case 'i':
 				channel->setInviteOnly(modeType == '+');
@@ -167,32 +178,43 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 				break;
 			case 'o':
 				if (argIndex < args.size()) {
-					checkAddOperator(server, channel, client, modeType == '+', args[argIndex]);
-					appliedModes += modeType; appliedModes += 'o';
+					if (!checkAddOperator(server, channel, client, modeType == '+', args[argIndex])) {
+						break;
+					}
+					appliedModes += modeType;
+					appliedModes += 'o';
 					appliedArgs.push_back(args[argIndex]);
 					argIndex++;
 				}
 				break;
 			case 'l':
 				if (modeType == '+' && argIndex < args.size()) {
-					setChannelUserLimit(server, channel, client, modeType == '+', args[argIndex]);
-					appliedModes += modeType; appliedModes += 'l';
+					if (!setChannelUserLimit(server, channel, client, modeType == '+', args[argIndex])) {
+						break;
+					}
+					appliedModes += modeType;
+					appliedModes += 'l';
 					appliedArgs.push_back(args[argIndex]);
 					argIndex++;
 				} else if (modeType == '-') {
-					setChannelUserLimit(server, channel, client, false, "");
-					appliedModes += modeType; appliedModes += 'l';
+					if (setChannelUserLimit(server, channel, client, false, "")) {
+						appliedModes += modeType; appliedModes += 'l';
+					}
 				}
 				break;
 			case 'k':
 				if (modeType == '+' && argIndex < args.size()) {
-					setChannelPwd(channel, modeType == '+', args[argIndex]);
-					appliedModes += modeType; appliedModes += 'k';
+					if (!setChannelPwd(channel, modeType == '+', args[argIndex])) {
+						break;
+					}
+					appliedModes += modeType;
+					appliedModes += 'k';
 					appliedArgs.push_back(args[argIndex]);
 					argIndex++;
 				} else if (modeType == '-') {
-					setChannelPwd(channel, false, "");
-					appliedModes += modeType; appliedModes += 'k';
+					if (setChannelPwd(channel, false, "")) {
+						appliedModes += modeType; appliedModes += 'k';
+					}
 				}
 				break;
 			case 't':
@@ -223,15 +245,8 @@ bool Command::mode(Server* server, Client *client, const std::string& line) {
 	std::string command, target, mode;
 	std::vector<std::string> args;
 
-	if (!(iss >> command >> target)) {
-		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
-		return false;
-	}
-	
-	if (!(iss >> mode)) {
-		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
-		return false;
-	}
+	iss >> command >> target;
+	iss >> mode;
 
 	std::string arg;
 	while (iss >> arg) {
