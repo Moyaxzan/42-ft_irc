@@ -290,8 +290,7 @@ void	Server::disconnectClient(int fd) {
 	checkChannelsPromoteOP(client);
 	for (std::list<unsigned int>::reverse_iterator it = chans.rbegin(); it != chans.rend(); ++it) {
 		if (*it >= this->channels_.size()) { // Prevent out-of-bounds access
-			++it;
-			continue;
+			break;
 		}
 		Channel* channel = this->channels_[*it];
 		if (channel->isMember(client) && !channel->disconnectClient(this, client, "")) {
