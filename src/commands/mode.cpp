@@ -149,16 +149,10 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 	}
 
 	char modeType = mode[0];  // '+' ou '-'
-	char modeFlag = mode[1];
 
 	if (modeType == 'b') {
 		client->bufferMessage(server, ENDOFBANLIST(client->getNick(), channel->getName()));
 		return true;
-	}
-
-	if (mode.length() != 2) {
-		client->bufferMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode));
-		return false;
 	}
 
 	if (!channel->isOperator(client)) {
@@ -166,30 +160,33 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 		return false;
 	}
 
-	switch (modeFlag) {
-		case 'i': 
-			channel->setInviteOnly(modeType == '+');
-			break;
-		case 'o':
-			checkAddOperator(server, channel, client, modeType == '+', arg);
-			break;
-		case 'l':
-			setChannelUserLimit(server, channel, client, modeType == '+', arg);
-			break;
-		case 'k':
-			if (!arg.empty())
-				setChannelPwd(channel, modeType == '+', arg);
-			else {
-				client->bufferMessage(server, ERR_NEEDMOREPARAMSCHAN(channel->getName(), "MODE"));
+	for (int i = 1; mode[i] != '\0'; i++) {
+		char modeFlag = mode[i];
+		switch (modeFlag) {
+			case 'i': 
+				channel->setInviteOnly(modeType == '+');
+				break;
+			case 'o':
+				checkAddOperator(server, channel, client, modeType == '+', arg);
+				break;
+			case 'l':
+				setChannelUserLimit(server, channel, client, modeType == '+', arg);
+				break;
+			case 'k':
+				if (!arg.empty())
+					setChannelPwd(channel, modeType == '+', arg);
+				else {
+					client->bufferMessage(server, ERR_NEEDMOREPARAMSCHAN(channel->getName(), "MODE"));
+					return (false);
+				}
+				break;
+			case 't':
+				channel->setRestrictedTopic(modeType == '+');
+				break;
+			default:
+				client->bufferMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode));
 				return (false);
-			}
-			break;
-		case 't':
-			channel->setRestrictedTopic(modeType == '+');
-			break;
-		default:
-			client->bufferMessage(server, ERR_UNKNOWNMODE(client->getNick(), mode));
-			return (false);
+		}
 	}
 
 	server->log("INFO", "MODE", client->getNick() + " sets " + mode + " on " + (arg.empty() ? channel->getName() : arg));
