@@ -157,22 +157,23 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 		return false;
 	}
 
+	unsigned int lokCpt = 0;
+	for (int i = 0; mode[i]; i++) {
+		if (mode[i] == 'l' || mode[i] == 'o' || mode[i] == 'k')
+			lokCpt++;
+	}
+	std::cout << "count = " << lokCpt << std::endl;
+	std::cout << "args size = " << args.size() << "\n";
+	if (lokCpt != args.size())
+		client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
 	char modeType = mode[0];
 	std::string appliedModes;
 	std::vector<std::string> appliedArgs;
 	size_t argIndex = 0;
-	size_t cptArgs = 0;
 
 	for (size_t i = 1; i < mode.length(); i++) {
 		char modeFlag = mode[i];
-		if ((modeFlag == 'o' || modeFlag == 'i' || modeFlag == 'l')) {
-			if (cptArgs > args.size() - 1) {
-				client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
-				break;
-			}
-			cptArgs++;
-		}
-			
+
 		switch (modeFlag) {
 			case 'i':
 				channel->setInviteOnly(modeType == '+');
@@ -180,23 +181,21 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 				break;
 			case 'o':
 				if (argIndex < args.size()) {
-					if (!checkAddOperator(server, channel, client, modeType == '+', args[argIndex])) {
-						break;
+					if (checkAddOperator(server, channel, client, modeType == '+', args[argIndex])) {
+						appliedModes += modeType;
+						appliedModes += 'o';
+						appliedArgs.push_back(args[argIndex]);
 					}
-					appliedModes += modeType;
-					appliedModes += 'o';
-					appliedArgs.push_back(args[argIndex]);
 					argIndex++;
 				}
 				break;
 			case 'l':
 				if (modeType == '+' && argIndex < args.size()) {
-					if (!setChannelUserLimit(server, channel, client, modeType == '+', args[argIndex])) {
-						break;
+					if (setChannelUserLimit(server, channel, client, modeType == '+', args[argIndex])) {
+						appliedModes += modeType;
+						appliedModes += 'l';
+						appliedArgs.push_back(args[argIndex]);
 					}
-					appliedModes += modeType;
-					appliedModes += 'l';
-					appliedArgs.push_back(args[argIndex]);
 					argIndex++;
 				} else if (modeType == '-') {
 					if (setChannelUserLimit(server, channel, client, false, "")) {
@@ -206,12 +205,11 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 				break;
 			case 'k':
 				if (modeType == '+' && argIndex < args.size()) {
-					if (!setChannelPwd(channel, modeType == '+', args[argIndex])) {
-						break;
+					if (setChannelPwd(channel, modeType == '+', args[argIndex])) {
+						appliedModes += modeType;
+						appliedModes += 'k';
+						appliedArgs.push_back(args[argIndex]);
 					}
-					appliedModes += modeType;
-					appliedModes += 'k';
-					appliedArgs.push_back(args[argIndex]);
 					argIndex++;
 				} else if (modeType == '-') {
 					if (setChannelPwd(channel, false, "")) {
