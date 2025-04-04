@@ -24,6 +24,7 @@ class Server {
         fd_set                      write_fds;
 		int							serv_socket_;
 		int							fd_max_;
+		int							maxChanId_;
 		sockaddr_in					socket_infos_;
 		std::string					password_;
 		std::string					creatTime_;

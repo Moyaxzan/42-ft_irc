@@ -134,8 +134,8 @@ void	Channel::addInvited(Client *user) {
 }
 
 void	Channel::removeInvited(Client *user) {
-	for (std::vector<Client *>::iterator it = this->invited_.begin(); it == this->invited_.end(); it++) {
-		if (*it == user) {
+	for (std::vector<Client *>::iterator it = this->invited_.begin(); it != this->invited_.end(); it++) {
+		if ((*it)->getNick() == user->getNick()) {
 			this->invited_.erase(it);
 			return ;
 		}
@@ -227,6 +227,7 @@ bool	Channel::disconnectClient(Server *server, Client *client, std::string reaso
 	this->removeMember(client);
 	this->removeOperator(client);
 	client->rmJoinedChann(this->id_);
+	this->removeInvited(client);
 	if (this->members_.empty() && this->operators_.empty()) {
 		return (false);
 	}

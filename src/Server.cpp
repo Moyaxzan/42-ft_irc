@@ -58,7 +58,8 @@ Server::Server(t_args& args) {
 	FD_SET(this->serv_socket_, &this->all_sockets_);
     FD_ZERO(&this->write_fds);
 	this->fd_max_ = this->serv_socket_;
-	this->password_=args.password;
+	this->password_ = args.password;
+	this->maxChanId_ = 0;
 }
 
 Server::Server(const Server& other) {
@@ -87,6 +88,7 @@ Server& Server::operator=(const Server& other) {
 	this->socket_infos_ = other.socket_infos_;
 	this->fd_max_ = other.fd_max_;
 	this->password_ = other.password_;
+	this->maxChanId_ = other.maxChanId_;
 	return (*this);
 }
 
@@ -164,16 +166,13 @@ void	Server::addNickname(std::string nickname, int fd) {
 }
 
 bool	Server::addChannel(std::string channelName, Client *creator, std::string passwd) {
-	int	id = 0;
 	std::vector<Channel *>::iterator it;
 
 	if (this->getChannelByName(channelName) != NULL) {
 		return (false);
 	}
-	for (it = this->channels_.begin(); it != this->channels_.end(); it++) {
-		id++;
-	}
-	Channel *newChan = new Channel(id, channelName);
+	this->maxChanId_++;
+	Channel *newChan = new Channel(this->maxChanId_, channelName);
 	if (!newChan) {
 		return (false);
 	}
@@ -290,11 +289,16 @@ void	Server::disconnectClient(int fd) {
 
 	checkChannelsPromoteOP(client);
 	for (std::list<unsigned int>::reverse_iterator it = chans.rbegin(); it != chans.rend(); ++it) {
+		if (*it >= this->channels_.size()) { // Prevent out-of-bounds access
+			++it;
+			continue;
+		}
 		Channel* channel = this->channels_[*it];
 		if (channel->isMember(client) && !channel->disconnectClient(this, client, "")) {
 			this->log("INFO", "CHANNEL", "channel " BLUE + channel->getName() + RESET " destroyed");
 			delete channel;
 			this->channels_.erase(this->channels_.begin() + *it);
+			it = chans.rbegin();
 		}
 	}
 	std::string	nickname = client->getNick();
@@ -303,6 +307,12 @@ void	Server::disconnectClient(int fd) {
 	this->nicknames_.erase(nickname);	
 	delete client;						
 	this->clients_.erase(fd);
+	if (fd == this->fd_max_) {
+		for (std::map<int, Client *>::iterator it = this->clients_.begin(); it != this->clients_.end(); it++) {
+			if (it->first > this->fd_max_)
+				this->fd_max_ = it->first;
+		}
+	}
 	//change fd_max_ if it is equal to fd and look for the new higher fd
 	if (nickname.empty()) {
 		std::ostringstream oss;
