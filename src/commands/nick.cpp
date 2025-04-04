@@ -56,7 +56,7 @@ bool	isValidNickname(Client *client, Server *server, std::string nickname) {
 		client->bufferMessage(server, ERR_NONICKNAMEGIVEN());
 		return (false);
 	}
-	if (nickname.size() > 9 || !validNickChars(nickname) || nickname == SERV_NAME || nickname == "sheriff") {
+	if (nickname.size() > 9 || !validNickChars(nickname) || nickname == SERV_NAME) {
 		client->bufferMessage(server, ERR_ERRONEUSNICKNAME(nickname));
 		return (false);
 	}

@@ -2,9 +2,9 @@
 
 NAME = Bot
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -MMD -g3
 
-DEBUG_FLAGS = -g3 -DDEBUG=1
+DEBUG_FLAGS = -DDEBUG=1
 
 CXX = c++
 

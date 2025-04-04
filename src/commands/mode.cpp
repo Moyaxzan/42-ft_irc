@@ -165,10 +165,12 @@ static bool handleChannelMode(Server *server, Client* client, Channel* channel, 
 
 	for (size_t i = 1; i < mode.length(); i++) {
 		char modeFlag = mode[i];
-		if ((modeFlag == 'o' || modeFlag == 'i' || modeFlag == 'l') && (cptArgs >= args.size() - 1)) {
-			client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
+		if ((modeFlag == 'o' || modeFlag == 'i' || modeFlag == 'l')) {
+			if (cptArgs > args.size() - 1) {
+				client->bufferMessage(server, ERR_NEEDMOREPARAMS(client->getNick(), "MODE"));
+				break;
+			}
 			cptArgs++;
-			break;
 		}
 			
 		switch (modeFlag) {

@@ -21,6 +21,7 @@ int main(int argc, char **argv)
 					bot.sendMsg("JOIN " + channel_tmp, 0, true);
 					if (!(recv_msg = bot.recvMsg()).empty() && recv_msg.find(" JOIN ") != recv_msg.npos) {
 						channel = channel_tmp;
+						std::cout << "entering channel " << channel << std::endl;
 						break ;
 					}
 				}
