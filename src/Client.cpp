@@ -97,7 +97,7 @@ unsigned int	Client::getCurrChannel(void) const {
 	return (this->currChannel_);
 }
 
-std::list<unsigned int>	Client::getJoinedChannels(void) const {
+std::list<unsigned int>&	Client::getJoinedChannels(void) {
 	return (this->joinedChannels_);
 }
 

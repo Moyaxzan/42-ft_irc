@@ -288,16 +288,13 @@ void	Server::disconnectClient(int fd) {
 	std::list<unsigned int>	chans = client->getJoinedChannels();
 
 	checkChannelsPromoteOP(client);
-	for (std::list<unsigned int>::reverse_iterator it = chans.rbegin(); it != chans.rend(); ++it) {
-		if (*it >= this->channels_.size()) { // Prevent out-of-bounds access
-			break;
-		}
-		Channel* channel = this->channels_[*it];
+	for (size_t i = 0; i < client->getJoinedChannels().size(); i++) {
+		Channel* channel = this->channels_[i];
 		if (channel->isMember(client) && !channel->disconnectClient(this, client, "")) {
 			this->log("INFO", "CHANNEL", "channel " BLUE + channel->getName() + RESET " destroyed");
 			delete channel;
-			this->channels_.erase(this->channels_.begin() + *it);
-			it = chans.rbegin();
+			this->channels_.erase(this->channels_.begin() + i);
+			i = 0;
 		}
 	}
 	std::string	nickname = client->getNick();

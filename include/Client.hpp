@@ -39,7 +39,7 @@ class Client {
 		std::string								getNick(void) const;
 		std::string								getUsername(void) const;
 		unsigned int							getCurrChannel(void) const;
-		std::list<unsigned int>					getJoinedChannels(void) const;
+		std::list<unsigned int>&				getJoinedChannels(void);
 
 		//SETTERS
 		void									setId(int id);
